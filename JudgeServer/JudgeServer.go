@@ -45,7 +45,12 @@ func handle(conn tcp.Conn) {
 	}
 }
 
+func Worker() {
+
+}
+
 func main() {
+
 	listen, err := tcp.Listen(":2333")
 	if err != nil {
 		fmt.Printf("error:%v", err)

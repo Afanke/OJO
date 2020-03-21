@@ -85,7 +85,8 @@ type OperationForm struct {
 	MaxMemory      int // 2097152 bytes
 	RealMemory     int
 	Score          int
-	PcId           int // Problem case Id
+	// Mode           int // 1:OI 2:ACM
+	PcId int // Problem case Id
 	// SmId           int // Submission Id
 	// Cid            int // Contest Id
 	Language     string

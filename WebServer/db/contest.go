@@ -440,3 +440,65 @@ func (Contest) GetOITop10(cid int) ([]dto.OIRank, error) {
 	}
 	return res, err
 }
+
+func (Contest) HasACMOverAll(form *dto.SubmitForm) (bool, error) {
+	sql := "select count(*) from ojo.contest_acm_overall where cid=? and uid=?"
+	var count int
+	err := db.Get(&count, sql, form.Cid, form.Uid)
+	return count == 1, err
+}
+
+func (Contest) HasACMDetail(form *dto.SubmitForm) (bool, error) {
+	sql := "select count(*) from ojo.contest_acm_detail where cid=? and uid=? and pid=?"
+	var count int
+	err := db.Get(&count, sql, form.Cid, form.Uid, form.Pid)
+	return count == 1, err
+}
+
+func (Contest) InsertACMOverAll(form *dto.SubmitForm, time int, ac bool) error {
+	aa := 0
+	if ac {
+		aa = 1
+	}
+	sql := "insert into ojo.contest_acm_overall(cid, uid, total, ac, time) VALUES (?,?,?,?,?)"
+	_, err := db.Exec(sql, form.Cid, form.Uid, 1, aa, time)
+	return err
+}
+
+func (Contest) InsertACMDetail(form *dto.SubmitForm, time int, ac, firstAc bool) error {
+	sql := "insert into ojo.contest_acm_detail(cid, uid, pid, time, total, ac, first_ac) VALUES (?,?,?,?,?,?,?)"
+	_, err := db.Exec(sql, form.Cid, form.Uid, form.Pid, time, 1, ac, firstAc)
+	return err
+}
+
+func (Contest) UpdateACMOverAll(form *dto.SubmitForm, time int, ac bool) error {
+	sql := `update ojo.contest_acm_overall 
+			set total=total+? , ac=ac+? , time=time+? 
+			where cid=? and uid=?`
+	aa := 0
+	if ac {
+		aa = 1
+	}
+	_, err := db.Exec(sql, 1, aa, time, form.Cid, form.Uid)
+	return err
+}
+
+func (Contest) UpdateACMDetail(form *dto.SubmitForm, time int, ac, first bool) error {
+	aa := 0
+	if ac {
+		aa = 1
+	}
+	sql := `update ojo.contest_acm_detail 
+			set total=total+? ,ac=? ,time=time+? ,first_ac=?
+			where cid=? and uid=? and pid=?`
+
+	_, err := db.Exec(sql, 1, aa, time, first, form.Cid, form.Uid, form.Pid)
+	return err
+}
+
+func (Contest) HasACMFirstDetail(form *dto.SubmitForm) (bool, error) {
+	sql := "select count(*) from ojo.contest_acm_detail where cid=? and pid=? and ac=1"
+	var count int
+	err := db.Get(&count, sql, form.Cid, form.Pid)
+	return count == 0, err
+}
