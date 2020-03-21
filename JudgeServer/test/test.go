@@ -77,7 +77,7 @@ func main() {
 		os.Exit(-1)
 	}
 	sql := `update  ojo.contest_acm_detail c
-			set c.total=1 ,c.ac=2 , c.time=3
+			set c.total=1 ,c.ac=2 , c.last_submit_time=3
 			where c.cid=3 and c.uid=1 and c.pid=2`
 	stmt, err := db.Prepare(sql)
 	if err != nil {

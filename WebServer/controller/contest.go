@@ -565,26 +565,38 @@ func handleACM(contest *dto.ContestDetail, form *dto.SubmitForm) {
 		_ = ctsdb.SetISE(form.Sid)
 		return
 	}
-	duration := subTime.Unix() - startTime.Unix()
+	duration := int(subTime.Unix() - startTime.Unix())
 	yes, err := ctsdb.HasACMOverAll(form)
-	fmt.Println(1)
 	if err != nil {
 		fmt.Printf("error:%v", err)
 		_ = ctsdb.SetISE(form.Sid)
 		return
 	}
 	if yes {
-		fmt.Println(2)
-		err = ctsdb.UpdateACMOverAll(form, int(duration), flag == "AC")
+		wrong, err := ctsdb.GetACMWrong(form)
+		if err != nil {
+			fmt.Printf("error:%v", err)
+			_ = ctsdb.SetISE(form.Sid)
+			return
+		}
+		du := duration
+		if flag != "AC" {
+			du += (wrong + 1) * contest.PunishTime
+		} else {
+			du += wrong * contest.PunishTime
+		}
+		err = ctsdb.UpdateACMOverAll(form, du, flag == "AC")
 		if err != nil {
 			fmt.Printf("error:%v", err)
 			_ = ctsdb.SetISE(form.Sid)
 			return
 		}
 	} else {
-		fmt.Println(3)
-
-		err = ctsdb.InsertACMOverAll(form, int(duration), flag == "AC")
+		du := duration
+		if flag != "AC" {
+			du += contest.PunishTime
+		}
+		err = ctsdb.InsertACMOverAll(form, du, flag == "AC")
 		if err != nil {
 			fmt.Printf("error:%v", err)
 			_ = ctsdb.SetISE(form.Sid)
@@ -601,7 +613,7 @@ func handleACM(contest *dto.ContestDetail, form *dto.SubmitForm) {
 	first, err := ctsdb.HasACMFirstDetail(form)
 	if yes {
 		fmt.Println(5)
-		err = ctsdb.UpdateACMDetail(form, int(duration), flag == "AC", first && flag == "AC")
+		err = ctsdb.UpdateACMDetail(form, duration, flag == "AC", first && flag == "AC")
 		if err != nil {
 			fmt.Printf("error:%v", err)
 			_ = ctsdb.SetISE(form.Sid)
@@ -614,7 +626,7 @@ func handleACM(contest *dto.ContestDetail, form *dto.SubmitForm) {
 			_ = ctsdb.SetISE(form.Sid)
 			return
 		}
-		err = ctsdb.InsertACMDetail(form, int(duration), flag == "AC", first && flag == "AC")
+		err = ctsdb.InsertACMDetail(form, duration, flag == "AC", first && flag == "AC")
 		if err != nil {
 			fmt.Printf("error:%v", err)
 			_ = ctsdb.SetISE(form.Sid)

@@ -84,7 +84,7 @@ func (Contest) GetCount(form *dto.ContestForm) (int, error) {
 
 func (Contest) GetDetail(id int) (*dto.ContestDetail, error) {
 	var data dto.ContestDetail
-	err := db.Get(&data, "select id, title, description, rule, start_time, end_time, cid from contest where id=?", id)
+	err := db.Get(&data, "select id, title, description, rule, start_time, end_time, cid,punish_time from contest where id=?", id)
 	if err != nil {
 		fmt.Printf("error:%v\n", err)
 		return nil, err
@@ -460,20 +460,20 @@ func (Contest) InsertACMOverAll(form *dto.SubmitForm, time int, ac bool) error {
 	if ac {
 		aa = 1
 	}
-	sql := "insert into ojo.contest_acm_overall(cid, uid, total, ac, time) VALUES (?,?,?,?,?)"
+	sql := "insert into ojo.contest_acm_overall(cid, uid, total, ac, total_time) VALUES (?,?,?,?,?)"
 	_, err := db.Exec(sql, form.Cid, form.Uid, 1, aa, time)
 	return err
 }
 
 func (Contest) InsertACMDetail(form *dto.SubmitForm, time int, ac, firstAc bool) error {
-	sql := "insert into ojo.contest_acm_detail(cid, uid, pid, time, total, ac, first_ac) VALUES (?,?,?,?,?,?,?)"
+	sql := "insert into ojo.contest_acm_detail(cid, uid, pid, last_submit_time, total, ac, first_ac) VALUES (?,?,?,?,?,?,?)"
 	_, err := db.Exec(sql, form.Cid, form.Uid, form.Pid, time, 1, ac, firstAc)
 	return err
 }
 
 func (Contest) UpdateACMOverAll(form *dto.SubmitForm, time int, ac bool) error {
 	sql := `update ojo.contest_acm_overall 
-			set total=total+? , ac=ac+? , time=time+? 
+			set total=total+? , ac=ac+? , total_time=? 
 			where cid=? and uid=?`
 	aa := 0
 	if ac {
@@ -489,7 +489,7 @@ func (Contest) UpdateACMDetail(form *dto.SubmitForm, time int, ac, first bool) e
 		aa = 1
 	}
 	sql := `update ojo.contest_acm_detail 
-			set total=total+? ,ac=? ,time=time+? ,first_ac=?
+			set total=total+? ,ac=? ,last_submit_time=? ,first_ac=?
 			where cid=? and uid=? and pid=?`
 
 	_, err := db.Exec(sql, 1, aa, time, first, form.Cid, form.Uid, form.Pid)
@@ -501,4 +501,11 @@ func (Contest) HasACMFirstDetail(form *dto.SubmitForm) (bool, error) {
 	var count int
 	err := db.Get(&count, sql, form.Cid, form.Pid)
 	return count == 0, err
+}
+
+func (Contest) GetACMWrong(form *dto.SubmitForm) (int, error) {
+	sql := "select a.total-a.ac from (select total,ac from ojo.contest_acm_overall where cid=? and uid=?) a"
+	var count int
+	err := db.Get(&count, sql, form.Cid, form.Uid)
+	return count, err
 }

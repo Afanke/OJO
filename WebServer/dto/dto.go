@@ -118,6 +118,7 @@ type ContestBrief struct {
 type ContestDetail struct {
 	Id          int    `json:"id" db:"id"`
 	Cid         int    `json:"cid" db:"cid"`
+	PunishTime  int    `json:"punishTime" db:"punish_time"`
 	Title       string `json:"title" db:"title"`
 	Description string `json:"description" db:"description"`
 	Rule        string `json:"rule" db:"rule"`
