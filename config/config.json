@@ -1,0 +1,8 @@
+{
+  "Port": 80,
+  "JudgeServer": "49.234.91.99:2333",
+  "DataBase": {
+    "DriverName": "mysql",
+    "DataSourceName": "root:123123@tcp(127.0.0.1:3306)/ojo?charset=utf8mb4"
+  }
+}
