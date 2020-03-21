@@ -4,7 +4,8 @@
 ### 开发日志
 ##### 2020-03-21
     FINISHED:把项目上传github
-    TODO:Mysql建表OIRank与ACMRank
-    TODO:重写WebServer与JudgeServer通信
-    TODO:重写判题处理逻辑
+    FINISHED:ACM Logic
+    FINISHED:Mysql建表ACMRank
+    MAYTODO:重写WebServer与JudgeServer通信
+    TODO:完成前端ACMRank展示
     
