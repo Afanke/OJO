@@ -110,5 +110,8 @@ func BindRoute(app *iris.Application) {
 		contest.Post("/getOIRank", c.GetOIRank)
 		contest.Post("/getOITop10", c.GetOITop10)
 		contest.Post("/getOIRankCount", c.GetOIRankCount)
+		contest.Post("/getACMRank", c.GetACMRank)
+		contest.Post("/getACMTop10", c.GetACMTop10)
+		contest.Post("/getACMRankCount", c.GetACMRankCount)
 	}
 }

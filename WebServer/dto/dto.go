@@ -209,6 +209,28 @@ type OIDetail struct {
 	MaxScore int `json:"maxScore" db:"max_score"`
 }
 
+type ACMRank struct {
+	Id        int         `json:"id" db:"id"`
+	Cid       int         `json:"cid" db:"cid"`
+	Uid       int         `json:"uid" db:"uid"`
+	Total     int         `json:"total" db:"total"`
+	AC        int         `json:"ac" db:"ac"`
+	TotalTime int         `json:"totalTime" db:"total_time"`
+	Username  string      `json:"username" db:"username"`
+	ACMDetail []ACMDetail `json:"ACMDetail" db:"acm_detail"`
+}
+
+type ACMDetail struct {
+	Id             int  `json:"id" db:"id"`
+	Cid            int  `json:"cid" db:"cid"`
+	Uid            int  `json:"uid" db:"uid"`
+	Pid            int  `json:"pid" db:"pid"`
+	LastSubmitTime int  `json:"lastSubmitTime" db:"last_submit_time"`
+	Total          int  `json:"total" db:"total"`
+	AC             bool `json:"ac" db:"ac"`
+	FirstAC        bool `json:"firstAC" db:"first_ac"`
+}
+
 // ------------------------------------------------------------------------------
 type ContestSubmission struct {
 	Cid        int    `json:"cid" db:"cid"`

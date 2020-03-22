@@ -291,10 +291,10 @@ func (Contest) GetOIRankCount(cid int) (int, error) {
 					  where cid=?
 					  group by uid,pid) a
 				 group by uid) b`
-	var count []int
-	err := db.Select(&count, sql, cid)
+	var count int
+	err := db.Get(&count, sql, cid)
 	fmt.Println(count)
-	return count[0], err
+	return count, err
 }
 
 func (Contest) GetOIDetail(cid, uid int) ([]dto.OIDetail, error) {
@@ -439,6 +439,84 @@ func (Contest) GetOITop10(cid int) ([]dto.OIRank, error) {
 		res[i].Username = name
 	}
 	return res, err
+}
+
+func (Contest) GetACMTop10(cid int) ([]dto.ACMRank, error) {
+	// When I wrote this code, only God and I understand what it did
+	// Now only God knows
+	sql := `select * from ojo.contest_acm_overall where cid=? order by ac desc ,total_time desc limit 10 `
+	var res []dto.ACMRank
+	err := db.Select(&res, sql, cid)
+	if err != nil {
+		fmt.Printf("error:%v\n", err)
+		return nil, err
+	}
+	for i, j := 0, len(res); i < j; i++ {
+		detail, err := cts.GetACMDetail(cid, res[i].Uid)
+		if err != nil {
+			fmt.Printf("error:%v\n", err)
+			return nil, err
+		}
+		name, err := user.GetName(res[i].Uid)
+		if err != nil {
+			fmt.Printf("error:%v\n", err)
+			return nil, err
+		}
+		res[i].ACMDetail = detail
+		res[i].Username = name
+	}
+	return res, err
+}
+
+func (Contest) GetACMDetail(cid, uid int) ([]dto.ACMDetail, error) {
+	sql := `select cad.*
+from ojo.contest_acm_detail cad,ojo.problem p
+where cad.cid=? and cad.uid=? and cad.pid=p.id
+order by p.ref`
+	var res []dto.ACMDetail
+	err := db.Select(&res, sql, cid, uid)
+	return res, err
+}
+
+func (Contest) GetACMRank(form dto.ContestForm) ([]dto.ACMRank, error) {
+	if form.Page < 1 {
+		form.Page = 1
+	}
+	form.Page -= 1
+	form.Limit = 10
+	form.Offset = form.Page * 10
+
+	sql := `select * from ojo.contest_acm_overall where cid=? order by ac desc ,total_time desc limit ?,?`
+	var res []dto.ACMRank
+	err := db.Select(&res, sql, form.Cid, form.Offset, form.Limit)
+	if err != nil {
+		fmt.Printf("error:%v\n", err)
+		return nil, err
+	}
+	for i, j := 0, len(res); i < j; i++ {
+		detail, err := cts.GetACMDetail(form.Cid, res[i].Uid)
+		if err != nil {
+			fmt.Printf("error:%v\n", err)
+			return nil, err
+		}
+		name, err := user.GetName(res[i].Uid)
+		if err != nil {
+			fmt.Printf("error:%v\n", err)
+			return nil, err
+		}
+		res[i].ACMDetail = detail
+		res[i].Username = name
+	}
+	return res, err
+}
+
+func (Contest) GetACMRankCount(cid int) (int, error) {
+	// When I wrote this code, only God and I understand what it did
+	// Now only God knows
+	sql := `select count(*) from ojo.contest_acm_overall where cid=? `
+	var count int
+	err := db.Get(&count, sql, cid)
+	return count, err
 }
 
 func (Contest) HasACMOverAll(form *dto.SubmitForm) (bool, error) {

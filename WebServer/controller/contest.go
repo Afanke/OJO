@@ -446,6 +446,78 @@ func (Contest) GetOITop10(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: detail})
 }
 
+func (Contest) GetACMTop10(c iris.Context) {
+	var id dto.Id
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	qualified, _, err := cts.isQualified(id.Id, c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	if !qualified {
+		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
+		return
+	}
+	detail, err := ctsdb.GetACMTop10(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: detail})
+}
+
+func (Contest) GetACMRank(c iris.Context) {
+	var form dto.ContestForm
+	err := c.ReadJSON(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	qualified, _, err := cts.isQualified(form.Cid, c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	if !qualified {
+		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
+		return
+	}
+	detail, err := ctsdb.GetACMRank(form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: detail})
+}
+
+func (Contest) GetACMRankCount(c iris.Context) {
+	var id dto.Id
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	qualified, _, err := cts.isQualified(id.Id, c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	if !qualified {
+		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
+		return
+	}
+	detail, err := ctsdb.GetACMRankCount(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: detail})
+}
+
 // 提交代码
 func (Contest) Submit(c iris.Context) {
 	var form dto.SubmitForm
