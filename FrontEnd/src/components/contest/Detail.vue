@@ -126,18 +126,21 @@
             </div>
           </transition>
           <transition name="slide-fade">
-            <div v-if="c === 3" >
+            <div v-if="c === 3">
               <status></status>
             </div>
           </transition>
           <transition name="slide-fade">
             <div v-if="c === 4">
-              <rank></rank>
+              <oi-rank v-if="rule === 'OI'"></oi-rank>
+              <acm-rank v-if="rule === 'ACM'"></acm-rank>
             </div>
           </transition>
         </div>
         <div class="right-box">
-          <div style="border-radius:4px;   background-color: #ffffff;box-shadow: 0 2px 7px 0 rgba(0, 0, 0, 0.1)">
+          <div
+            style="border-radius:4px;   background-color: #ffffff;box-shadow: 0 2px 7px 0 rgba(0, 0, 0, 0.1)"
+          >
             <div class="showed-button" @click="change(1)">
               <i class="el-icon-s-home" style="margin-left:20px"></i>
               <span style="margin-left:10px">OverView</span>
@@ -183,7 +186,8 @@
 </template>
 <script>
 import Status from '@/components/contest/Status.vue';
-import Rank from '@/components/contest/Rank.vue';
+import OIRank from '@/components/contest/OIRank.vue';
+import ACMRank from '@/components/contest/ACMRank.vue';
 
 export default {
   created() {
@@ -195,9 +199,8 @@ export default {
   data() {
     return {
       show: false,
-      c: 0,
+      c: 1,
       contestData: [],
-      mode: '',
       id: 0,
       title: '',
       description: '',
@@ -209,7 +212,8 @@ export default {
       timeout: null,
       btnMode: 'banned-button',
       problemList: [],
-      loading: true
+      loading: true,
+      rule: ''
     };
   },
   mounted() {
@@ -218,6 +222,11 @@ export default {
       this.id = this.$route.query.id;
     } else {
       this.id = 1;
+    }
+    if (this.$route.query.c) {
+      this.c = Number(this.$route.query.c);
+    } else {
+      this.c = 1;
     }
     this.getQualification();
     this.query();
@@ -234,7 +243,7 @@ export default {
         console.log(res);
         if (res.error) {
           // this.$message.error(res.error);
-          return
+          return;
         } else {
           this.qualified = res.data;
           if (this.qualified) {
@@ -282,11 +291,9 @@ export default {
         case 2:
           this.getProblems();
           break;
-        case 3:
-          this.getSubmission();
-          break;
-        case 4:
-          this.getRank();
+        default:
+          this.getOverview();
+
           break;
       }
     },
@@ -303,6 +310,7 @@ export default {
           // this.contestLoading = false;
           this.title = res.data.title;
           this.description = res.data.description;
+          this.rule = res.data.rule;
           this.startTime = new Date(res.data.startTime.replace(/-/g, '/'));
           this.endTime = new Date(res.data.endTime.replace(/-/g, '/'));
           this.now = new Date(res.data.now.replace(/-/g, '/'));
@@ -328,7 +336,7 @@ export default {
     async getProblems() {
       try {
         this.loading = true;
-        this.problemList=[]
+        this.problemList = [];
         const { data: res } = await this.$http.post('/contest/getAllProblem', {
           id: Number(this.id)
         });
@@ -347,31 +355,29 @@ export default {
             this.problemList[i].statistic.ac /
             this.problemList[i].statistic.total;
           this.problemList[i].ac_rate = '0';
-          
+
           if (isNaN(rate)) {
             this.problemList[i].ac_rate = '--';
           } else {
             this.problemList[i].ac_rate = (rate * 100).toFixed(2) + '%';
           }
-          console.log(this.problemList[i].ac_rate)
-        
+          console.log(this.problemList[i].ac_rate);
         }
-          const { data: res1 } = await this.$http.post('/contest/getTime', {
-            id: Number(this.id)
-          });
-          this.startTime = new Date(res1.data.startTime.replace(/-/g, '/'));
-          this.endTime = new Date(res1.data.endTime.replace(/-/g, '/'));
-          this.now = new Date(res1.data.now.replace(/-/g, '/'));
-          clearTimeout(this.timeout);
-          this.startCountDown();
-          this.loading = false;
+        const { data: res1 } = await this.$http.post('/contest/getTime', {
+          id: Number(this.id)
+        });
+        this.startTime = new Date(res1.data.startTime.replace(/-/g, '/'));
+        this.endTime = new Date(res1.data.endTime.replace(/-/g, '/'));
+        this.now = new Date(res1.data.now.replace(/-/g, '/'));
+        clearTimeout(this.timeout);
+        this.startCountDown();
+        this.loading = false;
       } catch (err) {
         console.log(err);
         alert(err);
       }
     },
-    getSubmission() {},
-    getRank() {},
+
     getDuration() {
       var timeDiff = this.endTime - this.startTime;
       if (timeDiff < 3600000) {
@@ -396,7 +402,7 @@ export default {
       if (!this.qualified) {
         return;
       }
-      if(Number(val)===this.c){
+      if (Number(val) === this.c) {
         return;
       }
       this.c = 0;
@@ -480,7 +486,8 @@ export default {
   },
   components: {
     status: Status,
-    rank:Rank
+    oiRank: OIRank,
+    acmRank: ACMRank
   }
 };
 </script>
@@ -500,7 +507,7 @@ export default {
   width: 100%;
   background-color: #ffffff;
   border-radius: 5px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1)
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
 .showed-button {
