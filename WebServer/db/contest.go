@@ -444,7 +444,7 @@ func (Contest) GetOITop10(cid int) ([]dto.OIRank, error) {
 func (Contest) GetACMTop10(cid int) ([]dto.ACMRank, error) {
 	// When I wrote this code, only God and I understand what it did
 	// Now only God knows
-	sql := `select * from ojo.contest_acm_overall where cid=? order by ac desc ,total_time desc limit 10 `
+	sql := `select * from ojo.contest_acm_overall where cid=? order by ac desc ,total_time limit 10 `
 	var res []dto.ACMRank
 	err := db.Select(&res, sql, cid)
 	if err != nil {
@@ -486,7 +486,7 @@ func (Contest) GetACMRank(form dto.ContestForm) ([]dto.ACMRank, error) {
 	form.Limit = 10
 	form.Offset = form.Page * 10
 
-	sql := `select * from ojo.contest_acm_overall where cid=? order by ac desc ,total_time desc limit ?,?`
+	sql := `select * from ojo.contest_acm_overall where cid=? order by ac desc ,total_time limit ?,?`
 	var res []dto.ACMRank
 	err := db.Select(&res, sql, form.Cid, form.Offset, form.Limit)
 	if err != nil {
