@@ -6,6 +6,11 @@
     FINISHED:ACM表格展示
     TODO:为Practice提供分钟内提交次数限制
     TODO:为Contest提供提交次数限制
+    TODO:OI改造
+    TODO:整体Rank
+    TODO:添加Recommend Tags
+    TODO:Session持久化
+    TODO:实现Log库
 
 ##### 2020-03-22
     FINISHED：ACM折线图

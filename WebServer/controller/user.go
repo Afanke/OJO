@@ -9,6 +9,7 @@ import (
 	"github.com/afanke/OJO/utils/session"
 	"github.com/kataras/iris"
 	"image/png"
+	"math/rand"
 )
 
 type User struct{}
@@ -61,13 +62,13 @@ func (User) GetInfo(c iris.Context) {
 }
 
 func (User) Captcha(c iris.Context) {
-	//服务器通知浏览器不要缓存
+	// 服务器通知浏览器不要缓存
 	c.Header("pragma", "no-cache")
 	c.Header("cache-control", "no-cache")
 	c.Header("expires", "0")
 	cp := captcha.NewCaptcha(120, 40, 4)
-	cp.SetFontPath("./dist/fonts/Wesley.ttf")
-	cp.SetMode(1) // 设置为数学公式
+	cp.SetFontPath("./dist/fonts/xindexingcao57.ttf")
+	cp.SetMode(rand.Int() & 1) // 设置为数学公式
 	code, img := cp.OutPut()
 	s, err := session.GetSession(c)
 	if err != nil {
@@ -75,7 +76,7 @@ func (User) Captcha(c iris.Context) {
 		return
 	}
 	s.Set("captcha", code)
-	//备注：code 可以根据情况存储到session，并在使用时取出验证
+	// 备注：code 可以根据情况存储到session，并在使用时取出验证
 	fmt.Println(code)
 	_ = png.Encode(c.ResponseWriter(), img)
 

@@ -1,7 +1,6 @@
 package db
 
 import (
-	"fmt"
 	"github.com/afanke/OJO/WebServer/dto"
 )
 
@@ -12,7 +11,6 @@ var pb Problem
 
 func (Problem) GetPbCase(pid int) ([]dto.ProblemCase, error) {
 	var res []dto.ProblemCase
-	fmt.Println(pid)
 	err := db.Select(&res, "select * from problem_case where pid=?", pid)
 	return res, err
 }

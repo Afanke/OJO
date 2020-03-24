@@ -4,12 +4,57 @@ import (
 	"fmt"
 	ctrl "github.com/afanke/OJO/WebServer/controller"
 	"github.com/afanke/OJO/WebServer/dto"
+	"github.com/afanke/OJO/utils/log"
 	"github.com/afanke/OJO/utils/randstr"
 	"github.com/afanke/OJO/utils/session"
 	"github.com/kataras/iris"
+	"github.com/kataras/iris/context"
 	"net/http"
+	"runtime"
+	"time"
 )
 
+func PanicMidWare(ctx iris.Context) {
+	defer func() {
+		if err := recover(); err != nil {
+			if ctx.IsStopped() {
+				return
+			}
+			var stacktrace string
+			for i := 1; ; i++ {
+				_, f, l, got := runtime.Caller(i)
+				if !got {
+					break
+				}
+				stacktrace += fmt.Sprintf("%s:%d\n", f, l)
+			}
+			// when stack finishes
+			log.Error("Recovered from a route's Handler('%s')", ctx.HandlerName())
+			log.Error("At Request: %s", ctx.Path())
+			log.Error("Trace: %s", err)
+			log.Error("%s", stacktrace)
+			ctx.StatusCode(500)
+			ctx.StopExecution()
+		}
+	}()
+
+	ctx.Next()
+}
+func ReqMidWare(ctx iris.Context) {
+	var latency time.Duration
+	var startTime, endTime time.Time
+	startTime = time.Now()
+
+	ctx.Next()
+
+	endTime = time.Now()
+	latency = endTime.Sub(startTime)
+	ip := ctx.RemoteAddr()
+	method := ctx.Method()
+	path := ctx.Path()
+	status := ctx.GetStatusCode()
+	log.Info("%d %s %s %s %s", status, latency, ip, method, path)
+}
 func CorsMidWare(c iris.Context) {
 	if c.Request().Method == "OPTIONS" {
 		c.Header("Access-Control-Allow-Origin", "http://localhost:8080")
@@ -32,7 +77,6 @@ func SessionMidWare(c iris.Context) {
 			c.MaxAge = 0
 		})
 	}
-	fmt.Println(cookie)
 	c.Next()
 }
 func TemUserMidWare(c iris.Context) {
@@ -44,17 +88,22 @@ func TemUserMidWare(c iris.Context) {
 	user := s.Get("user")
 	_, ok := user.(dto.User)
 	if !ok {
-		s.Set("user", dto.User{Id: 1, Username: "hello"})
+		s.Set("user", dto.User{Id: 1, Username: "visitor"})
 	}
 	c.Next()
 }
 
 func BindRoute(app *iris.Application) {
+	app.Use(PanicMidWare)
 	app.Use(SessionMidWare)
 	app.Use(CorsMidWare)
-	app.Use(TemUserMidWare)
+	app.Use(ReqMidWare)
+	// app.Use(TemUserMidWare)
 	{
 		var file ctrl.File
+		app.Get("/pp", func(context context.Context) {
+			log.Fatal("asdwer")
+		})
 		app.Get("/", file.Index)
 		app.Get("/favicon.ico", file.Favicon)
 		app.Get("/img/*", file.File)

@@ -2,8 +2,8 @@ package db
 
 import (
 	"errors"
-	"fmt"
 	"github.com/afanke/OJO/WebServer/dto"
+	"github.com/afanke/OJO/utils/log"
 )
 
 type QueryForm struct {
@@ -38,7 +38,7 @@ func (Practice) GetAll(form *dto.PracticeForm) ([]dto.PracticeBrief, error) {
 	sql += "and p.show=1 order by p.id limit :offset, :limit"
 	rows, err := db.NamedQuery(sql, &form)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return []dto.PracticeBrief{}, nil
 	}
 	var rest = make([]dto.PracticeBrief, 0, form.Limit)
@@ -46,17 +46,17 @@ func (Practice) GetAll(form *dto.PracticeForm) ([]dto.PracticeBrief, error) {
 		var res dto.PracticeBrief
 		err := rows.StructScan(&res)
 		if err != nil {
-			fmt.Printf("error:%v", err)
+			log.Warn("error:%v", err)
 			return []dto.PracticeBrief{}, err
 		}
 		stat, err := pt.GetStatistic(res.Id)
 		if err != nil {
-			fmt.Printf("error:%v", err)
+			log.Warn("error:%v", err)
 			return []dto.PracticeBrief{}, err
 		}
 		tag, err := pb.GetProblemTag(res.Id)
 		if err != nil {
-			fmt.Printf("error:%v", err)
+			log.Warn("error:%v", err)
 			return []dto.PracticeBrief{}, err
 		}
 		res.Tags = tag
@@ -93,7 +93,7 @@ func (Practice) GetCount(form *dto.PracticeForm) (int, error) {
 	var count int
 	rows, err := db.NamedQuery(sql, &form)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return 0, err
 	}
 	_ = rows.Next()
@@ -111,7 +111,7 @@ func (Practice) GetDetail(pbid int) (*dto.Practice, error) {
 	var detail dto.Practice
 	err := db.Get(&detail, `select * from ojo.problem p where p.id=? and p.show=1 limit 1`, pbid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	if !detail.Show {
@@ -119,27 +119,27 @@ func (Practice) GetDetail(pbid int) (*dto.Practice, error) {
 	}
 	statistic, err := pt.GetStatistic(pbid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	tags, err := pb.GetProblemTag(pbid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	languages, err := pb.GetLanguage(pbid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	samples, err := pb.GetSample(pbid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	name, err := pb.GetCreatorName(detail.Cid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	detail.CreatorName = name
@@ -160,13 +160,13 @@ func (Practice) GetAllStat(uid, offset, limit int) ([]dto.PracticeSubStat, error
 	var res []dto.PracticeSubStat
 	err := db.Select(&res, "select ps.id,ps.uid,ps.pid,ps.total_score,ps.language,ps.status,ps.submit_time from practice_submission ps where ps.uid=? order by ps.submit_time desc limit ?,?", uid, offset, limit)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	for i := 0; i < len(res); i++ {
 		ptName, err := pb.GetName(res[i].Pid)
 		if err != nil {
-			fmt.Printf("error:%v", err)
+			log.Warn("error:%v", err)
 			return nil, err
 		}
 		res[i].ProblemName = ptName
@@ -178,7 +178,7 @@ func (Practice) GetAllStatCount(uid int) (int, error) {
 	var count int
 	err := db.Get(&count, "select count(*) from practice_submission ps where ps.uid=?", uid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return 0, err
 	}
 	return count, nil
@@ -188,17 +188,17 @@ func (Practice) GetStat(psmid int) (*dto.PracticeSubStat, error) {
 	var s dto.PracticeSubStat
 	err := db.Get(&s, "select * from practice_submission ps where ps.id=? limit 1", psmid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	ptName, err := pb.GetName(s.Pid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	userName, err := user.GetName(s.Uid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	s.Username = userName
@@ -218,12 +218,12 @@ func (Practice) Submit(form dto.SubmitForm) (*dto.PracticeSubmission, error) {
 		values(?,?,?,'Judging',0,now(),?)`
 	exec, err := db.Exec(sql, form.Uid, form.Pid, form.Language, form.Code)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	id, err := exec.LastInsertId()
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	var res dto.PracticeSubmission
@@ -249,7 +249,7 @@ func (Practice) UpdateStat(pbid, total, ac, wa, ce, mle, re, tle, ole int) error
 func (Practice) SetISE(psmid int) error {
 	_, err := db.Exec("update ojo.practice_submission set status='ISE' where id=?", psmid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 	}
 	return err
 }

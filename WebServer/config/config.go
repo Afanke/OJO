@@ -2,7 +2,7 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/afanke/OJO/utils/log"
 	"io/ioutil"
 	"os"
 )
@@ -12,12 +12,12 @@ var Config ServerConfig
 func init() {
 	file, err := ioutil.ReadFile("./config/config.json")
 	if err != nil {
-		fmt.Printf("error:%v\n", err)
+		log.Fatal("error:%v\n", err)
 		os.Exit(-1)
 	}
 	err = json.Unmarshal(file, &Config)
 	if err != nil {
-		fmt.Printf("error:%v\n", err)
+		log.Fatal("error:%v\n", err)
 		os.Exit(-1)
 	}
 	// fmt.Println(Config)

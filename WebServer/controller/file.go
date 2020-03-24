@@ -1,7 +1,6 @@
 package ctrl
 
 import (
-	"fmt"
 	"github.com/afanke/OJO/WebServer/db"
 	"github.com/afanke/OJO/WebServer/dto"
 	"github.com/kataras/iris"
@@ -24,17 +23,16 @@ func (File) Favicon(c iris.Context) {
 	if err != nil {
 		c.NotFound()
 	}
-	c.WriteGzip(file)
+	_, _ = c.WriteGzip(file)
 }
 
 func (File) File(c iris.Context) {
 	path := c.Path()
-	fmt.Println(path)
 	file, err := ioutil.ReadFile("./dist" + path)
 	if err != nil {
 		c.NotFound()
 	}
-	c.WriteGzip(file)
+	_, _ = c.WriteGzip(file)
 }
 
 func (File) GetProgress(c iris.Context) {

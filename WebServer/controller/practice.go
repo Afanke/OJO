@@ -3,10 +3,10 @@ package ctrl
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/afanke/OJO/WebServer/config"
 	"github.com/afanke/OJO/WebServer/db"
 	"github.com/afanke/OJO/WebServer/dto"
+	"github.com/afanke/OJO/utils/log"
 	"github.com/afanke/OJO/utils/session"
 	"github.com/afanke/OJO/utils/tcp"
 	"github.com/kataras/iris"
@@ -234,19 +234,19 @@ func (Practice) Submit(c iris.Context) {
 func (Practice) handleSubmit(form dto.SubmitForm) {
 	forms, err := pt.prepareForms(&form)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		_ = pctdb.SetISE(form.Sid)
 		return
 	}
 	forms, err = pt.sendToJudge(forms)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		_ = pctdb.SetISE(form.Sid)
 		return
 	}
 	err = pt.updateStatistic(form.Pid, form.Sid, form.Uid, forms)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		_ = pctdb.SetISE(form.Sid)
 		return
 	}
@@ -254,7 +254,7 @@ func (Practice) handleSubmit(form dto.SubmitForm) {
 	score := pt.countTotalScore(forms)
 	err = pctdb.UpdateFlagAndScore(form.Sid, score, flag)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		_ = pctdb.SetISE(form.Sid)
 		return
 	}
@@ -263,18 +263,18 @@ func (Practice) handleSubmit(form dto.SubmitForm) {
 func (Practice) sendToJudge(forms []dto.OperationForm) ([]dto.OperationForm, error) {
 	conn, err := tcp.Dial(config.Config.JudgeServer)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	bytes, err := json.Marshal(&forms)
 	_, err = conn.Send(bytes)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	_, recv, err := conn.Recv()
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	err = json.Unmarshal(recv, &forms)
@@ -284,12 +284,12 @@ func (Practice) sendToJudge(forms []dto.OperationForm) ([]dto.OperationForm, err
 func (Practice) prepareForms(subForm *dto.SubmitForm) ([]dto.OperationForm, error) {
 	cases, err := pbdb.GetPbCase(subForm.Pid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	problem, err := pbdb.GetProblem(subForm.Pid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	forms := make([]dto.OperationForm, len(cases))
@@ -376,7 +376,7 @@ func (Practice) updateStatistic(pbid, psmid, uid int, forms []dto.OperationForm)
 		}
 		err := pctdb.InsertCaseRes(psmid, uid, forms[i])
 		if err != nil {
-			fmt.Printf("error:%v", err)
+			log.Warn("error:%v", err)
 			return err
 		}
 	}

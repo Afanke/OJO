@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"github.com/afanke/OJO/WebServer/dto"
+	"github.com/afanke/OJO/utils/log"
 	"time"
 )
 
@@ -36,7 +37,7 @@ func (Contest) GetAll(form *dto.ContestForm) ([]dto.ContestBrief, error) {
 	sql += " order by create_time desc limit :offset, :limit"
 	rows, err := db.NamedQuery(sql, &form)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return []dto.ContestBrief{}, nil
 	}
 	var rest = make([]dto.ContestBrief, 0, form.Limit)
@@ -45,7 +46,7 @@ func (Contest) GetAll(form *dto.ContestForm) ([]dto.ContestBrief, error) {
 		var res dto.ContestBrief
 		err := rows.StructScan(&res)
 		if err != nil {
-			fmt.Printf("error:%v", err)
+			log.Warn("error:%v", err)
 			return []dto.ContestBrief{}, nil
 		}
 		res.Now = t
@@ -74,7 +75,7 @@ func (Contest) GetCount(form *dto.ContestForm) (int, error) {
 	var count int
 	rows, err := db.NamedQuery(sql, &form)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return 0, err
 	}
 	_ = rows.Next()
@@ -86,12 +87,12 @@ func (Contest) GetDetail(id int) (*dto.ContestDetail, error) {
 	var data dto.ContestDetail
 	err := db.Get(&data, "select id, title, description, rule, start_time, end_time, cid,punish_time from contest where id=?", id)
 	if err != nil {
-		fmt.Printf("error:%v\n", err)
+		log.Warn("error:%v\n", err)
 		return nil, err
 	}
 	name, err := pb.GetCreatorName(data.Cid)
 	if err != nil {
-		fmt.Printf("error:%v\n", err)
+		log.Warn("error:%v\n", err)
 		return nil, err
 	}
 	data.CreatorName = name
@@ -120,12 +121,12 @@ func (Contest) GetStartTime(cid int) (time.Time, error) {
 	var res string
 	err := db.Get(&res, "select start_time from ojo.contest where id=?", cid)
 	if err != nil {
-		fmt.Printf("error:%v\n", err)
+		log.Warn("error:%v\n", err)
 		return time.Time{}, err
 	}
 	data, err := time.Parse("2006-01-02 15:04:05", res)
 	if err != nil {
-		fmt.Printf("error:%v\n", err)
+		log.Warn("error:%v\n", err)
 		return time.Time{}, err
 	}
 	return data, err
@@ -136,13 +137,13 @@ func (Contest) GetAllProblem(cid int) ([]dto.CtsPbBrief, error) {
 	var data []dto.CtsPbBrief
 	err := db.Select(&data, sql, cid)
 	if err != nil {
-		fmt.Printf("error:%v\n", err)
+		log.Warn("error:%v\n", err)
 		return nil, err
 	}
 	for i, l := 0, len(data); i < l; i++ {
 		stat, err := cts.GetStatistic(cid, data[i].Id)
 		if err != nil {
-			fmt.Printf("error:%v\n", err)
+			log.Warn("error:%v\n", err)
 			return nil, err
 		}
 		data[i].Statistic = stat
@@ -167,32 +168,32 @@ func (Contest) GetProblemDetail(cid, pid int) (*dto.ContestProblem, error) {
 	var detail dto.ContestProblem
 	err := db.Get(&detail, `select id, cid, ref, title, description, input_description, output_description, hint, create_time, last_update_time, cpu_time_limit, memory_limit, io_mode, difficulty, real_time_limit, source from ojo.problem p where p.id=? limit 1`, pid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	statistic, err := cts.GetStatistic(cid, pid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	tags, err := pb.GetProblemTag(pid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	languages, err := pb.GetLanguage(pid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	samples, err := pb.GetSample(pid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	name, err := pb.GetCreatorName(detail.Cid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	detail.CreatorName = name
@@ -213,17 +214,17 @@ func (Contest) GetStat(psmid int) (*dto.ContestSubStat, error) {
 	var s dto.ContestSubStat
 	err := db.Get(&s, "select * from contest_submission ps where ps.id=? limit 1", psmid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	ptName, err := pb.GetName(s.Pid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	userName, err := user.GetName(s.Uid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	s.Username = userName
@@ -258,18 +259,18 @@ func (Contest) GetOIRank(form dto.ContestForm) ([]dto.OIRank, error) {
 	var res []dto.OIRank
 	err := db.Select(&res, sql, form.Cid, form.Offset, form.Limit)
 	if err != nil {
-		fmt.Printf("error:%v\n", err)
+		log.Warn("error:%v\n", err)
 		return nil, err
 	}
 	for i, j := 0, len(res); i < j; i++ {
 		detail, err := cts.GetOIDetail(form.Cid, res[i].Uid)
 		if err != nil {
-			fmt.Printf("error:%v\n", err)
+			log.Warn("error:%v\n", err)
 			return nil, err
 		}
 		name, err := user.GetName(res[i].Uid)
 		if err != nil {
-			fmt.Printf("error:%v\n", err)
+			log.Warn("error:%v\n", err)
 			return nil, err
 		}
 		res[i].OIDetail = detail
@@ -314,12 +315,12 @@ func (Contest) Submit(form dto.SubmitForm) (*dto.ContestSubmission, error) {
 		values(?,?,?,?,'Judging',0,now(),?)`
 	exec, err := db.Exec(sql, form.Cid, form.Uid, form.Pid, form.Language, form.Code)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	id, err := exec.LastInsertId()
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	var res dto.ContestSubmission
@@ -345,7 +346,7 @@ func (Contest) UpdateStat(cid, pid, total, ac, wa, ce, mle, re, tle, ole int) er
 func (Contest) SetISE(csmid int) error {
 	_, err := db.Exec("update ojo.contest_submission set status='ISE' where id=?", csmid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 	}
 	return err
 }
@@ -377,13 +378,13 @@ func (Contest) GetAllStat(cid, uid, offset, limit int) ([]dto.ContestSubStat, er
 	var res []dto.ContestSubStat
 	err := db.Select(&res, "select cs.id,cs.uid,cs.cid,cs.pid,cs.total_score,cs.language,cs.status,cs.submit_time from contest_submission cs where cs.cid=? and cs.uid=? order by cs.submit_time desc limit ?,?", cid, uid, offset, limit)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return nil, err
 	}
 	for i := 0; i < len(res); i++ {
 		ptName, err := pb.GetName(res[i].Pid)
 		if err != nil {
-			fmt.Printf("error:%v", err)
+			log.Warn("error:%v", err)
 			return nil, err
 		}
 		res[i].ProblemName = ptName
@@ -395,7 +396,7 @@ func (Contest) GetAllStatCount(cid, uid int) (int, error) {
 	var count int
 	err := db.Get(&count, "select count(*) from contest_submission cs where cs.cid=? and cs.uid=?", cid, uid)
 	if err != nil {
-		fmt.Printf("error:%v", err)
+		log.Warn("error:%v", err)
 		return 0, err
 	}
 	return count, nil
@@ -405,7 +406,7 @@ func (Contest) GetTime(id int) (*dto.ContestDetail, error) {
 	var data dto.ContestDetail
 	err := db.Get(&data, "select id, start_time, end_time from contest where id=?", id)
 	if err != nil {
-		fmt.Printf("error:%v\n", err)
+		log.Warn("error:%v\n", err)
 		return nil, err
 	}
 	data.Now = time.Now().Format("2006-01-02 15:04:05")
@@ -427,13 +428,13 @@ func (Contest) GetOITop10(cid int) ([]dto.OIRank, error) {
 	var res []dto.OIRank
 	err := db.Select(&res, sql, cid)
 	if err != nil {
-		fmt.Printf("error:%v\n", err)
+		log.Warn("error:%v\n", err)
 		return nil, err
 	}
 	for i, j := 0, len(res); i < j; i++ {
 		name, err := user.GetName(res[i].Uid)
 		if err != nil {
-			fmt.Printf("error:%v\n", err)
+			log.Warn("error:%v\n", err)
 			return nil, err
 		}
 		res[i].Username = name
@@ -448,18 +449,18 @@ func (Contest) GetACMTop10(cid int) ([]dto.ACMRank, error) {
 	var res []dto.ACMRank
 	err := db.Select(&res, sql, cid)
 	if err != nil {
-		fmt.Printf("error:%v\n", err)
+		log.Warn("error:%v\n", err)
 		return nil, err
 	}
 	for i, j := 0, len(res); i < j; i++ {
 		detail, err := cts.GetACMDetail(cid, res[i].Uid)
 		if err != nil {
-			fmt.Printf("error:%v\n", err)
+			log.Warn("error:%v\n", err)
 			return nil, err
 		}
 		name, err := user.GetName(res[i].Uid)
 		if err != nil {
-			fmt.Printf("error:%v\n", err)
+			log.Warn("error:%v\n", err)
 			return nil, err
 		}
 		res[i].ACMDetail = detail
@@ -490,18 +491,18 @@ func (Contest) GetACMRank(form dto.ContestForm) ([]dto.ACMRank, error) {
 	var res []dto.ACMRank
 	err := db.Select(&res, sql, form.Cid, form.Offset, form.Limit)
 	if err != nil {
-		fmt.Printf("error:%v\n", err)
+		log.Warn("error:%v\n", err)
 		return nil, err
 	}
 	for i, j := 0, len(res); i < j; i++ {
 		detail, err := cts.GetACMDetail(form.Cid, res[i].Uid)
 		if err != nil {
-			fmt.Printf("error:%v\n", err)
+			log.Warn("error:%v\n", err)
 			return nil, err
 		}
 		name, err := user.GetName(res[i].Uid)
 		if err != nil {
-			fmt.Printf("error:%v\n", err)
+			log.Warn("error:%v\n", err)
 			return nil, err
 		}
 		res[i].ACMDetail = detail
