@@ -257,7 +257,6 @@ func (f *FileLogger) Init() {
 			Print(ERROR, "%v", err)
 		}
 		f.debug = debug
-		Print(DEBUG, "file debug init")
 		fallthrough
 	case INFO:
 		info, err := os.OpenFile(cfg.FilePath+"/info.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
@@ -265,7 +264,6 @@ func (f *FileLogger) Init() {
 			Print(ERROR, "%v", err)
 		}
 		f.info = info
-		Print(DEBUG, "file info init")
 		fallthrough
 	case WARN:
 		warn, err := os.OpenFile(cfg.FilePath+"/warn.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
@@ -273,7 +271,6 @@ func (f *FileLogger) Init() {
 			Print(ERROR, "%v", err)
 		}
 		f.warn = warn
-		Print(DEBUG, "file warn init")
 		fallthrough
 	case ERROR:
 		erro, err := os.OpenFile(cfg.FilePath+"/error.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
@@ -281,11 +278,8 @@ func (f *FileLogger) Init() {
 			Print(ERROR, "%v", err)
 		}
 		f.error = erro
-		Print(DEBUG, "file error init")
 	}
 	f.logChan = make(chan *FileLog, 1000000)
-	// fmt.Println(size(f.logChan))
-	Print(DEBUG, "file log chan init")
 	go f.LogBG()
 }
 
@@ -308,12 +302,6 @@ func formatString(level Level, format string, a ...interface{}) (s string) {
 	fileName, funcName, line := getFuncInfo(4)
 	msg := fmt.Sprintf(format, a...)
 	return fmt.Sprintf("%s [%s] %s [%s %s %d]\n", time.Now().Format("2006-01-02 15:04:05"), lv, msg, fileName, funcName, line)
-
-	// if level < ERROR {
-	// 	return fmt.Sprintf("%s [%s] %s [%s %s %d]\n", time.Now().Format("2006-01-02 15:04:05"), lv, msg, fileName, funcName, line)
-	// } else {
-	// 	return fmt.Sprintf("%s [%s] [%s %s %d] %s \n", time.Now().Format("2006-01-02 15:04:05"), lv, fileName, funcName, line, msg)
-	// }
 }
 
 func Log(level Level, format string, a ...interface{}) {

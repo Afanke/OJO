@@ -2,6 +2,11 @@
 不知道写什么，先写一下开发日志吧
 
 ### 开发日志
+
+#####2020-03-24 2020-03-25
+    FINISHED:Session
+    FINISHED:LOG
+
 ##### 2020-03-23
     FINISHED:ACM表格展示
     TODO:为Practice提供分钟内提交次数限制
