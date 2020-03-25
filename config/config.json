@@ -5,9 +5,18 @@
     "DriverName": "mysql",
     "DataSourceName": "root:123123@tcp(127.0.0.1:3306)/ojo?charset=utf8mb4"
   },
-  "Level": 0,
-  "EnableConsole": true,
-  "EnableFile": true,
-  "FilePath": "./logs",
-  "MaxSize": 1000000
+  "Session": {
+    "CleanCycle" :60,
+    "SaveCycle": 60,
+    "MaxAge": 15000
+  },
+  "Log": {
+    "FileLevel": 0,
+    "ConsoleLevel": 0,
+    "EnableConsole": true,
+    "EnableFile": true,
+    "FilePath": "./logs",
+    "MaxSize": 20971250,
+    "FileChanSize": 10000
+  }
 }

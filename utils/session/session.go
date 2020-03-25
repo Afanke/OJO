@@ -2,32 +2,72 @@ package session
 
 import (
 	"encoding/gob"
+	"encoding/json"
 	"errors"
 	"github.com/afanke/OJO/WebServer/dto"
 	"github.com/afanke/OJO/utils/log"
 	"github.com/kataras/iris"
+	"io/ioutil"
 	"os"
+	"sync"
 	"time"
 )
 
 type Session struct {
 	Data map[string]interface{}
+	lock sync.RWMutex
+	Time int64
 }
+
+type Config struct {
+	CleanCycle int64
+	SaveCycle  int64
+	MaxAge     int64
+}
+
+type SConfig struct {
+	Config Config `json:"Session"`
+}
+
+var cfg Config
+var Pool = map[string]Session{}
+var PoolLock sync.RWMutex
 
 func init() {
 	gob.Register(dto.User{})
+	gob.Register(sync.RWMutex{})
 	LoadSession()
-	go func() {
-		for {
-			select {
-			case <-time.Tick(time.Minute):
-				SaveSession()
-			}
-		}
-	}()
+	err := LoadConfig()
+	if err != nil {
+		log.Error("use default config")
+		cfg.SaveCycle = 15000
+		cfg.CleanCycle = 15000
+		cfg.MaxAge = 15000
+		return
+	}
+	go regularTask()
 }
 
-var Pool = map[string]Session{}
+func LoadConfig() error {
+	file, err := ioutil.ReadFile("./config/config.json")
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
+	var scfg SConfig
+	err = json.Unmarshal(file, &scfg)
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
+	cfg = scfg.Config
+	if cfg.CleanCycle < 60 || cfg.SaveCycle < 60 {
+		log.Error("session config params not permitted")
+		return errors.New("")
+	}
+	log.Info("success to load session config")
+	return nil
+}
 
 func GetSession(c iris.Context) (s Session, err error) {
 	cookie := c.GetCookie("GOGONEWWORLD")
@@ -35,30 +75,67 @@ func GetSession(c iris.Context) (s Session, err error) {
 		return Session{}, errors.New("miss cookie or cookie not correct")
 	}
 	addr := c.RemoteAddr()
+	PoolLock.RLock()
+	defer PoolLock.RUnlock()
 	if s, ok := Pool[cookie+addr]; ok {
 		return s, nil
 	} else {
-		s = Session{Data: map[string]interface{}{}}
+		s = Session{Data: map[string]interface{}{}, Time: time.Now().Unix(), lock: sync.RWMutex{}}
 		Pool[cookie+addr] = s
 		return s, nil
 	}
 }
 
 func (s Session) Get(str string) interface{} {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	return s.Data[str]
 }
 
 func (s Session) Set(str string, i interface{}) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	s.Time = time.Now().Unix()
 	s.Data[str] = i
 }
 
 func (s Session) Remove(str string) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
 	delete(s.Data, str)
 }
 
+func regularTask() {
+	for {
+		select {
+		case <-time.Tick(time.Duration(cfg.CleanCycle) * time.Second):
+			cleanPool()
+		case <-time.Tick(time.Duration(cfg.SaveCycle) * time.Second):
+			SaveSession()
+		}
+	}
+}
+
+func cleanPool() {
+	PoolLock.Lock()
+	defer PoolLock.Unlock()
+	now := time.Now().Unix()
+	t := 0
+	d := 0
+	for k := range Pool {
+		t++
+		if now-Pool[k].Time > cfg.MaxAge {
+			delete(Pool, k)
+			d++
+		}
+	}
+	log.Info("clean session pool: t:%d c:%d d:%d", t, t-d, d)
+}
+
 func SaveSession() {
-	log.Info("start to save session")
-	file, err := os.OpenFile("./config/session", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	PoolLock.Lock()
+	defer PoolLock.Unlock()
+	file, err := os.OpenFile("./config/session.gob", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 	if err != nil {
 		log.Error("failed to save session:%v", err)
 		return
@@ -72,7 +149,9 @@ func SaveSession() {
 }
 
 func LoadSession() {
-	file, err := os.OpenFile("./config/session", os.O_RDONLY, 0666)
+	PoolLock.Lock()
+	defer PoolLock.Unlock()
+	file, err := os.OpenFile("./config/session.gob", os.O_RDONLY, 0666)
 	if err != nil {
 		log.Error("failed to load session:%v", err)
 		return

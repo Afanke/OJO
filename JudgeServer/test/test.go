@@ -3,9 +3,8 @@ package main
 import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/jmoiron/sqlx"
-	"os"
 	"reflect"
+	"time"
 )
 
 func DeepFields(ifaceType reflect.Type) []reflect.StructField {
@@ -64,25 +63,19 @@ func StructCopy(DstStructPtr interface{}, SrcStructPtr interface{}) {
 	return
 }
 
+type s struct {
+	s string
+}
+
 func main() {
-	var err error
-	db, err := sqlx.Open("mysql", "root:123123@tcp(127.0.0.1:3306)/ojo?charset=utf8mb4")
-	if err != nil {
-		fmt.Printf("error:%v", err)
-		os.Exit(-1)
+	ss := make(chan *s, 1000000)
+	start := time.Now()
+	for i := 0; i < 1000000; i++ {
+		ss <- &s{s: "hello"}
 	}
-	err = db.Ping()
-	if err != nil {
-		fmt.Printf("error:%v", err)
-		os.Exit(-1)
+	for i := 0; i < 1000000; i++ {
+		fmt.Println(<-ss)
 	}
-	sql := `update  ojo.contest_acm_detail c
-			set c.total=1 ,c.ac=2 , c.last_submit_time=3
-			where c.cid=3 and c.uid=1 and c.pid=2`
-	stmt, err := db.Prepare(sql)
-	if err != nil {
-		fmt.Printf("error:%v\n", err)
-		return
-	}
-	_, err = stmt.Exec()
+	end := time.Now()
+	fmt.Println(end.UnixNano() - start.UnixNano())
 }
