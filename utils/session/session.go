@@ -109,14 +109,14 @@ func regularTask() {
 	for {
 		select {
 		case <-time.Tick(time.Duration(cfg.CleanCycle) * time.Second):
-			cleanPool()
+			CleanPool()
 		case <-time.Tick(time.Duration(cfg.SaveCycle) * time.Second):
 			SaveSession()
 		}
 	}
 }
 
-func cleanPool() {
+func CleanPool() {
 	PoolLock.Lock()
 	defer PoolLock.Unlock()
 	now := time.Now().Unix()
@@ -129,7 +129,7 @@ func cleanPool() {
 			d++
 		}
 	}
-	log.Info("clean session pool: t:%d c:%d d:%d", t, t-d, d)
+	log.Info("clean session pool: all:%d save:%d del:%d", t, t-d, d)
 }
 
 func SaveSession() {
