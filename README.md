@@ -1,4 +1,6 @@
 # OJO 
+![](https://img.shields.io/badge/GO-1.14%2B-9cf)   ![](https://img.shields.io/badge/GO%20Iris-v11-blue)  ![](https://img.shields.io/badge/Vue-2-brightgreen) 
+
 不知道写什么，先写一下开发日志吧
 
 ### 开发日志
