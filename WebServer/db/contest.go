@@ -166,7 +166,7 @@ func (Contest) GetStatistic(cid int, pid int64) (*dto.ContestStatistic, error) {
 
 func (Contest) GetProblemDetail(cid int, pid int64) (*dto.ContestProblem, error) {
 	var detail dto.ContestProblem
-	err := db.Get(&detail, `select id, cid, ref, title, description, input_description, output_description, hint, create_time, last_update_time, cpu_time_limit, memory_limit, io_mode, difficulty, real_time_limit, source from ojo.problem p where p.id=? limit 1`, pid)
+	err := db.Get(&detail, `select id, cid, ref, title, description, input_description, output_description, hint, create_time, last_update_time, cpu_time_limit, memory_limit, difficulty, real_time_limit, source from ojo.problem p where p.id=? limit 1`, pid)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err

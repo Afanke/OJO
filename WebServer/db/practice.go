@@ -274,7 +274,7 @@ func (Practice) InsertCaseRes(psmid, uid int, form dto.OperationForm) error {
 }
 
 func (Practice) InsertStatistic(tx *sql.Tx, pbid int64) error {
-	s := "insert into ojo.practice(pbid) values (?)"
+	s := "insert into ojo.practice_statistic(pbid) values (?)"
 	_, err := tx.Exec(s, pbid)
 	return err
 }

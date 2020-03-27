@@ -24,6 +24,7 @@ func (Problem) AddProblem(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
+	p.Cid = 1
 	err = pbdb.InsertProblem(&p)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
