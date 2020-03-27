@@ -76,7 +76,7 @@ func (Practice) GetDetail(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	detail, err := pctdb.GetDetail(ptid.Id)
+	detail, err := pctdb.GetDetail(int64(ptid.Id))
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -340,7 +340,7 @@ func (Practice) concludeFlag(forms []dto.OperationForm) string {
 	}
 }
 
-func (Practice) updateStatistic(pbid, psmid, uid int, forms []dto.OperationForm) error {
+func (Practice) updateStatistic(pbid int64, psmid, uid int, forms []dto.OperationForm) error {
 	var total = 0
 	var ac = 0
 	var wa = 0

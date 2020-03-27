@@ -799,7 +799,7 @@ func (Contest) concludeFlag(forms []dto.OperationForm) string {
 	}
 }
 
-func (Contest) updateStatistic(cid, pid, csmid, uid int, forms []dto.OperationForm) error {
+func (Contest) updateStatistic(cid int, pid int64, csmid, uid int, forms []dto.OperationForm) error {
 	var total = 0
 	var ac = 0
 	var wa = 0

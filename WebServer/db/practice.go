@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"errors"
 	"github.com/afanke/OJO/WebServer/dto"
 	"github.com/afanke/OJO/utils/log"
@@ -20,23 +21,23 @@ type Practice struct{}
 var pt = Practice{}
 
 func (Practice) GetAll(form *dto.PracticeForm) ([]dto.PracticeBrief, error) {
-	var sql = `select p.id, p.ref, p.title, p.difficulty
+	var s = `select p.id, p.ref, p.title, p.difficulty
 			from ojo.problem p `
 	if form.Tid != 0 {
-		sql += ", ojo.problem_tags pt "
+		s += ", ojo.problem_tag pt "
 	}
-	sql += "where 1=1 "
+	s += "where 1=1 "
 	if form.Tid != 0 {
-		sql += "and pt.tid = :tid and pt.pid=p.id "
+		s += "and pt.tid = :tid and pt.pid=p.id "
 	}
 	if form.Keywords != "" {
-		sql += "and title like concat('%',:keywords,'%') "
+		s += "and title like concat('%',:keywords,'%') "
 	}
 	if form.Difficulty != "" {
-		sql += "and difficulty=:difficulty "
+		s += "and difficulty=:difficulty "
 	}
-	sql += "and p.show=1 order by p.id limit :offset, :limit"
-	rows, err := db.NamedQuery(sql, &form)
+	s += "and p.visible=1 order by p.id limit :offset, :limit"
+	rows, err := db.NamedQuery(s, &form)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return []dto.PracticeBrief{}, nil
@@ -67,9 +68,9 @@ func (Practice) GetAll(form *dto.PracticeForm) ([]dto.PracticeBrief, error) {
 
 }
 
-func (Practice) GetAllTags() ([]dto.Tags, error) {
-	var tags []dto.Tags
-	err := db.Select(&tags, "select * from ojo.tags")
+func (Practice) GetAllTags() ([]dto.Tag, error) {
+	var tags []dto.Tag
+	err := db.Select(&tags, "select * from ojo.tag")
 	return tags, err
 }
 
@@ -77,7 +78,7 @@ func (Practice) GetCount(form *dto.PracticeForm) (int, error) {
 	var sql = `select count(*)
 			from ojo.problem p `
 	if form.Tid != 0 {
-		sql += ", ojo.problem_tags pt "
+		sql += ", ojo.problem_tag pt "
 	}
 	sql += "where 1=1 "
 	if form.Tid != 0 {
@@ -89,7 +90,7 @@ func (Practice) GetCount(form *dto.PracticeForm) (int, error) {
 	if form.Difficulty != "" {
 		sql += "and difficulty=:difficulty "
 	}
-	sql += "and p.show=1 "
+	sql += "and p.visible=1 "
 	var count int
 	rows, err := db.NamedQuery(sql, &form)
 	if err != nil {
@@ -101,20 +102,20 @@ func (Practice) GetCount(form *dto.PracticeForm) (int, error) {
 	return count, err
 }
 
-func (Practice) GetStatistic(pbid int) (*dto.PracticeStatistic, error) {
+func (Practice) GetStatistic(pbid int64) (*dto.PracticeStatistic, error) {
 	var stat dto.PracticeStatistic
 	err := db.Get(&stat, "select * from practice_statistic where pbid=? limit 1", pbid)
 	return &stat, err
 }
 
-func (Practice) GetDetail(pbid int) (*dto.Practice, error) {
+func (Practice) GetDetail(pbid int64) (*dto.Practice, error) {
 	var detail dto.Practice
-	err := db.Get(&detail, `select * from ojo.problem p where p.id=? and p.show=1 limit 1`, pbid)
+	err := db.Get(&detail, `select * from ojo.problem p where p.id=? and p.visible=1 limit 1`, pbid)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err
 	}
-	if !detail.Show {
+	if !detail.Visible {
 		return nil, errors.New("failed to access")
 	}
 	statistic, err := pt.GetStatistic(pbid)
@@ -231,7 +232,7 @@ func (Practice) Submit(form dto.SubmitForm) (*dto.PracticeSubmission, error) {
 	return &res, err
 }
 
-func (Practice) UpdateStat(pbid, total, ac, wa, ce, mle, re, tle, ole int) error {
+func (Practice) UpdateStat(pbid int64, total, ac, wa, ce, mle, re, tle, ole int) error {
 	var sql = `  update ojo.practice_statistic set 
                 total =total+ ?,
                 ac =ac+ ?,
@@ -269,5 +270,11 @@ func (Practice) InsertCaseRes(psmid, uid int, form dto.OperationForm) error {
   				values(?,?,?,?,?,?,?,?,?,?)`
 	_, err := db.Exec(sql, psmid, form.PcId, uid, form.Flag, form.ActualCpuTime,
 		form.ActualRealTime, form.RealMemory, form.RealOutput, form.ErrorOutput, form.Score)
+	return err
+}
+
+func (Practice) InsertStatistic(tx *sql.Tx, pbid int64) error {
+	s := "insert into ojo.practice(pbid) values (?)"
+	_, err := tx.Exec(s, pbid)
 	return err
 }

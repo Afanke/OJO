@@ -141,7 +141,7 @@ func (Contest) GetAllProblem(cid int) ([]dto.CtsPbBrief, error) {
 		return nil, err
 	}
 	for i, l := 0, len(data); i < l; i++ {
-		stat, err := cts.GetStatistic(cid, data[i].Id)
+		stat, err := cts.GetStatistic(cid, int64(data[i].Id))
 		if err != nil {
 			log.Warn("error:%v\n", err)
 			return nil, err
@@ -158,13 +158,13 @@ func (Contest) GetAllProblemName(cid int) ([]dto.CtsPbBrief, error) {
 	return data, err
 }
 
-func (Contest) GetStatistic(cid, pid int) (*dto.ContestStatistic, error) {
+func (Contest) GetStatistic(cid int, pid int64) (*dto.ContestStatistic, error) {
 	var stat dto.ContestStatistic
 	err := db.Get(&stat, "select * from ojo.contest_statistic where cid=? and pid=? limit 1", cid, pid)
 	return &stat, err
 }
 
-func (Contest) GetProblemDetail(cid, pid int) (*dto.ContestProblem, error) {
+func (Contest) GetProblemDetail(cid int, pid int64) (*dto.ContestProblem, error) {
 	var detail dto.ContestProblem
 	err := db.Get(&detail, `select id, cid, ref, title, description, input_description, output_description, hint, create_time, last_update_time, cpu_time_limit, memory_limit, io_mode, difficulty, real_time_limit, source from ojo.problem p where p.id=? limit 1`, pid)
 	if err != nil {
@@ -204,7 +204,7 @@ func (Contest) GetProblemDetail(cid, pid int) (*dto.ContestProblem, error) {
 	return &detail, err
 }
 
-func (Contest) IsMatched(cid, pid int) (bool, error) {
+func (Contest) IsMatched(cid int, pid int64) (bool, error) {
 	var ok int
 	err := db.Get(&ok, "select count(*) from ojo.contest_problem where cid=? and pid=? limit 1", cid, pid)
 	return ok == 1, err
@@ -232,7 +232,7 @@ func (Contest) GetStat(psmid int) (*dto.ContestSubStat, error) {
 	return &s, nil
 }
 
-func (Contest) GetSubmission(uid, pid, cid int) (*dto.ContestSubmission, error) {
+func (Contest) GetSubmission(uid int, pid int64, cid int) (*dto.ContestSubmission, error) {
 	var s dto.ContestSubmission
 	err := db.Get(&s, "select * from contest_submission cs where cs.uid=? and cs.pid=? and cs.cid=? order by cs.submit_time desc limit 1", uid, pid, cid)
 	return &s, err
@@ -328,7 +328,7 @@ func (Contest) Submit(form dto.SubmitForm) (*dto.ContestSubmission, error) {
 	return &res, err
 }
 
-func (Contest) UpdateStat(cid, pid, total, ac, wa, ce, mle, re, tle, ole int) error {
+func (Contest) UpdateStat(cid int, pid int64, total, ac, wa, ce, mle, re, tle, ole int) error {
 	var sql = `  update ojo.contest_statistic set 
                 total =total+ ?,
                 ac =ac+ ?,

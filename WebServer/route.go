@@ -57,14 +57,14 @@ func ReqMidWare(ctx iris.Context) {
 }
 func CorsMidWare(c iris.Context) {
 	if c.Request().Method == "OPTIONS" {
-		c.Header("Access-Control-Allow-Origin", "http://localhost:8080")
+		c.Header("Access-Control-Allow-Origin", c.Request().Header.Get("Origin"))
 		c.Header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,PATCH,OPTIONS")
 		c.Header("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization")
 		c.Header("Access-Control-Allow-Credentials", "true")
 		c.StatusCode(204)
 		return
 	}
-	c.Header("Access-Control-Allow-Origin", "http://localhost:8080")
+	c.Header("Access-Control-Allow-Origin", c.Request().Header.Get("Origin"))
 	c.Header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,PATCH,OPTIONS")
 	c.Header("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization")
 	c.Header("Access-Control-Allow-Credentials", "true")
@@ -162,5 +162,11 @@ func BindRoute(app *iris.Application) {
 		contest.Post("/getACMRank", c.GetACMRank)
 		contest.Post("/getACMTop10", c.GetACMTop10)
 		contest.Post("/getACMRankCount", c.GetACMRankCount)
+	}
+	admin := app.Party("/admin")
+	{
+		var pb ctrl.Problem
+		admin.Get("/problem/getAllTags", pb.GetAllTags)
+		admin.Post("/problem/addProblem", pb.AddProblem)
 	}
 }
