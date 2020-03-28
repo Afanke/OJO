@@ -86,6 +86,23 @@ func GetSession(c iris.Context) (s Session, err error) {
 	}
 }
 
+func Get(c iris.Context, key string) (interface{}, error) {
+	s, err := GetSession(c)
+	if err != nil {
+		return nil, err
+	}
+	return s.Get(key), nil
+}
+
+func Set(c iris.Context, key string, value interface{}) error {
+	s, err := GetSession(c)
+	if err != nil {
+		return err
+	}
+	s.Set(key, value)
+	return nil
+}
+
 func (s Session) Get(str string) interface{} {
 	s.lock.RLock()
 	defer s.lock.RUnlock()

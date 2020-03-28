@@ -36,11 +36,11 @@ func (Practice) GetAll(form *dto.PracticeForm) ([]dto.PracticeBrief, error) {
 	if form.Difficulty != "" {
 		s += "and difficulty=:difficulty "
 	}
-	s += "and p.visible=1 order by p.id limit :offset, :limit"
+	s += "and p.visible=1 order by p.ref limit :offset, :limit"
 	rows, err := db.NamedQuery(s, &form)
 	if err != nil {
 		log.Warn("error:%v", err)
-		return []dto.PracticeBrief{}, nil
+		return []dto.PracticeBrief{}, err
 	}
 	var rest = make([]dto.PracticeBrief, 0, form.Limit)
 	for rows.Next() {
@@ -75,24 +75,24 @@ func (Practice) GetAllTags() ([]dto.Tag, error) {
 }
 
 func (Practice) GetCount(form *dto.PracticeForm) (int, error) {
-	var sql = `select count(*)
+	var s = `select count(*)
 			from ojo.problem p `
 	if form.Tid != 0 {
-		sql += ", ojo.problem_tag pt "
+		s += ", ojo.problem_tag pt "
 	}
-	sql += "where 1=1 "
+	s += "where 1=1 "
 	if form.Tid != 0 {
-		sql += "and pt.tid =:tid and pt.pid=p.id "
+		s += "and pt.tid =:tid and pt.pid=p.id "
 	}
 	if form.Keywords != "" {
-		sql += "and title like concat('%',:keywords,'%') "
+		s += "and title like concat('%',:keywords,'%') "
 	}
 	if form.Difficulty != "" {
-		sql += "and difficulty=:difficulty "
+		s += "and difficulty=:difficulty "
 	}
-	sql += "and p.visible=1 "
+	s += "and p.visible=1 "
 	var count int
-	rows, err := db.NamedQuery(sql, &form)
+	rows, err := db.NamedQuery(s, &form)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return 0, err

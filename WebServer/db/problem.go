@@ -11,10 +11,72 @@ type Problem struct {
 
 var pb Problem
 
+var ProblemPageSize = 10
+
 func (Problem) GetPbCase(pid int64) ([]dto.ProblemCase, error) {
 	var res []dto.ProblemCase
 	err := db.Select(&res, "select * from problem_case where pid=?", pid)
 	return res, err
+}
+
+func (Problem) GetAll(form *dto.ProblemForm) ([]dto.ProblemBrief, error) {
+	if form.Page < 1 {
+		form.Page = 1
+	}
+	form.Page -= 1
+	form.Limit = ProblemPageSize
+	form.Offset = form.Page * ProblemPageSize
+	var s = `select id,ref,cid,title, difficulty,create_time,last_update_time,visible
+			from ojo.problem  where 1=1 `
+	if form.Keywords != "" {
+		s += "and title like concat('%',:keywords,'%') "
+	}
+	if form.Difficulty != "" {
+		s += "and difficulty=:difficulty "
+	}
+	s += " order by id desc limit :offset, :limit"
+	rows, err := db.NamedQuery(s, &form)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	var rest = make([]dto.ProblemBrief, 0, form.Limit)
+	for rows.Next() {
+		var res dto.ProblemBrief
+		err := rows.StructScan(&res)
+		if err != nil {
+			log.Warn("error:%v", err)
+			return []dto.ProblemBrief{}, err
+		}
+		tag, err := pb.GetProblemTag(res.Id)
+		if err != nil {
+			log.Warn("error:%v", err)
+			return []dto.ProblemBrief{}, err
+		}
+		res.Tags = tag
+		rest = append(rest, res)
+	}
+	return rest, nil
+}
+
+func (Problem) GetCount(form *dto.ProblemForm) (int, error) {
+	var s = `select count(*)
+			from ojo.problem  where 1=1 `
+	if form.Keywords != "" {
+		s += "and title like concat('%',:keywords,'%') "
+	}
+	if form.Difficulty != "" {
+		s += "and difficulty=:difficulty "
+	}
+	var count int
+	rows, err := db.NamedQuery(s, &form)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return 0, err
+	}
+	_ = rows.Next()
+	err = rows.Scan(&count)
+	return count, err
 }
 
 func (Problem) GetProblem(id int64) (*dto.Problem, error) {
@@ -192,5 +254,17 @@ func (Problem) InsertProblemSample(tx *sql.Tx, ps *dto.ProblemSample) error {
 func (Problem) InsertProblemTag(tx *sql.Tx, pid int64, tid int) error {
 	var s = "insert into ojo.problem_tag(tid, pid) VALUES (?,?)"
 	_, err := tx.Exec(s, tid, pid)
+	return err
+}
+
+func (Problem) SetVisibleTrue(id int) error {
+	s := "update ojo.problem set visible=true where id=? limit 1"
+	_, err := db.Exec(s, id)
+	return err
+}
+
+func (Problem) SetVisibleFalse(id int) error {
+	s := "update ojo.problem set visible=false where id=? limit 1"
+	_, err := db.Exec(s, id)
 	return err
 }

@@ -168,5 +168,9 @@ func BindRoute(app *iris.Application) {
 		var pb ctrl.Problem
 		admin.Get("/problem/getAllTags", pb.GetAllTags)
 		admin.Post("/problem/addProblem", pb.AddProblem)
+		admin.Post("/problem/getAll", pb.GetAll)
+		admin.Post("/problem/getCount", pb.GetCount)
+		admin.Post("/problem/setVisibleTrue", pb.SetVisibleTrue)
+		admin.Post("/problem/setVisibleFalse", pb.SetVisibleFalse)
 	}
 }

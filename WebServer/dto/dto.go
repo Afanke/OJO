@@ -15,6 +15,13 @@ type RegisterForm struct {
 	Password string `json:"password"`
 	Captcha  string `json:"captcha"`
 }
+type ProblemForm struct {
+	Page       int    `json:"page" db:"page"`
+	Offset     int    `json:"offset" db:"offset"`
+	Limit      int    `json:"limit" db:"limit"`
+	Difficulty string `json:"difficulty" db:"difficulty"`
+	Keywords   string `json:"keywords" db:"keywords"`
+}
 type PracticeForm struct {
 	Page       int    `json:"page" db:"page"`
 	Tid        int    ` json:"tid" db:"tid"`
@@ -24,14 +31,14 @@ type PracticeForm struct {
 	Keywords   string `json:"keywords" db:"keywords"`
 }
 type PracticeBrief struct {
-	Id          int64              `json:"id" db:"id"`
-	Cid         int                `json:"cid" db:"cid"`
-	Ref         string             `json:"ref" db:"ref"`
-	Title       string             `json:"title" db:"title"`
-	Description string             `json:"description" db:"description"`
-	Difficulty  string             `json:"difficulty" db:"difficulty"`
-	Tags        []Tag              `json:"tags"`
-	Statistic   *PracticeStatistic `json:"statistic"`
+	Id    int64  `json:"id" db:"id"`
+	Cid   int    `json:"cid" db:"cid"`
+	Ref   string `json:"ref" db:"ref"`
+	Title string `json:"title" db:"title"`
+	// Description string             `json:"description" db:"description"`
+	Difficulty string             `json:"difficulty" db:"difficulty"`
+	Tags       []Tag              `json:"tags"`
+	Statistic  *PracticeStatistic `json:"statistic"`
 }
 type Practice struct {
 	Visible           bool   `json:"visible" db:"visible"`
@@ -312,6 +319,17 @@ type PracticeSubmission struct {
 	TotalScore int    `json:"totalScore" db:"total_score"`
 	SubmitTime string `json:"submitTime" db:"submit_time"`
 	Code       string `json:"code" db:"code"`
+}
+type ProblemBrief struct {
+	Visible        bool   `json:"visible" db:"visible"`
+	Id             int64  `json:"id" db:"id"`
+	Cid            int    `json:"cid" db:"cid"`
+	Ref            string `json:"ref" db:"ref"`
+	Title          string `json:"title" db:"title"`
+	Difficulty     string `json:"difficulty" db:"difficulty"`
+	CreateTime     string `json:"createTime" db:"create_time"`
+	LastUpdateTime string `json:"lastUpdateTime" db:"last_update_time"`
+	Tags           []Tag  `json:"tags"`
 }
 type Problem struct {
 	Id                int             `json:"id" db:"id"`
