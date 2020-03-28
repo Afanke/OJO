@@ -170,7 +170,7 @@ export default {
       const {data:res1} = await this.$http.post('/practice/getAllStatusCount');
       // console.log(res1);
       if (res1.error) {
-        this.$message.error(res1.error);
+        // this.$message.error(res1.error);
         return
       } else {
         this.count = res1.data;

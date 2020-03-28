@@ -476,7 +476,7 @@ export default {
       });
     },
     goback() {
-      this.$router.go(-1);
+      this.$router.push("/contest");
     }
   },
   watch: {

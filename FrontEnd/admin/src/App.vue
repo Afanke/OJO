@@ -6,12 +6,13 @@
 
   <el-container>
     <el-main style="min-width:1050px">
-      <router-view> </router-view>
+      <router-view> 
+
+      </router-view>
       </el-main>
   </el-container>
 
 </el-container>
-
   </div>
 </template>
 <script>

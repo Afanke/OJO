@@ -30,7 +30,7 @@
             <img style="width: 45px; height: 45px;float:left;margin-left:30px;margin-top:10px"
               src="@/assets/images/contest.png" />
             <div style="float:left;margin-top:8px;margin-left:10px">
-              <el-link style="font-size:20px;" @click="goDetail(item.id)"> {{ item.title }}</el-link>
+              <el-link style="font-size:20px;" @click="goDetail(item.id)">{{item.title }}</el-link>
               <div style="font-size:13px;margin-top:3px">
                 <i class="el-icon-unlock" style="color:#409EFF"></i>
                 <span>{{ item.startTime }}</span>
@@ -47,9 +47,7 @@
                 <div :style="item.style">
                   &nbsp;
                 </div>
-                <span style="margin-left:5px;margin-right:-8px">{{
-                  item.status
-                }}</span>
+                <span style="margin-left:5px;margin-right:-8px">{{item.status}}</span>
               </el-button>
             </div>
             <el-row v-if="index!==0"

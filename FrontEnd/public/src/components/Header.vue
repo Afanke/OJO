@@ -524,10 +524,12 @@ export default {
   }
 };
 </script>
-<style>
-/* .tac{
-  min-width: 1100px;
-} */
+<style scoped>
+.tac{
+  width: 100%;
+  min-width: 1200px;
+  background-color: #ffffff;
+}
 #ojName {
   font-size: 30px;
 }

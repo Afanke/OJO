@@ -1,9 +1,6 @@
 <template>
 
 <div >
-  <!-- <button @click="show = !show">
-    Toggle render
-  </button> -->
   <transition name="slide-fade">
  
   <div class="center-box" v-if="show">

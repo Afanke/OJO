@@ -4,22 +4,25 @@
       <span style="float:left;font-size:20px;margin-left:20px;margin-top:15px">Rank</span>
     </el-row>
     <div style="width:85%;float:left;margin-left:7.5%">
-      <ve-line style="width:100%" :settings="chartSettings" :legend-visible="true" :extend="chartExtend"></ve-line>
+      <ve-line style="width:100%" :settings="chartSettings" :legend-visible="true" :extend="chartExtend">
+      </ve-line>
     </div>
 
     <div style="width:100%">
-      <el-table :data="tableData" style="width: 100%" v-loading="rankLoading" :cell-style="cellStyle">
+      <el-table :data="tableData" style="width: 100%" v-loading="rankLoading" :cell-style="cellStyle" size="mini"  >
         <el-table-column type="index" label="#" min-width="10" align="center" :index="indexMethod">
         </el-table-column>
         <el-table-column prop="username" label="Username" align="center" min-width="10">
         </el-table-column>
-        <el-table-column label="Last Submit" align="center" min-width="10">
+        <el-table-column label="AC/Total" align="center" min-width="10">
           <template slot-scope="scope">
-            <!-- <div style="background-color:green;height:60px"> -->
-            <span>{{ countDuration(scope.row.lastSubmitTime) }}</span>
+            <span>{{scope.row.ac}}&nbsp;/&nbsp;{{scope.row.total}}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="totalScore" label="Total Score" align="center" min-width="10">
+        <el-table-column  label="TotalTime" align="center" min-width="10">
+          <template slot-scope="scope">
+            <span v-if="scope.row.totalTime">{{countDuration(scope.row.totalTime)}}</span>
+          </template>
         </el-table-column>
         <el-table-column :label="item.title" min-width="10" v-bind:key="i" v-for="(item, i) in problemList"
           align="center">
@@ -27,7 +30,8 @@
             <el-link :underline="false" @click="goProblem(item.id)">{{item.title}}</el-link>
           </template>
           <template slot-scope="scope">
-            <span v-if="scope.row.OIDetail[i]">{{scope.row.OIDetail[i].maxScore}}</span>
+            <span v-if="scope.row.ACMDetail[i]">{{countDuration(scope.row.ACMDetail[i].lastSubmitTime)}}</span><br>
+            <span v-if="scope.row.ACMDetail[i] && scope.row.ACMDetail[i].total-scope.row.ACMDetail[i].ac">(-{{scope.row.ACMDetail[i].total-scope.row.ACMDetail[i].ac}})</span>
           </template>
         </el-table-column>
       </el-table>
@@ -193,21 +197,38 @@
         }
         this.count = Number(res3.data);
         this.loading = false;
-        // this.getRank();
+        this.getRank();
       } catch (err) {
         console.log(err);
         alert(err);
       }
     },
     methods: {
-      cellStyle(row, column, rowIndex, columnIndex) {
-        if (row.column.label === "Username") {
-          return "font-weight:bold";
-        } else {
-          // return 'background-color:green'
-        }
+      cellStyle(tb) {
+        // console.log(tb)
+        if (tb.columnIndex > 3 ) {
+          // console.log(tb.row.ACMDetail[tb.columnIndex-4])
+          if(!tb.row.ACMDetail[tb.columnIndex-4]){
+            return 'height:57px'
+          }
+          if(tb.row.ACMDetail[tb.columnIndex-4].firstAC){
+            return 'background-color:#67C23A;color:#fff;height:57px'
+          }
+          if(tb.row.ACMDetail[tb.columnIndex-4].ac){
+            return 'background-color:rgb(225, 243, 216);height:57px'
+          }
+          if(!tb.row.ACMDetail[tb.columnIndex-4].ac && tb.row.ACMDetail[tb.columnIndex-4].total){
+            return 'background-color:rgb(253, 226, 226);height:57px'
+          }
+          // tb.row.ACMDetail[tb.columnIndex-4].ac
+          // tb.row.ACMDetail[tb.columnIndex-4].total
+          // return "font-weight:bold";
+        } 
       },
       prepareChart() {
+        if(!this.top10){
+          return
+        }
         for (let i = 0; i < this.top10.length; i++) {
           this.top10[i].ACMDetail = this.top10[i].ACMDetail.sort(function (a, b) {
             return a.lastSubmitTime - b.lastSubmitTime;
@@ -236,6 +257,29 @@
           this.chartExtend.series.push(obj);
         }
       },
+      prepareTable(data){
+        if(!data){
+          return
+        }
+        this.tableData=data
+        for(let i=0;i<this.tableData.length;i++){
+          for (let j=0;j<this.problemList.length;j++){
+            if (this.tableData[i].ACMDetail[j].pid!==this.problemList[j].id){
+                  this.tableData[i].ACMDetail.splice(j, 0, {
+                    ac: false,
+                    cid: 0,
+                    firstAC: false,
+                    id: 0,
+                    lastSubmitTime: -1,
+                    pid: 0,
+                    total: 0,
+                    uid: 0,
+                  })
+            }
+          }
+        }
+        console.log(this.tableData)
+      },
       async getRank() {
         try {
           this.rankLoading = true;
@@ -250,7 +294,7 @@
             this.$message.error(res.error);
             return;
           }
-          this.tableData = res.data;
+          this.prepareTable(res.data)
           this.rankLoading = false;
         } catch (err) {
           console.log(err);
@@ -267,9 +311,10 @@
         });
       },
       countDuration(val) {
-        var s = this.startTime;
-        var e = new Date(val.replace(/-/g, "/")).getTime();
-        var d = (e - s) / 1000;
+        if (val===-1){
+          return ""
+        }
+        var d=val
         var hour = Math.floor(d / 3600);
         d = d % 3600;
         if (hour < 10) {
@@ -340,7 +385,7 @@
     width: 100%;
     background-color: #ffffff;
     border-radius: 10px;
-    margin-bottom: 20px;
+    /* margin-bottom: 20px; */
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   }
 </style>

@@ -29,7 +29,7 @@ import {
   Icon,
   Row,
   Col,
-  Card,
+  // Card,
   Progress,
   Form,
   FormItem,
@@ -126,7 +126,7 @@ Vue.use(Image);
 Vue.use(Drawer);
 Vue.use(Loading.directive);
 
-Vue.use(Card);
+// Vue.use(Card);
 Vue.use(Progress);
 Vue.use(Icon);
 Vue.use(Row);

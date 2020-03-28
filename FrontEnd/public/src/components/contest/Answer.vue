@@ -18,48 +18,52 @@
                 </el-button>
               </div>
             </el-row>
-            <el-row>
+            <el-row style="width:94%;margin-left:3%">
               <el-row v-if="problemDetail.description">
                 <p class="title" style="margin-top:10px">Description</p>
-                <p class="content">
+                <p class="content" style="margin-left:3%">
                   {{ problemDetail.description }}
                 </p>
               </el-row>
               <el-row v-if="problemDetail.inputDescription">
                 <p class="title">Input</p>
-                <p class="content">
+                <p class="content" style="margin-left:3%">
                   {{ problemDetail.inputDescription }}
                 </p>
               </el-row>
               <el-row v-if="problemDetail.outputDescription">
                 <p class="title">Output</p>
-                <p class="content">
+                <p class="content" style="margin-left:3%">
                   {{ problemDetail.outputDescription }}
                 </p>
               </el-row>
-              <el-row class="sample" v-bind:key="i" v-for="(sample, i) in problemDetail.samples">
+              <el-row class="sample" v-bind:key="i" v-for="(sample, i) in problemDetail.sample" :gutter="20">
                 <el-col :span="12">
                   <el-row style="width:100%">
-                    <p class="sample-title">Sample Input {{ i + 1 }}</p>
-                    <div class="sample-content-container" v-html="sample.input.replace(/\r?\n/g, '<br />')"></div>
+                    <p class="sample-title">Sample Input {{ i + 1 }} <i class="el-icon-document-copy"
+                        @click="copyText(i)" style="cursor:pointer"></i></p>
+                    <el-input :id="'sampleInput'+i" type="textarea" resize="none" readonly autosize
+                      v-model="sample.input">
+                    </el-input>
                   </el-row>
                 </el-col>
                 <el-col :span="12">
                   <el-row style="width:100%">
                     <p class="sample-title">Sample Output {{ i + 1 }}</p>
-                    <div class="sample-content-container" v-html="sample.output.replace(/\r?\n/g, '<br />')"></div>
+                    <el-input type="textarea" resize="none" readonly autosize v-model="sample.output">
+                    </el-input>
                   </el-row>
                 </el-col>
               </el-row>
               <el-row v-if="problemDetail.hint">
                 <p class="title" style="margin-top:10px">Hint</p>
-                <p class="content">
+                <p class="content" style="margin-left:3%">
                   {{ problemDetail.hint }}
                 </p>
               </el-row>
               <el-row v-if="problemDetail.source">
                 <p class="title" style="margin-top:10px">Source</p>
-                <p class="content">
+                <p class="content" style="margin-left:3%">
                   {{ problemDetail.source }}
                 </p>
               </el-row>
@@ -70,7 +74,7 @@
             <el-row style=";margin: 15px auto 15px;width:95%">
               <span style="font-size:15px;">Language:</span>
               <el-select v-model="currentLanguage" placeholder="请选择" style="margin-left:15px;" size="small">
-                <el-option v-for="item in problemDetail.languages" :key="item.id" :label="item.name" :value="item.id">
+                <el-option v-for="item in problemDetail.language" :key="item.id" :label="item.name" :value="item.id">
                 </el-option>
               </el-select>
             </el-row>
@@ -103,16 +107,16 @@
               </el-button>
               <el-button style="margin-left:15px" type="warning" plain v-if="status === 'TLE'" @click="goStatusDetail">
                 Time Limit Exceeded
-                </el-button>
+              </el-button>
               <el-button style="margin-left:15px" type="warning" plain v-if="status === 'MLE'" @click="goStatusDetail">
                 Memory Limit Exceeded
-                </el-button>
+              </el-button>
               <el-button style="margin-left:15px" type="success" plain v-if="status === 'AC'" @click="goStatusDetail">
                 Accepted
-                </el-button>
+              </el-button>
               <el-button style="margin-left:15px" type="primary" plain v-if="status === 'PA'" @click="goStatusDetail">
                 Partial Accepted
-                </el-button>
+              </el-button>
               <el-button style="margin-left:15px" type="primary" plain v-if="status === 'Sending'">Sending</el-button>
               <el-button type="primary" style="float:right;margin-top:-3px" @click="submit" :loading="isJuding"
                 class="el-icon-s-promotion" :disabled="over">&nbsp;&nbsp;Submit</el-button>
@@ -162,10 +166,6 @@
                     {{ problemDetail.memoryLimit / 1024 / 1024 + "MB" }}</span>
                 </el-row>
                 <el-row style="margin-bottom: 14px;">
-                  <span style="float:left">IO Mode</span>
-                  <span style="float:right"> {{ problemDetail.ioMode }}</span>
-                </el-row>
-                <el-row style="margin-bottom: 14px;">
                   <span style="float:left">Created By</span>
                   <span style="float:right">
                     {{ problemDetail.creatorName }}</span>
@@ -178,7 +178,7 @@
                 </el-row>
                 <el-row style="margin-bottom: 14px;">
                   <span style="float:left">Tags</span>
-                  <div v-bind:key="i" v-for="(tag, i) in problemDetail.tags">
+                  <div v-bind:key="i" v-for="(tag, i) in problemDetail.tag">
                     <el-row>
                       <el-button style="float:right;margin-bottom:5px" type="primary" size="mini" plain>{{ tag.name }}
                       </el-button>
@@ -311,15 +311,14 @@
           id: 0,
           inputDescription: "",
           outputDescription: "",
-          ioMode: "",
-          languages: [],
+          language: [],
           lastUpdateTime: "",
           memoryLimit: 0,
           realTimeLimit: 0,
           ref: "",
           ruleType: "",
-          samples: [],
-          tags: [],
+          sample: [],
+          tag: [],
           title: ""
         },
         detailedChartSettings: {
@@ -447,7 +446,7 @@
         }
         this.statistic = res.data.statistic;
         this.problemDetail = res.data;
-        this.currentLanguage = this.problemDetail.languages[0].name;
+        this.currentLanguage = this.problemDetail.language[0].name;
         this.refreshStatistic();
         this.show = true;
         const {
@@ -490,6 +489,27 @@
       }
     },
     methods: {
+      copyToClipBoard(id) { //复制到剪切板
+        if (document.execCommand) {
+          var e = document.getElementById(id);
+          e.select();
+          document.execCommand("Copy");
+          return true;
+        }
+        return false;
+      },
+      copyText(i) {
+
+        let res = this.copyToClipBoard('sampleInput' + i)
+        if (res) {
+          this.$message({
+            message: 'The text has been copied successfully',
+            type: 'success'
+          })
+        } else {
+          this.$message.error("copy failed")
+        }
+      },
       refreshStatistic() {
         this.briefChartData.rows = [{
             status: "AC",
@@ -686,43 +706,20 @@
     cursor: pointer;
   }
 
-  .sample {
-    text-align: left;
-    width: 100%;
-  }
-
   .sample-title {
-    text-align: left;
-    margin-left: 8%;
-    margin-right: 8%;
+    float: left;
     color: #3091f2;
     font-size: 18px;
     font-weight: 400;
-    word-wrap: break-word;
-  }
-
-  .sample-content-container {
-    word-wrap: break-word;
-    text-align: left;
-    margin-left: 8%;
-    margin-right: 8%;
-    font-size: 14px;
-    border: 1px solid #e9eaec;
-    border-radius: 2px;
-    padding: 10px 20px 10px;
   }
 
   .title {
-    margin-left: 4%;
-    margin-right: 4%;
     color: #3091f2;
     font-size: 18px;
     font-weight: 400;
   }
 
   .content {
-    margin-left: 7%;
-    margin-right: 7%;
     font-size: 16px;
   }
 

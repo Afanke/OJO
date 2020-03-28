@@ -78,7 +78,7 @@
               <span>&nbsp;Difficulty</span>
               <el-row class="small-element">
                 <el-select v-model="difficulty" size="small" placeholder="请选择" style="width:100px">
-                  <el-option v-for="item in difficultyOptions" :key="item.value" :label="item.label"
+                  <el-option v-for="(item,index1) in difficultyOptions" :key="index1+'index1'" :label="item.label"
                     :value="item.value">
                   </el-option>
                 </el-select>
@@ -91,8 +91,8 @@
               <el-row class="small-element">
                 <el-popover placement="bottom" width="400" trigger="click">
                   <el-checkbox-group v-model="tags">
-                    <el-checkbox style="min-width:100px" :key="index" :label="item.name"
-                      v-for="(item,index) in allTags"></el-checkbox>
+                    <el-checkbox style="min-width:100px" :key="index2+'index2'" :label="item.name"
+                      v-for="(item,index2) in allTags"></el-checkbox>
                   </el-checkbox-group>
                   <el-button size="small" slot="reference">Click To Select</el-button>
                 </el-popover>
@@ -112,11 +112,11 @@
             </el-col>
           </el-row>
           <el-row style="border:1px solid rgb(233, 233, 235);border-radius:5px;margin-top:30px"
-            v-for="(item,index) in sample">
+            v-for="(item,index3) in sample" :key="index3+'index3'">
             <el-row style="height:50px;line-height:50px">
-              <span style="margin-left:10px;font-weight:bold">Sample {{index+1}}</span>
+              <span style="margin-left:10px;font-weight:bold">Sample {{index3+1}}</span>
               <el-button type="warning" style="margin-right:40px;float:right;margin-top:9px" size="small"
-                @click="deleteSample(index)">Delete
+                @click="deleteSample(index3)">Delete
               </el-button>
             </el-row>
             <el-row style="background-color:#FAFDFF">
@@ -154,11 +154,11 @@
             </div>
           </el-row>
           <el-row style="border:1px solid rgb(233, 233, 235);border-radius:5px;margin-top:30px"
-            v-for="(item,index) in problemCase">
+            v-for="(item,index4) in problemCase" :key="index4+'index4'">
             <el-row style="height:50px;line-height:50px">
-              <span style="margin-left:10px;font-weight:bold">Test Case {{index+1}}</span>
+              <span style="margin-left:10px;font-weight:bold">Test Case {{index4+1}}</span>
               <el-button type="warning" style="margin-right:40px;float:right;margin-top:9px" size="small"
-                @click="deleteProblemCase(index)">Delete
+                @click="deleteProblemCase(index4)">Delete
               </el-button>
               <el-input-number :step="10" size="small" :min="0" style="float:right;margin-right:40px;margin-top:9px"
                 v-model="item.score"></el-input-number>
@@ -410,7 +410,7 @@
         this.problemCase.push({
           input: '',
           output: '',
-          score: 0
+          score: 10
         })
       },
       addSample() {

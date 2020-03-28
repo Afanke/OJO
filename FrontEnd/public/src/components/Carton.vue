@@ -1,21 +1,31 @@
 <template>
-  <div class="star-night">
+<div >
+  <transition name="slide-fade">
+ 
+  <div class="center-box" v-if="show">
+    <div class="star-night">
     <div class="stars">
+      <!-- 321 -->
       <div
         v-for="(item, index) in startsCount"
         :key="index"
         class="star"
-        ref="star"
-      >
+        ref="star">
+         <!-- 123 -->
       </div>
     </div>
     <div class="main-box">
       <div class="carton-box">
-        <h1 data-spotlight="OJO Online Judge">OJO Online Judge</h1>
+        <h1 data-spotlight="OJO Online Judge" style="margin:200px 0">OJO Online Judge</h1>
       </div>
-      <p style="width:100%;text-align:center">Under Construction</p>
+      <p style="width:100%;text-align:center;color:#e96f92"  >Under Construction</p>
     </div>
   </div>
+    
+  </div>
+  </transition>
+</div>
+  
 </template>
 
 <script>
@@ -23,7 +33,26 @@ export default {
   data() {
     return {
       startsCount: 800,
-      distance: 800
+      distance: 400,
+      status:'',
+      show:true,
+       StatusOptions: [{
+            value: 0,
+            label: 'All'
+          },
+          // {
+          //   value: 1,
+          //   label: 'Not Started'
+          // },
+          // {
+          //   value: 2,
+          //   label: 'Under Way'
+          // },
+          // {
+          //   value: 3,
+          //   label: 'Ended'
+          // }
+        ],
     };
   },
   mounted() {
@@ -36,16 +65,12 @@ export default {
       item.style.transformOrigin = '0 0 ' + thisDistance + 'px';
       item.style.transform =
         'translate3d(0,0,' +
-        -thisDistance +
+        ((Math.random() * -thisDistance) +100)  +
         'px) rotateY(' +
-        Math.random() * 360 +
+        ((Math.random() * 360) +360) +
         'deg) rotateX(' +
-        Math.random() * -50 +
-        'deg) scale(' +
-        speed +
-        ',' +
-        speed +
-        ')';
+        ((Math.random() * -100) -100) +
+        'deg)'
     });
   },
   methods: {},
@@ -54,6 +79,15 @@ export default {
 </script>
 
 <style scoped>
+.center-box {
+  /* min-width:1100px; */
+  margin-top: 20px !important;
+  margin: 0 auto;
+  width: 80%;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
 .main-box {
   /* position: absolute; */
   height:100%;
@@ -63,6 +97,7 @@ export default {
 
 .star-night {
   /* position: relative; */
+    border-radius: 10px;
   width: 100%;
   /* height:100%; */
   margin: 0;
@@ -92,7 +127,7 @@ export default {
   perspective-origin: 50% 100%;
   left: 0%;
   width: 100%;
-  animation: rotate 60s infinite linear;
+  animation: rotate 90s infinite linear;
   bottom: 0;
 }
 .star {
@@ -109,9 +144,11 @@ export default {
 }
 @keyframes rotate {
   0% {
+    /* transform: perspective(300px) rotateZ(0deg) rotateX(0deg) rotateY(0); */
     transform: perspective(400px) rotateZ(20deg) rotateX(-40deg) rotateY(0);
   }
   100% {
+    /* transform: perspective(300px) rotateZ(0deg) rotateX(0deg) */
     transform: perspective(400px) rotateZ(20deg) rotateX(-40deg)
       rotateY(-360deg);
   }
@@ -127,7 +164,7 @@ export default {
 }
 h1 {
   font-size: 100px;
-  color: #3b3737;
+  color: #e96f9200;
   font-family: Helvetica;
   margin: 0;
   padding: 0;
