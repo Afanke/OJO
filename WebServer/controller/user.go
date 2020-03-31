@@ -78,7 +78,7 @@ func (User) Captcha(c iris.Context) {
 	c.Header("cache-control", "no-cache")
 	c.Header("expires", "0")
 	cp := captcha.NewCaptcha(120, 40, 4)
-	cp.SetFontPath("./dist/fonts/xindexingcao57.ttf")
+	cp.SetFontPath("./config/xindexingcao57.ttf")
 	cp.SetMode(rand.Int() & 1) // 设置为数学公式
 	code, img := cp.OutPut()
 	s, err := session.GetSession(c)

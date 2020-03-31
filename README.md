@@ -1,13 +1,14 @@
 # OJO 
 ![](https://img.shields.io/badge/GO-1.14%2B-9cf)   ![](https://img.shields.io/badge/GO%20Iris-v11-blue)  ![](https://img.shields.io/badge/Vue-2-brightgreen) 
 
-> An Online Judge System based on Go and Vue
+> An Online Judge System based on Go and Vue [Demo](http://49.234.91.99/)
 
-> This project is another implementation of [QingdaoU/OnlineJudge](https://github.com/QingdaoU/OnlineJudge), with the only user [SECE](https://sece.sysu.edu.cn/)
+> This project is another implementation of [QingdaoU/OnlineJudge](https://github.com/QingdaoU/OnlineJudge), with the first user [SECE](https://sece.sysu.edu.cn/)
                                                            
 > Again, I want to show my respect to [QingdaoU/OnlineJudge](https://github.com/QingdaoU/OnlineJudge), I leaned a lot with this project                                                              
 
-> If you know Go or Vue and want to develop with me, please contact me
+> If you know Go or Vue and want to develop with me, please contact me at xiaoq37@mail2.sysu.edu.cn
+
 ### Features
 * Separated frontend, webServer and JudgeServer
 * Fast! With the async programing language Go
@@ -22,7 +23,7 @@
     |--Frontend       --Vue
     |--WebServer      --Go
     |--JudgeServer    --Go and C
-    |--utils          --some useful utils,such as session,log
+    |--utils          --some useful utils, such as session, log
     |--config         --the config of Webserver
     
 ### Installation
