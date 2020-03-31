@@ -20,7 +20,6 @@ func init() {
 		log.Fatal("error:%v\n", err)
 		os.Exit(-1)
 	}
-	// fmt.Println(Config)
 }
 
 type ServerConfig struct {

@@ -2,12 +2,10 @@ package ctrl
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/afanke/OJO/WebServer/config"
 	"github.com/afanke/OJO/WebServer/db"
 	"github.com/afanke/OJO/WebServer/dto"
 	"github.com/afanke/OJO/utils/log"
-	"github.com/afanke/OJO/utils/session"
 	"github.com/afanke/OJO/utils/tcp"
 	"github.com/kataras/iris"
 	"strings"
@@ -92,14 +90,9 @@ func (Practice) GetCurrentStatus(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	s, err := session.GetSession(c)
+	user, err := getUserToken(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	user, ok := s.Get("user").(dto.User)
-	if !ok {
-		c.JSON(&dto.Res{Error: errors.New("please login").Error(), Data: nil})
 		return
 	}
 	detail, err := pctdb.GetSubmission(user.Id, ptid.Id)
@@ -134,10 +127,6 @@ func (Practice) GetStatusDetail(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	//s, err := session.GetSession(c)
-	//if err != nil {c.JSON(&dto.Res{Error:err.Error(),Data:nil});return}
-	//user,ok:= s.Get("user").(dto.User)
-	//if !ok{user=dto.User{Id:1,}}
 	data, err := pctdb.GetCaseRes(psmid.Id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -160,14 +149,9 @@ func (Practice) GetAllStatus(c iris.Context) {
 		form.Offset = (form.Page - 1) * 10
 	}
 	form.Limit = 10
-	s, err := session.GetSession(c)
+	user, err := getUserToken(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	user, ok := s.Get("user").(dto.User)
-	if !ok {
-		c.JSON(&dto.Res{Error: errors.New("please login").Error(), Data: nil})
 		return
 	}
 	data, err := pctdb.GetAllStat(user.Id, form.Offset, form.Limit)
@@ -180,16 +164,9 @@ func (Practice) GetAllStatus(c iris.Context) {
 
 // 获得当前用户的所有Practice提交的记录之和
 func (Practice) GetAllStatusCount(c iris.Context) {
-	s, err := session.GetSession(c)
+	user, err := getUserToken(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	res := s.Get("user")
-	var user dto.User
-	user, ok := res.(dto.User)
-	if !ok {
-		c.JSON(&dto.Res{Error: errors.New("please login").Error(), Data: nil})
 		return
 	}
 	data, err := pctdb.GetAllStatCount(user.Id)
@@ -208,16 +185,9 @@ func (Practice) Submit(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	s, err := session.GetSession(c)
+	user, err := getUserToken(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	res := s.Get("user")
-	var user dto.User
-	user, ok := res.(dto.User)
-	if !ok {
-		c.JSON(&dto.Res{Error: errors.New("please login").Error(), Data: nil})
 		return
 	}
 	form.Uid = user.Id
@@ -340,7 +310,7 @@ func (Practice) concludeFlag(forms []dto.OperationForm) string {
 	}
 }
 
-func (Practice) updateStatistic(pbid int64, psmid, uid int, forms []dto.OperationForm) error {
+func (Practice) updateStatistic(pbid, psmid, uid int64, forms []dto.OperationForm) error {
 	var total = 0
 	var ac = 0
 	var wa = 0

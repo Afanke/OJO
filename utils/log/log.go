@@ -79,7 +79,7 @@ func init() {
 	}
 	cfg = lcfg.Log
 	file.Init()
-	Print(INFO, "%v", cfg)
+	// Print(INFO, "%v", cfg)
 	Print(INFO, "success to load log system")
 }
 

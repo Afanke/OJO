@@ -151,13 +151,13 @@ func (Practice) GetDetail(pbid int64) (*dto.Practice, error) {
 	return &detail, err
 }
 
-func (Practice) GetSubmission(uid, pid int) (*dto.PracticeSubmission, error) {
+func (Practice) GetSubmission(uid, pid int64) (*dto.PracticeSubmission, error) {
 	var s dto.PracticeSubmission
 	err := db.Get(&s, "select * from practice_submission ps where ps.uid=? and ps.pid=? order by ps.submit_time desc limit 1", uid, pid)
 	return &s, err
 }
 
-func (Practice) GetAllStat(uid, offset, limit int) ([]dto.PracticeSubStat, error) {
+func (Practice) GetAllStat(uid int64, offset, limit int) ([]dto.PracticeSubStat, error) {
 	var res []dto.PracticeSubStat
 	err := db.Select(&res, "select ps.id,ps.uid,ps.pid,ps.total_score,ps.language,ps.status,ps.submit_time from practice_submission ps where ps.uid=? order by ps.submit_time desc limit ?,?", uid, offset, limit)
 	if err != nil {
@@ -175,7 +175,7 @@ func (Practice) GetAllStat(uid, offset, limit int) ([]dto.PracticeSubStat, error
 	return res, nil
 }
 
-func (Practice) GetAllStatCount(uid int) (int, error) {
+func (Practice) GetAllStatCount(uid int64) (int, error) {
 	var count int
 	err := db.Get(&count, "select count(*) from practice_submission ps where ps.uid=?", uid)
 	if err != nil {
@@ -185,7 +185,7 @@ func (Practice) GetAllStatCount(uid int) (int, error) {
 	return count, nil
 }
 
-func (Practice) GetStat(psmid int) (*dto.PracticeSubStat, error) {
+func (Practice) GetStat(psmid int64) (*dto.PracticeSubStat, error) {
 	var s dto.PracticeSubStat
 	err := db.Get(&s, "select * from practice_submission ps where ps.id=? limit 1", psmid)
 	if err != nil {
@@ -207,7 +207,7 @@ func (Practice) GetStat(psmid int) (*dto.PracticeSubStat, error) {
 	return &s, nil
 }
 
-func (Practice) GetCaseRes(psmid int) ([]dto.PracticeCaseResult, error) {
+func (Practice) GetCaseRes(psmid int64) ([]dto.PracticeCaseResult, error) {
 	var res []dto.PracticeCaseResult
 	err := db.Select(&res, "select * from ojo.practice_case_result where psmid=?", psmid)
 	return res, err
@@ -247,7 +247,7 @@ func (Practice) UpdateStat(pbid int64, total, ac, wa, ce, mle, re, tle, ole int)
 	return err
 }
 
-func (Practice) SetISE(psmid int) error {
+func (Practice) SetISE(psmid int64) error {
 	_, err := db.Exec("update ojo.practice_submission set status='ISE' where id=?", psmid)
 	if err != nil {
 		log.Warn("error:%v", err)
@@ -255,7 +255,7 @@ func (Practice) SetISE(psmid int) error {
 	return err
 }
 
-func (Practice) UpdateFlagAndScore(psmid, score int, flag string) error {
+func (Practice) UpdateFlagAndScore(psmid int64, score int, flag string) error {
 	var sql = `  update ojo.practice_submission set 
                 status =?,
                 total_score = ?
@@ -264,7 +264,7 @@ func (Practice) UpdateFlagAndScore(psmid, score int, flag string) error {
 	return err
 }
 
-func (Practice) InsertCaseRes(psmid, uid int, form dto.OperationForm) error {
+func (Practice) InsertCaseRes(psmid, uid int64, form dto.OperationForm) error {
 	var sql = `  insert into ojo.practice_case_result
   (psmid,pcaseid,uid,flag,cpu_time,real_time,real_memory,real_output,error_output,score)
   				values(?,?,?,?,?,?,?,?,?,?)`

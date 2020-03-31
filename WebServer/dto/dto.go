@@ -22,9 +22,56 @@ type ProblemForm struct {
 	Difficulty string `json:"difficulty" db:"difficulty"`
 	Keywords   string `json:"keywords" db:"keywords"`
 }
+type UserForm struct {
+	Page     int    `json:"page" db:"page"`
+	Offset   int    `json:"offset" db:"offset"`
+	Limit    int    `json:"limit" db:"limit"`
+	Keywords string `json:"keywords" db:"keywords"`
+	Type     int    `json:"type" db:"type"`
+}
+type UserBrief struct {
+	Id            int64  `json:"id" db:"id"`
+	Type          int    `json:"type" db:"type"`
+	Enabled       bool   `json:"enabled" db:"enabled"`
+	Username      string `json:"username" db:"username"`
+	Email         string `json:"email" db:"email"`
+	CreateTime    string `json:"createTime" db:"create_time"`
+	LastLoginTime string `json:"lastLoginTime" db:"last_login_time"`
+	IconPath      string `json:"iconPath" db:"icon_path"`
+	RealName      string `json:"realName" db:"real_name"`
+}
+type UserDetail struct {
+	Id        int64  `json:"id" db:"id"`
+	Type      int    `json:"type" db:"type"`
+	Username  string `json:"username" db:"username"`
+	Email     string `json:"email" db:"email"`
+	RealName  string `json:"realName" db:"real_name"`
+	Signature string `json:"signature" db:"signature"`
+	School    string `json:"school" db:"school"`
+	Blog      string `json:"blog" db:"blog"`
+	IconPath  string `json:"iconPath" db:"icon_path"`
+	Major     string `json:"major" db:"major"`
+	Github    string `json:"github" db:"github"`
+}
+
+type UserDetail2 struct {
+	Id        int64  `json:"id" db:"id"`
+	Type      int    `json:"type" db:"type"`
+	Username  string `json:"username" db:"username"`
+	Password  string `json:"password" db:"password"`
+	Email     string `json:"email" db:"email"`
+	RealName  string `json:"realName" db:"real_name"`
+	Signature string `json:"signature" db:"signature"`
+	IconPath  string `json:"iconPath" db:"icon_path"`
+	School    string `json:"school" db:"school"`
+	Blog      string `json:"blog" db:"blog"`
+	Major     string `json:"major" db:"major"`
+	Github    string `json:"github" db:"github"`
+}
+
 type PracticeForm struct {
 	Page       int    `json:"page" db:"page"`
-	Tid        int    ` json:"tid" db:"tid"`
+	Tid        int64  ` json:"tid" db:"tid"`
 	Offset     int    `json:"offset" db:"offset"`
 	Limit      int    `json:"limit" db:"limit"`
 	Difficulty string `json:"difficulty" db:"difficulty"`
@@ -32,7 +79,7 @@ type PracticeForm struct {
 }
 type PracticeBrief struct {
 	Id    int64  `json:"id" db:"id"`
-	Cid   int    `json:"cid" db:"cid"`
+	Cid   int64  `json:"cid" db:"cid"`
 	Ref   string `json:"ref" db:"ref"`
 	Title string `json:"title" db:"title"`
 	// Description string             `json:"description" db:"description"`
@@ -42,8 +89,8 @@ type PracticeBrief struct {
 }
 type Practice struct {
 	Visible           bool   `json:"visible" db:"visible"`
-	Id                int    `json:"id" db:"id"`
-	Cid               int    `json:"cid" db:"cid"`
+	Id                int64  `json:"id" db:"id"`
+	Cid               int64  `json:"cid" db:"cid"`
 	MemoryLimit       int    `json:"memoryLimit" db:"memory_limit"`
 	CpuTimeLimit      int    `json:"cpuTimeLimit" db:"cpu_time_limit"`
 	RealTimeLimit     int    `json:"realTimeLimit" db:"real_time_limit"`
@@ -65,15 +112,15 @@ type Practice struct {
 	Statistic   *PracticeStatistic `json:"statistic"`
 }
 type Id struct {
-	Id int `json:"id"`
+	Id int64 `json:"id"`
 }
 type Id2 struct {
-	Cid int   `json:"cid"`
+	Cid int64 `json:"cid"`
 	Pid int64 `json:"pid"`
 }
 type PracticeSubStat struct {
-	Id          int    `json:"id" db:"id"`
-	Uid         int    `json:"uid" db:"uid"`
+	Id          int64  `json:"id" db:"id"`
+	Uid         int64  `json:"uid" db:"uid"`
 	Pid         int64  `json:"pid" db:"pid"`
 	TotalScore  int    `json:"totalScore" db:"total_score"`
 	Language    string `json:"language" db:"language"`
@@ -92,7 +139,7 @@ type OperationForm struct {
 	RealMemory     int
 	Score          int
 	// Mode           int // 1:OI 2:ACM
-	PcId int // Problem case Id
+	PcId int64 // Problem case Id
 	// SmId           int // Submission Id
 	// Cid            int // Contest Id
 	Language     string
@@ -106,15 +153,15 @@ type OperationForm struct {
 	Flag         string
 }
 type SubmitForm struct {
-	Cid      int    `json:"cid" db:"cid"` // Contest Id
-	Sid      int    `json:"sid" db:"sid"` // Submission Id
-	Uid      int    `json:"uid" db:"uid"` // User Id
+	Cid      int64  `json:"cid" db:"cid"` // Contest Id
+	Sid      int64  `json:"sid" db:"sid"` // Submission Id
+	Uid      int64  `json:"uid" db:"uid"` // User Id
 	Pid      int64  `json:"pid" db:"pid"` // Problem Id
 	Language string `json:"language" db:"language"`
 	Code     string `json:"code" db:"code"`
 }
 type ContestBrief struct {
-	Id        int    `json:"id" db:"id"`
+	Id        int64  `json:"id" db:"id"`
 	Title     string `json:"title" db:"title"`
 	Rule      string `json:"rule" db:"rule"`
 	StartTime string `json:"startTime" db:"start_time"`
@@ -122,8 +169,8 @@ type ContestBrief struct {
 	Now       string `json:"now"`
 }
 type ContestDetail struct {
-	Id          int    `json:"id" db:"id"`
-	Cid         int    `json:"cid" db:"cid"`
+	Id          int64  `json:"id" db:"id"`
+	Cid         int64  `json:"cid" db:"cid"`
 	PunishTime  int    `json:"punishTime" db:"punish_time"`
 	Title       string `json:"title" db:"title"`
 	Description string `json:"description" db:"description"`
@@ -134,7 +181,7 @@ type ContestDetail struct {
 	CreatorName string `json:"creatorName" db:"creatorName"`
 }
 type ContestForm struct {
-	Cid      int    `json:"cid" db:"cid"`
+	Cid      int64  `json:"cid" db:"cid"`
 	Page     int    `json:"page" db:"page"`
 	Rule     string `json:"rule" db:"rule"`
 	Status   int    `json:"status" db:"status"`
@@ -143,18 +190,18 @@ type ContestForm struct {
 	Limit    int    `json:"limit" db:"limit"`
 }
 type ContestQualifyForm struct {
-	Id       int    `json:"id"`
+	Id       int64  `json:"id"`
 	Password string `json:"password"`
 }
 type CtsPbBrief struct {
-	Id        int               `json:"id" db:"id"`
+	Id        int64             `json:"id" db:"id"`
 	Ref       string            `json:"ref" db:"ref"`
 	Title     string            `json:"title" db:"title"`
 	Statistic *ContestStatistic `json:"statistic"`
 }
 type ContestProblem struct {
-	Id                int    `json:"id" db:"id"`
-	Cid               int    `json:"cid" db:"cid"`
+	Id                int64  `json:"id" db:"id"`
+	Cid               int64  `json:"cid" db:"cid"`
 	MemoryLimit       int    `json:"memoryLimit" db:"memory_limit"`
 	CpuTimeLimit      int    `json:"cpuTimeLimit" db:"cpu_time_limit"`
 	RealTimeLimit     int    `json:"realTimeLimit" db:"real_time_limit"`
@@ -177,21 +224,21 @@ type ContestProblem struct {
 }
 type ContestCaseResult struct {
 	CpuTime     int    `json:"cpuTime" db:"cpu_time"`
-	Csmid       int    `json:"csmid" db:"csmid"`
+	Csmid       int64  `json:"csmid" db:"csmid"`
 	ErrorOutput string `json:"errorOutput" db:"error_output"`
 	Flag        string `json:"flag" db:"flag"`
-	Id          int    `json:"id" db:"id"`
-	Pcaseid     int    `json:"pcaseid" db:"pcaseid"`
+	Id          int64  `json:"id" db:"id"`
+	Pcaseid     int64  `json:"pcaseid" db:"pcaseid"`
 	RealMemory  int    `json:"realMemory" db:"real_memory"`
 	RealOutput  string `json:"realOutput" db:"real_output"`
 	RealTime    int    `json:"realTime" db:"real_time"`
 	Score       int    `json:"score" db:"score"`
-	Uid         int    `json:"uid" db:"uid"`
+	Uid         int64  `json:"uid" db:"uid"`
 }
 type ContestSubStat struct {
-	Id          int    `json:"id" db:"id"`
-	Uid         int    `json:"uid" db:"uid"`
-	Cid         int    `json:"cid" db:"cid"`
+	Id          int64  `json:"id" db:"id"`
+	Uid         int64  `json:"uid" db:"uid"`
+	Cid         int64  `json:"cid" db:"cid"`
 	Pid         int64  `json:"pid" db:"pid"`
 	TotalScore  int    `json:"totalScore" db:"total_score"`
 	Language    string `json:"language" db:"language"`
@@ -202,8 +249,8 @@ type ContestSubStat struct {
 	Username    string `json:"username" db:"username"`
 }
 type OIRank struct {
-	Cid            int        `json:"cid" db:"cid"`
-	Uid            int        `json:"uid" db:"uid"`
+	Cid            int64      `json:"cid" db:"cid"`
+	Uid            int64      `json:"uid" db:"uid"`
 	Username       string     `json:"username" db:"username"`
 	TotalScore     int        `json:"totalScore" db:"total_score"`
 	LastSubmitTime string     `json:"lastSubmitTime" db:"last_submit_time"`
@@ -216,8 +263,8 @@ type OIDetail struct {
 
 type ACMRank struct {
 	Id        int         `json:"id" db:"id"`
-	Cid       int         `json:"cid" db:"cid"`
-	Uid       int         `json:"uid" db:"uid"`
+	Cid       int64       `json:"cid" db:"cid"`
+	Uid       int64       `json:"uid" db:"uid"`
 	Total     int         `json:"total" db:"total"`
 	AC        int         `json:"ac" db:"ac"`
 	TotalTime int         `json:"totalTime" db:"total_time"`
@@ -226,11 +273,11 @@ type ACMRank struct {
 }
 
 type ACMDetail struct {
-	Id             int   `json:"id" db:"id"`
-	Cid            int   `json:"cid" db:"cid"`
-	Uid            int   `json:"uid" db:"uid"`
+	Id             int64 `json:"id" db:"id"`
+	Cid            int64 `json:"cid" db:"cid"`
+	Uid            int64 `json:"uid" db:"uid"`
 	Pid            int64 `json:"pid" db:"pid"`
-	LastSubmitTime int   `json:"lastSubmitTime" db:"last_submit_time"`
+	LastSubmitTime int64 `json:"lastSubmitTime" db:"last_submit_time"`
 	Total          int   `json:"total" db:"total"`
 	AC             bool  `json:"ac" db:"ac"`
 	FirstAC        bool  `json:"firstAC" db:"first_ac"`
@@ -238,18 +285,18 @@ type ACMDetail struct {
 
 // ------------------------------------------------------------------------------
 type ContestSubmission struct {
-	Cid        int    `json:"cid" db:"cid"`
-	Id         int    `json:"id" db:"id"`
+	Cid        int64  `json:"cid" db:"cid"`
+	Id         int64  `json:"id" db:"id"`
 	Pid        int64  `json:"pid" db:"pid"`
 	Code       string `json:"code" db:"code"`
 	TotalScore int    `json:"totalScore" db:"total_score"`
-	Uid        int    `json:"uid" db:"uid"`
+	Uid        int64  `json:"uid" db:"uid"`
 	Language   string `json:"language" db:"language"`
 	Status     string `json:"status" db:"status"`
 	SubmitTime string `json:"submitTime" db:"submit_time"`
 }
 type Administrator struct {
-	Id            int    `json:"id" db:"id"`
+	Id            int64  `json:"id" db:"id"`
 	Name          string `json:"name" db:"name"`
 	Account       string `json:"account" db:"account"`
 	Password      string `json:"password" db:"password"`
@@ -257,7 +304,8 @@ type Administrator struct {
 	LastLoginTime string `json:"lastLoginTime" db:"last_login_time"`
 }
 type Contest struct {
-	Id             int    `json:"id" db:"id"`
+	Id             int64  `json:"id" db:"id"`
+	Cid            int64  `json:"cid" db:"cid"`
 	Title          string `json:"title" db:"title"`
 	Description    string `json:"description" db:"description"`
 	Rule           string `json:"rule" db:"rule"`
@@ -265,10 +313,10 @@ type Contest struct {
 	EndTime        string `json:"endTime" db:"end_time"`
 	CreateTime     string `json:"createTime" db:"create_time"`
 	LastUpdateTime string `json:"lastUpdateTime" db:"last_update_time"`
-	Cid            int    `json:"cid" db:"cid"`
 	Password       string `json:"password" db:"password"`
 }
 type ContestStatistic struct {
+	Pid   int64 `json:"pid" db:"pid"`
 	Total int   `json:"total" db:"total"`
 	Ac    int   `json:"ac" db:"ac"`
 	Ce    int   `json:"ce" db:"ce"`
@@ -276,20 +324,19 @@ type ContestStatistic struct {
 	Id    int   `json:"id" db:"id"`
 	Mle   int   `json:"mle" db:"mle"`
 	Ole   int   `json:"ole" db:"ole"`
-	Pid   int64 `json:"pid" db:"pid"`
 	Re    int   `json:"re" db:"re"`
 	Tle   int   `json:"tle" db:"tle"`
 	Wa    int   `json:"wa" db:"wa"`
 }
 type Language struct {
-	Id   int    `json:"id" db:"id"`
+	Id   int64  `json:"id" db:"id"`
 	Name string `json:"name" db:"name"`
 }
 type PracticeCaseResult struct {
-	Id          int    `json:"id" db:"id"`
-	Psmid       int    `json:"psmid" db:"psmid"`
-	Pcaseid     int    `json:"pcaseid" db:"pcaseid"`
-	Uid         int    `json:"uid" db:"uid"`
+	Id          int64  `json:"id" db:"id"`
+	Psmid       int64  `json:"psmid" db:"psmid"`
+	Pcaseid     int64  `json:"pcaseid" db:"pcaseid"`
+	Uid         int64  `json:"uid" db:"uid"`
 	Flag        string `json:"flag" db:"flag"`
 	CpuTime     int    `json:"cpuTime" db:"cpu_time"`
 	RealTime    int    `json:"realTime" db:"real_time"`
@@ -299,20 +346,20 @@ type PracticeCaseResult struct {
 	Score       int    `json:"score" db:"score"`
 }
 type PracticeStatistic struct {
-	Id    int `json:"id" db:"id"`
-	Pbid  int `json:"pbid" db:"pbid"`
-	Total int `json:"total" db:"total"`
-	Ac    int `json:"ac" db:"ac"`
-	Wa    int `json:"wa" db:"wa"`
-	Re    int `json:"re" db:"re"`
-	Tle   int `json:"tle" db:"tle"`
-	Mle   int `json:"mle" db:"mle"`
-	Ce    int `json:"ce" db:"ce"`
-	Ole   int `json:"ole" db:"ole"`
+	Id    int64 `json:"id" db:"id"`
+	Pbid  int64 `json:"pbid" db:"pbid"`
+	Total int   `json:"total" db:"total"`
+	Ac    int   `json:"ac" db:"ac"`
+	Wa    int   `json:"wa" db:"wa"`
+	Re    int   `json:"re" db:"re"`
+	Tle   int   `json:"tle" db:"tle"`
+	Mle   int   `json:"mle" db:"mle"`
+	Ce    int   `json:"ce" db:"ce"`
+	Ole   int   `json:"ole" db:"ole"`
 }
 type PracticeSubmission struct {
-	Id         int    `json:"id" db:"id"`
-	Uid        int    `json:"uid" db:"uid"`
+	Id         int64  `json:"id" db:"id"`
+	Uid        int64  `json:"uid" db:"uid"`
 	Pid        int64  `json:"pid" db:"pid"`
 	Language   string `json:"language" db:"language"`
 	Status     string `json:"status" db:"status"`
@@ -323,7 +370,7 @@ type PracticeSubmission struct {
 type ProblemBrief struct {
 	Visible        bool   `json:"visible" db:"visible"`
 	Id             int64  `json:"id" db:"id"`
-	Cid            int    `json:"cid" db:"cid"`
+	Cid            int64  `json:"cid" db:"cid"`
 	Ref            string `json:"ref" db:"ref"`
 	Title          string `json:"title" db:"title"`
 	Difficulty     string `json:"difficulty" db:"difficulty"`
@@ -332,8 +379,8 @@ type ProblemBrief struct {
 	Tags           []Tag  `json:"tags"`
 }
 type Problem struct {
-	Id                int             `json:"id" db:"id"`
-	Cid               int             `json:"cid" db:"cid"`
+	Id                int64           `json:"id" db:"id"`
+	Cid               int64           `json:"cid" db:"cid"`
 	Ref               string          `json:"ref" db:"ref"`
 	Title             string          `json:"title" db:"title"`
 	Description       string          `json:"description" db:"description"`
@@ -354,7 +401,7 @@ type Problem struct {
 	Tag               []Tag           `json:"tag"`
 }
 type ProblemCase struct {
-	Id     int    `json:"id" db:"id"`
+	Id     int64  `json:"id" db:"id"`
 	Pid    int64  `json:"pid" db:"pid"`
 	Input  string `json:"input" db:"input"`
 	Output string `json:"output" db:"output"`
@@ -363,7 +410,7 @@ type ProblemCase struct {
 type ProblemLanguage struct {
 	Id  int64 `json:"id" db:"id"`
 	Pid int64 `json:"pid" db:"pid"`
-	Lid int   `json:"lid" db:"lid"`
+	Lid int64 `json:"lid" db:"lid"`
 }
 type ProblemSample struct {
 	Id     int64  `json:"id" db:"id"`
@@ -372,24 +419,41 @@ type ProblemSample struct {
 	Output string `json:"output" db:"output"`
 }
 type ProblemTag struct {
-	Id  int   `json:"id" db:"id"`
-	Tid int   `json:"tid" db:"tid"`
+	Id  int64 `json:"id" db:"id"`
+	Tid int64 `json:"tid" db:"tid"`
 	Pid int64 `json:"pid" db:"pid"`
 }
 type Progress struct {
-	Id       int    `json:"id" db:"id"`
+	Id       int64  `json:"id" db:"id"`
 	Name     string `json:"name" db:"name"`
 	Progress int    `json:"progress" db:"progress"`
 }
 type Tag struct {
-	Id   int    `json:"id" db:"id"`
+	Id   int64  `json:"id" db:"id"`
 	Name string `json:"name" db:"name"`
 }
+type UserToken struct {
+	Enabled  bool   `json:"enabled" db:"enabled"`
+	Type     int    `json:"type" db:"type"`
+	Id       int64  `json:"id" db:"id"`
+	Username string `json:"username" db:"username"`
+	IconPath string `json:"iconPath" db:"icon_path"`
+	RealName string `json:"realName" db:"real_name"`
+}
 type User struct {
-	Id            int    `json:"id" db:"id"`
+	Id            int64  `json:"id" db:"id"`
 	Username      string `json:"username" db:"username"`
 	Password      string `json:"password" db:"password"`
 	Email         string `json:"email" db:"email"`
 	CreateTime    string `json:"createTime" db:"create_time"`
 	LastLoginTime string `json:"lastLoginTime" db:"last_login_time"`
+	Type          int    `json:"type" db:"type"`
+	Enabled       bool   `json:"enabled" db:"enabled"`
+	IconPath      string `json:"iconPath" db:"icon_path"`
+	RealName      string `json:"realName" db:"real_name"`
+	Signature     string `json:"signature" db:"signature"`
+	School        string `json:"school" db:"school"`
+	Blog          string `json:"blog" db:"blog"`
+	Major         string `json:"major" db:"major"`
+	Github        string `json:"github" db:"github"`
 }

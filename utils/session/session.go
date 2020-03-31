@@ -34,7 +34,7 @@ var Pool = map[string]Session{}
 var PoolLock sync.RWMutex
 
 func init() {
-	gob.Register(dto.User{})
+	gob.Register(dto.UserToken{})
 	gob.Register(sync.RWMutex{})
 	LoadSession()
 	err := LoadConfig()
@@ -103,6 +103,48 @@ func Set(c iris.Context, key string, value interface{}) error {
 	return nil
 }
 
+func SetInt(c iris.Context, key string, value int) error {
+	s, err := GetSession(c)
+	if err != nil {
+		return err
+	}
+	s.Set(key, value)
+	return nil
+}
+
+func GetInt(c iris.Context, key string) (int, error) {
+	s, err := GetSession(c)
+	if err != nil {
+		return 0, err
+	}
+	i, ok := s.Get(key).(int)
+	if !ok {
+		return 0, errors.New("can't convert interface to int")
+	}
+	return i, err
+}
+
+func SetInt64(c iris.Context, key string, value int64) error {
+	s, err := GetSession(c)
+	if err != nil {
+		return err
+	}
+	s.Set(key, value)
+	return nil
+}
+
+func GetInt64(c iris.Context, key string) (int64, error) {
+	s, err := GetSession(c)
+	if err != nil {
+		return 0, err
+	}
+	i, ok := s.Get(key).(int64)
+	if !ok {
+		return 0, errors.New("can't convert interface to int64")
+	}
+	return i, err
+}
+
 func (s Session) Get(str string) interface{} {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
@@ -120,6 +162,19 @@ func (s Session) Remove(str string) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	delete(s.Data, str)
+}
+
+func DelByInt64(str string, id int64) {
+	PoolLock.Lock()
+	defer PoolLock.Unlock()
+	for k := range Pool {
+		i, ok := Pool[k].Get(str).(int64)
+		if ok {
+			if i == id {
+				delete(Pool, k)
+			}
+		}
+	}
 }
 
 func regularTask() {

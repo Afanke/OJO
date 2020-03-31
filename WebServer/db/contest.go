@@ -83,7 +83,7 @@ func (Contest) GetCount(form *dto.ContestForm) (int, error) {
 	return count, err
 }
 
-func (Contest) GetDetail(id int) (*dto.ContestDetail, error) {
+func (Contest) GetDetail(id int64) (*dto.ContestDetail, error) {
 	var data dto.ContestDetail
 	err := db.Get(&data, "select id, title, description, rule, start_time, end_time, cid,punish_time from contest where id=?", id)
 	if err != nil {
@@ -100,24 +100,24 @@ func (Contest) GetDetail(id int) (*dto.ContestDetail, error) {
 	return &data, nil
 }
 
-func (Contest) GetQualification(uid, cid int) (bool, error) {
+func (Contest) GetQualification(uid, cid int64) (bool, error) {
 	var ok int
 	err := db.Get(&ok, "select count(*) from ojo.contest_user where uid=? and cid=? limit 1", uid, cid)
 	return ok == 1, err
 }
 
-func (Contest) AddQualification(uid, cid int) error {
+func (Contest) AddQualification(uid, cid int64) error {
 	_, err := db.Exec("insert into ojo.contest_user(cid, uid) values(?,?)", cid, uid)
 	return err
 }
 
-func (Contest) GetPassword(cid int) (string, error) {
+func (Contest) GetPassword(cid int64) (string, error) {
 	var res string
 	err := db.Get(&res, "select password from ojo.contest where id=?", cid)
 	return res, err
 }
 
-func (Contest) GetStartTime(cid int) (time.Time, error) {
+func (Contest) GetStartTime(cid int64) (time.Time, error) {
 	var res string
 	err := db.Get(&res, "select start_time from ojo.contest where id=?", cid)
 	if err != nil {
@@ -132,7 +132,7 @@ func (Contest) GetStartTime(cid int) (time.Time, error) {
 	return data, err
 }
 
-func (Contest) GetAllProblem(cid int) ([]dto.CtsPbBrief, error) {
+func (Contest) GetAllProblem(cid int64) ([]dto.CtsPbBrief, error) {
 	var sql = `select p.id,p.title,p.ref from contest_problem cp,problem p where cp.pid=p.id and cp.cid=?`
 	var data []dto.CtsPbBrief
 	err := db.Select(&data, sql, cid)
@@ -141,7 +141,7 @@ func (Contest) GetAllProblem(cid int) ([]dto.CtsPbBrief, error) {
 		return nil, err
 	}
 	for i, l := 0, len(data); i < l; i++ {
-		stat, err := cts.GetStatistic(cid, int64(data[i].Id))
+		stat, err := cts.GetStatistic(cid, data[i].Id)
 		if err != nil {
 			log.Warn("error:%v\n", err)
 			return nil, err
@@ -151,20 +151,20 @@ func (Contest) GetAllProblem(cid int) ([]dto.CtsPbBrief, error) {
 	return data, nil
 }
 
-func (Contest) GetAllProblemName(cid int) ([]dto.CtsPbBrief, error) {
+func (Contest) GetAllProblemName(cid int64) ([]dto.CtsPbBrief, error) {
 	var sql = `select p.id,p.title,p.ref from contest_problem cp,problem p where cp.pid=p.id and cp.cid=? order by p.ref`
 	var data []dto.CtsPbBrief
 	err := db.Select(&data, sql, cid)
 	return data, err
 }
 
-func (Contest) GetStatistic(cid int, pid int64) (*dto.ContestStatistic, error) {
+func (Contest) GetStatistic(cid, pid int64) (*dto.ContestStatistic, error) {
 	var stat dto.ContestStatistic
 	err := db.Get(&stat, "select * from ojo.contest_statistic where cid=? and pid=? limit 1", cid, pid)
 	return &stat, err
 }
 
-func (Contest) GetProblemDetail(cid int, pid int64) (*dto.ContestProblem, error) {
+func (Contest) GetProblemDetail(cid, pid int64) (*dto.ContestProblem, error) {
 	var detail dto.ContestProblem
 	err := db.Get(&detail, `select id, cid, ref, title, description, input_description, output_description, hint, create_time, last_update_time, cpu_time_limit, memory_limit, difficulty, real_time_limit, source from ojo.problem p where p.id=? limit 1`, pid)
 	if err != nil {
@@ -204,13 +204,13 @@ func (Contest) GetProblemDetail(cid int, pid int64) (*dto.ContestProblem, error)
 	return &detail, err
 }
 
-func (Contest) IsMatched(cid int, pid int64) (bool, error) {
+func (Contest) IsMatched(cid, pid int64) (bool, error) {
 	var ok int
 	err := db.Get(&ok, "select count(*) from ojo.contest_problem where cid=? and pid=? limit 1", cid, pid)
 	return ok == 1, err
 }
 
-func (Contest) GetStat(psmid int) (*dto.ContestSubStat, error) {
+func (Contest) GetStat(psmid int64) (*dto.ContestSubStat, error) {
 	var s dto.ContestSubStat
 	err := db.Get(&s, "select * from contest_submission ps where ps.id=? limit 1", psmid)
 	if err != nil {
@@ -232,7 +232,7 @@ func (Contest) GetStat(psmid int) (*dto.ContestSubStat, error) {
 	return &s, nil
 }
 
-func (Contest) GetSubmission(uid int, pid int64, cid int) (*dto.ContestSubmission, error) {
+func (Contest) GetSubmission(uid, pid, cid int64) (*dto.ContestSubmission, error) {
 	var s dto.ContestSubmission
 	err := db.Get(&s, "select * from contest_submission cs where cs.uid=? and cs.pid=? and cs.cid=? order by cs.submit_time desc limit 1", uid, pid, cid)
 	return &s, err
@@ -280,7 +280,7 @@ func (Contest) GetOIRank(form dto.ContestForm) ([]dto.OIRank, error) {
 	return res, err
 }
 
-func (Contest) GetOIRankCount(cid int) (int, error) {
+func (Contest) GetOIRankCount(cid int64) (int, error) {
 	// When I wrote this code, only God and I understand what it did
 	// Now only God knows
 	sql := `select count(*)
@@ -298,7 +298,7 @@ func (Contest) GetOIRankCount(cid int) (int, error) {
 	return count, err
 }
 
-func (Contest) GetOIDetail(cid, uid int) ([]dto.OIDetail, error) {
+func (Contest) GetOIDetail(cid, uid int64) ([]dto.OIDetail, error) {
 	sql := `select cs.pid,max(total_score) max_score
 		    from ojo.contest_submission cs,ojo.problem p
 		    where cs.cid=? and cs.uid=? and cs.pid=p.id
@@ -328,7 +328,7 @@ func (Contest) Submit(form dto.SubmitForm) (*dto.ContestSubmission, error) {
 	return &res, err
 }
 
-func (Contest) UpdateStat(cid int, pid int64, total, ac, wa, ce, mle, re, tle, ole int) error {
+func (Contest) UpdateStat(cid, pid int64, total, ac, wa, ce, mle, re, tle, ole int) error {
 	var sql = `  update ojo.contest_statistic set 
                 total =total+ ?,
                 ac =ac+ ?,
@@ -343,7 +343,7 @@ func (Contest) UpdateStat(cid int, pid int64, total, ac, wa, ce, mle, re, tle, o
 	return err
 }
 
-func (Contest) SetISE(csmid int) error {
+func (Contest) SetISE(csmid int64) error {
 	_, err := db.Exec("update ojo.contest_submission set status='ISE' where id=?", csmid)
 	if err != nil {
 		log.Warn("error:%v", err)
@@ -351,7 +351,7 @@ func (Contest) SetISE(csmid int) error {
 	return err
 }
 
-func (Contest) UpdateFlagAndScore(csmid, score int, flag string) error {
+func (Contest) UpdateFlagAndScore(csmid int64, score int, flag string) error {
 	var sql = `  update ojo.contest_submission set 
                 status =?,
                 total_score = ?
@@ -360,7 +360,7 @@ func (Contest) UpdateFlagAndScore(csmid, score int, flag string) error {
 	return err
 }
 
-func (Contest) InsertCaseRes(csmid, uid int, form dto.OperationForm) error {
+func (Contest) InsertCaseRes(csmid, uid int64, form dto.OperationForm) error {
 	var sql = `  insert into ojo.contest_case_result
   (csmid,pcaseid,uid,flag,cpu_time,real_time,real_memory,real_output,error_output,score)
   				values(?,?,?,?,?,?,?,?,?,?)`
@@ -368,13 +368,13 @@ func (Contest) InsertCaseRes(csmid, uid int, form dto.OperationForm) error {
 		form.ActualRealTime, form.RealMemory, form.RealOutput, form.ErrorOutput, form.Score)
 	return err
 }
-func (Contest) GetCaseRes(csmid int) ([]dto.ContestCaseResult, error) {
+func (Contest) GetCaseRes(csmid int64) ([]dto.ContestCaseResult, error) {
 	var res []dto.ContestCaseResult
 	err := db.Select(&res, "select * from ojo.contest_case_result where csmid=?", csmid)
 	return res, err
 }
 
-func (Contest) GetAllStat(cid, uid, offset, limit int) ([]dto.ContestSubStat, error) {
+func (Contest) GetAllStat(cid, uid int64, offset, limit int) ([]dto.ContestSubStat, error) {
 	var res []dto.ContestSubStat
 	err := db.Select(&res, "select cs.id,cs.uid,cs.cid,cs.pid,cs.total_score,cs.language,cs.status,cs.submit_time from contest_submission cs where cs.cid=? and cs.uid=? order by cs.submit_time desc limit ?,?", cid, uid, offset, limit)
 	if err != nil {
@@ -392,7 +392,7 @@ func (Contest) GetAllStat(cid, uid, offset, limit int) ([]dto.ContestSubStat, er
 	return res, nil
 }
 
-func (Contest) GetAllStatCount(cid, uid int) (int, error) {
+func (Contest) GetAllStatCount(cid, uid int64) (int, error) {
 	var count int
 	err := db.Get(&count, "select count(*) from contest_submission cs where cs.cid=? and cs.uid=?", cid, uid)
 	if err != nil {
@@ -402,7 +402,7 @@ func (Contest) GetAllStatCount(cid, uid int) (int, error) {
 	return count, nil
 }
 
-func (Contest) GetTime(id int) (*dto.ContestDetail, error) {
+func (Contest) GetTime(id int64) (*dto.ContestDetail, error) {
 	var data dto.ContestDetail
 	err := db.Get(&data, "select id, start_time, end_time from contest where id=?", id)
 	if err != nil {
@@ -413,7 +413,7 @@ func (Contest) GetTime(id int) (*dto.ContestDetail, error) {
 	return &data, nil
 }
 
-func (Contest) GetOITop10(cid int) ([]dto.OIRank, error) {
+func (Contest) GetOITop10(cid int64) ([]dto.OIRank, error) {
 	// When I wrote this code, only God and I understand what it did
 	// Now only God knows
 	sql := `select a.cid,a.uid,sum(a.max_score) total_score,max(a.submit_time) last_submit_time 
@@ -442,7 +442,7 @@ func (Contest) GetOITop10(cid int) ([]dto.OIRank, error) {
 	return res, err
 }
 
-func (Contest) GetACMTop10(cid int) ([]dto.ACMRank, error) {
+func (Contest) GetACMTop10(cid int64) ([]dto.ACMRank, error) {
 	// When I wrote this code, only God and I understand what it did
 	// Now only God knows
 	sql := `select * from ojo.contest_acm_overall where cid=? order by ac desc ,total_time limit 10 `
@@ -469,7 +469,7 @@ func (Contest) GetACMTop10(cid int) ([]dto.ACMRank, error) {
 	return res, err
 }
 
-func (Contest) GetACMDetail(cid, uid int) ([]dto.ACMDetail, error) {
+func (Contest) GetACMDetail(cid, uid int64) ([]dto.ACMDetail, error) {
 	sql := `select cad.*
 from ojo.contest_acm_detail cad,ojo.problem p
 where cad.cid=? and cad.uid=? and cad.pid=p.id
@@ -511,7 +511,7 @@ func (Contest) GetACMRank(form dto.ContestForm) ([]dto.ACMRank, error) {
 	return res, err
 }
 
-func (Contest) GetACMRankCount(cid int) (int, error) {
+func (Contest) GetACMRankCount(cid int64) (int, error) {
 	// When I wrote this code, only God and I understand what it did
 	// Now only God knows
 	sql := `select count(*) from ojo.contest_acm_overall where cid=? `
@@ -582,6 +582,7 @@ func (Contest) HasACMFirstDetail(form *dto.SubmitForm) (bool, error) {
 	return count == 0, err
 }
 
+// 根据Cid获得ACM提交错误的次数
 func (Contest) GetACMWrong(form *dto.SubmitForm) (int, error) {
 	sql := "select a.total-a.ac from (select total,ac from ojo.contest_acm_overall where cid=? and uid=?) a"
 	var count int

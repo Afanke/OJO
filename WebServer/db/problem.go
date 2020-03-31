@@ -108,9 +108,9 @@ func (Problem) GetSample(pbid int64) ([]dto.ProblemSample, error) {
 	return samples, err
 }
 
-func (Problem) GetCreatorName(creatorId int) (string, error) {
+func (Problem) GetCreatorName(creatorId int64) (string, error) {
 	var s string
-	err := db.Get(&s, "select a.name from administrator a where a.id=? limit 1", creatorId)
+	err := db.Get(&s, "select username from ojo.user  where id=? limit 1", creatorId)
 	return s, err
 }
 
@@ -239,7 +239,7 @@ func (Problem) InsertProblemCase(tx *sql.Tx, pc *dto.ProblemCase) error {
 	return err
 }
 
-func (Problem) InsertProblemLanguage(tx *sql.Tx, pid int64, lid int) error {
+func (Problem) InsertProblemLanguage(tx *sql.Tx, pid, lid int64) error {
 	var s = "insert into ojo.problem_language(pid, lid) VALUES (?,?)"
 	_, err := tx.Exec(s, pid, lid)
 	return err
@@ -251,20 +251,26 @@ func (Problem) InsertProblemSample(tx *sql.Tx, ps *dto.ProblemSample) error {
 	return err
 }
 
-func (Problem) InsertProblemTag(tx *sql.Tx, pid int64, tid int) error {
+func (Problem) InsertProblemTag(tx *sql.Tx, pid, tid int64) error {
 	var s = "insert into ojo.problem_tag(tid, pid) VALUES (?,?)"
 	_, err := tx.Exec(s, tid, pid)
 	return err
 }
 
-func (Problem) SetVisibleTrue(id int) error {
+func (Problem) SetVisibleTrue(id int64) error {
 	s := "update ojo.problem set visible=true where id=? limit 1"
 	_, err := db.Exec(s, id)
 	return err
 }
 
-func (Problem) SetVisibleFalse(id int) error {
+func (Problem) SetVisibleFalse(id int64) error {
 	s := "update ojo.problem set visible=false where id=? limit 1"
 	_, err := db.Exec(s, id)
 	return err
+}
+
+func (Problem) GetCreatorId(pid int64) (int64, error) {
+	var cid int64
+	err := db.Get(&cid, "select cid from ojo.problem where id=?", pid)
+	return cid, err
 }

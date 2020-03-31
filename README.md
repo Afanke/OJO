@@ -1,36 +1,32 @@
 # OJO 
 ![](https://img.shields.io/badge/GO-1.14%2B-9cf)   ![](https://img.shields.io/badge/GO%20Iris-v11-blue)  ![](https://img.shields.io/badge/Vue-2-brightgreen) 
 
-不知道写什么，先写一下开发日志吧
+> An Online Judge System based on Go and Vue
 
-### 开发日志
+> This project is another implementation of [QingdaoU/OnlineJudge](https://github.com/QingdaoU/OnlineJudge), with the only user [SECE](https://sece.sysu.edu.cn/)
+                                                           
+> Again, I want to show my respect to [QingdaoU/OnlineJudge](https://github.com/QingdaoU/OnlineJudge), I leaned a lot with this project                                                              
 
-##### 2020-03-26 2020-03-27
-    FINISHED:优化表结构
-    FINISHED:完成添加Problem功能
+> If you know Go or Vue and want to develop with me, please contact me
+### Features
+* Separated frontend, webServer and JudgeServer
+* Fast! With the async programing language Go
+* Easy! Vue with ElementUi and Go with Iris are easy to learn and develop
+* ACM/OI rule support
+* Amazing charting and visualization, the same as QingdaoU/OnlineJudge
+* delete some seldom used features and prepare to add other features 
+* Docker and MicroService support later
 
-##### 2020-03-24 2020-03-25
-    FINISHED:Session
-    FINISHED:LOG
-
-##### 2020-03-23
-    FINISHED:ACM表格展示
-    TODO:为Practice提供分钟内提交次数限制
-    TODO:为Contest提供提交次数限制
-    TODO:OI改造
-    TODO:整体Rank
-    TODO:添加Recommend Tags
-    TODO:Session持久化
-    TODO:实现Log库
-
-##### 2020-03-22
-    FINISHED：ACM折线图
-    TODO:ACM表格展示
-
-##### 2020-03-21
-    FINISHED:把项目上传github
-    FINISHED:ACM Logic
-    FINISHED:Mysql建表ACMRank
-    MAYTODO:重写WebServer与JudgeServer通信
-    TODO:前端ACMRank展示
+### Structure
+    OJO
+    |--Frontend       --Vue
+    |--WebServer      --Go
+    |--JudgeServer    --Go and C
+    |--utils          --some useful utils,such as session,log
+    |--config         --the config of Webserver
     
+### Installation
+Coming Soon(Late August)
+
+### Document
+Coming Soon(Late August)

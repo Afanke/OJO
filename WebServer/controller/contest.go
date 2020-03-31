@@ -108,14 +108,9 @@ func (Contest) Qualify(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	s, err := session.GetSession(c)
+	user, err := getUserToken(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	user, ok := s.Get("user").(dto.User)
-	if !ok {
-		c.JSON(&dto.Res{Error: errors.New("please login").Error(), Data: nil})
 		return
 	}
 	startTime, err := ctsdb.GetStartTime(form.Id)
@@ -145,7 +140,7 @@ func (Contest) Qualify(c iris.Context) {
 }
 
 // 判断Contest是否已经结束
-func (Contest) isOver(cid int) (bool, error) {
+func (Contest) isOver(cid int64) (bool, error) {
 	res, err := ctsdb.GetTime(cid)
 	if err != nil {
 		log.Warn("error:%v\n", err)
@@ -165,13 +160,13 @@ func (Contest) isOver(cid int) (bool, error) {
 }
 
 // 根据Session和cid比对用户是否具有Contest的访问权限
-func (Contest) isQualified(cid int, c iris.Context) (bool, *dto.User, error) {
+func (Contest) isQualified(cid int64, c iris.Context) (bool, *dto.UserToken, error) {
 	s, err := session.GetSession(c)
 	if err != nil {
 		log.Warn("error:%v\n", err)
 		return false, nil, err
 	}
-	user, ok := s.Get("user").(dto.User)
+	user, ok := s.Get("user").(dto.UserToken)
 	if !ok {
 		return false, nil, errors.New("please login")
 	}
@@ -677,7 +672,6 @@ func handleACM(contest *dto.ContestDetail, form *dto.SubmitForm) {
 		}
 	}
 	yes, err = ctsdb.HasACMDetail(form)
-	fmt.Println(4)
 	if err != nil {
 		log.Warn("error:%v", err)
 		_ = ctsdb.SetISE(form.Sid)
@@ -706,7 +700,6 @@ func handleACM(contest *dto.ContestDetail, form *dto.SubmitForm) {
 			return
 		}
 	}
-	fmt.Println(7)
 	score := 0
 	if flag == "AC" {
 		score = cts.countTotalScore(forms)
@@ -799,7 +792,7 @@ func (Contest) concludeFlag(forms []dto.OperationForm) string {
 	}
 }
 
-func (Contest) updateStatistic(cid int, pid int64, csmid, uid int, forms []dto.OperationForm) error {
+func (Contest) updateStatistic(cid, pid, csmid, uid int64, forms []dto.OperationForm) error {
 	var total = 0
 	var ac = 0
 	var wa = 0
