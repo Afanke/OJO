@@ -371,6 +371,7 @@ type ProblemBrief struct {
 	Visible        bool   `json:"visible" db:"visible"`
 	Id             int64  `json:"id" db:"id"`
 	Cid            int64  `json:"cid" db:"cid"`
+	CreatorName    string `json:"creatorName"`
 	Ref            string `json:"ref" db:"ref"`
 	Title          string `json:"title" db:"title"`
 	Difficulty     string `json:"difficulty" db:"difficulty"`

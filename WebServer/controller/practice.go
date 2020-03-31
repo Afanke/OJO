@@ -252,7 +252,7 @@ func (Practice) sendToJudge(forms []dto.OperationForm) ([]dto.OperationForm, err
 }
 
 func (Practice) prepareForms(subForm *dto.SubmitForm) ([]dto.OperationForm, error) {
-	cases, err := pbdb.GetPbCase(subForm.Pid)
+	cases, err := pbdb.GetCase(subForm.Pid)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err

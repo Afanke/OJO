@@ -101,7 +101,6 @@ func (User) Logout(c iris.Context) {
 	}
 	s.Remove("user")
 	c.JSON(&dto.Res{Error: "", Data: "success to log out"})
-
 }
 
 func (User) Register(c iris.Context) {
@@ -210,6 +209,16 @@ func (User) UpdateDetail(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
+	s, err := session.GetSessionByInt64("userid", form.Id)
+	if err == nil {
+		if token, ok := s.Get("user").(dto.UserToken); ok {
+			token.Type = form.Type
+			token.Username = form.Username
+			token.IconPath = form.IconPath
+			token.RealName = form.RealName
+			s.Set("user", token)
+		}
+	}
 	c.JSON(&dto.Res{Error: "", Data: "update user successfully"})
 }
 
@@ -302,7 +311,7 @@ func isSuperAdmin(c iris.Context) (*dto.UserToken, error) {
 	if user, ok := get.(dto.UserToken); !ok {
 		return nil, errors.New("not login in or not permitted")
 	} else {
-		if user.Type < 2 {
+		if user.Type < 3 {
 			return nil, errors.New("not permitted")
 		}
 		return &user, nil

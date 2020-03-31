@@ -13,7 +13,7 @@ var pb Problem
 
 var ProblemPageSize = 10
 
-func (Problem) GetPbCase(pid int64) ([]dto.ProblemCase, error) {
+func (Problem) GetCase(pid int64) ([]dto.ProblemCase, error) {
 	var res []dto.ProblemCase
 	err := db.Select(&res, "select * from problem_case where pid=?", pid)
 	return res, err
@@ -53,7 +53,13 @@ func (Problem) GetAll(form *dto.ProblemForm) ([]dto.ProblemBrief, error) {
 			log.Warn("error:%v", err)
 			return []dto.ProblemBrief{}, err
 		}
+		creatorName, err := pb.GetCreatorName(res.Cid)
+		if err != nil {
+			log.Warn("error:%v", err)
+			return []dto.ProblemBrief{}, err
+		}
 		res.Tags = tag
+		res.CreatorName = creatorName
 		rest = append(rest, res)
 	}
 	return rest, nil
@@ -83,6 +89,45 @@ func (Problem) GetProblem(id int64) (*dto.Problem, error) {
 	var res dto.Problem
 	err := db.Get(&res, `select * from ojo.problem p where p.id=? limit 1`, id)
 	return &res, err
+}
+
+func (Problem) GetDetail(id int64) (*dto.Problem, error) {
+	var detail dto.Problem
+	err := db.Get(&detail, `select id, cid,
+       ref, title, description, input_description,
+       output_description, hint, create_time,
+       last_update_time, cpu_time_limit, memory_limit,
+       difficulty, real_time_limit, source,
+       visible from ojo.problem p where p.id=? limit 1`, id)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	tags, err := pb.GetProblemTag(id)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	languages, err := pb.GetLanguage(id)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	samples, err := pb.GetSample(id)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	cases, err := pb.GetCase(id)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	detail.Tag = tags
+	detail.Language = languages
+	detail.Sample = samples
+	detail.ProblemCase = cases
+	return &detail, err
 }
 
 func (Problem) GetProblemTag(pbid int64) ([]dto.Tag, error) {
@@ -231,6 +276,153 @@ func (Problem) InsertProblem(p *dto.Problem) error {
 		return err
 	}
 	return nil
+}
+
+func (Problem) UpdateProblem(p *dto.Problem) error {
+
+	var s = `update ojo.problem set cid=?,
+                        ref=?,
+                        title=?,
+                        description=?,
+                        input_description=?,
+                        output_description=?,
+                        hint=?,
+                        last_update_time=now(),
+                        cpu_time_limit=?,
+                        memory_limit=?,
+                        difficulty=?,
+                        real_time_limit=?,
+                        source=?,
+                        visible=? where id=? `
+	tx, err := db.Begin()
+	if err != nil {
+		log.Warn("%v", err)
+		return err
+	}
+	_, err = tx.Exec(s, p.Cid, p.Ref, p.Title, p.Description, p.InputDescription,
+		p.OutputDescription, p.Hint, p.CpuTimeLimit, p.MemoryLimit, p.Difficulty, p.RealTimeLimit, p.Source, p.Visible, p.Id)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	err = pb.DeleteProblemCase(tx, p.Id)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	err = pb.DeleteProblemLanguage(tx, p.Id)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	err = pb.DeleteProblemSample(tx, p.Id)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	err = pb.DeleteProblemTag(tx, p.Id)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	for i, j := 0, len(p.ProblemCase); i < j; i++ {
+		p.ProblemCase[i].Pid = p.Id
+		err := pb.InsertProblemCase(tx, &p.ProblemCase[i])
+		if err != nil {
+			log.Warn("%v", err)
+			err2 := tx.Rollback()
+			if err2 != nil {
+				log.Warn("%v", err2)
+			}
+			return err
+		}
+	}
+	for i, j := 0, len(p.Language); i < j; i++ {
+		err := pb.InsertProblemLanguage(tx, p.Id, p.Language[i].Id)
+		if err != nil {
+			log.Warn("%v", err)
+			err2 := tx.Rollback()
+			if err2 != nil {
+				log.Warn("%v", err2)
+			}
+			return err
+		}
+	}
+	for i, j := 0, len(p.Sample); i < j; i++ {
+		p.Sample[i].Pid = p.Id
+		err := pb.InsertProblemSample(tx, &p.Sample[i])
+		if err != nil {
+			log.Warn("%v", err)
+			err2 := tx.Rollback()
+			if err2 != nil {
+				log.Warn("%v", err2)
+			}
+			return err
+		}
+	}
+	for i, j := 0, len(p.Tag); i < j; i++ {
+		err := pb.InsertProblemTag(tx, p.Id, p.Tag[i].Id)
+		if err != nil {
+			log.Warn("%v", err)
+			err2 := tx.Rollback()
+			if err2 != nil {
+				log.Warn("%v", err2)
+			}
+			return err
+		}
+	}
+	err = tx.Commit()
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	return nil
+}
+
+func (Problem) DeleteProblemCase(tx *sql.Tx, pid int64) error {
+	var s = "delete from ojo.problem_case where pid=?"
+	_, err := tx.Exec(s, pid)
+	return err
+}
+
+func (Problem) DeleteProblemLanguage(tx *sql.Tx, pid int64) error {
+	var s = "delete from ojo.problem_language where pid=?"
+	_, err := tx.Exec(s, pid)
+	return err
+}
+func (Problem) DeleteProblemSample(tx *sql.Tx, pid int64) error {
+	var s = "delete from ojo.problem_sample where pid=?"
+	_, err := tx.Exec(s, pid)
+	return err
+}
+func (Problem) DeleteProblemTag(tx *sql.Tx, pid int64) error {
+	var s = "delete from ojo.problem_tag where pid=?"
+	_, err := tx.Exec(s, pid)
+	return err
 }
 
 func (Problem) InsertProblemCase(tx *sql.Tx, pc *dto.ProblemCase) error {

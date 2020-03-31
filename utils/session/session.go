@@ -69,21 +69,34 @@ func LoadConfig() error {
 	return nil
 }
 
-func GetSession(c iris.Context) (s Session, err error) {
+func GetSession(c iris.Context) (s *Session, err error) {
 	cookie := c.GetCookie("GOGONEWWORLD")
 	if cookie == "" {
-		return Session{}, errors.New("miss cookie or cookie not correct")
+		return nil, errors.New("miss cookie or cookie not correct")
 	}
 	addr := c.RemoteAddr()
 	PoolLock.RLock()
 	defer PoolLock.RUnlock()
 	if s, ok := Pool[cookie+addr]; ok {
-		return s, nil
+		return &s, nil
 	} else {
 		s = Session{Data: map[string]interface{}{}, Time: time.Now().Unix(), lock: sync.RWMutex{}}
 		Pool[cookie+addr] = s
-		return s, nil
+		return &s, nil
 	}
+}
+
+func GetSessionByInt64(str string, id int64) (Session, error) {
+	for k := range Pool {
+		i, ok := Pool[k].Get(str).(int64)
+		if ok {
+			if i == id {
+				s := Pool[k]
+				return s, nil
+			}
+		}
+	}
+	return Session{}, errors.New("now such session")
 }
 
 func Get(c iris.Context, key string) (interface{}, error) {
