@@ -5,7 +5,7 @@
 
 > This project is another implementation of [QingdaoU/OnlineJudge](https://github.com/QingdaoU/OnlineJudge), with the first user [SECE](https://sece.sysu.edu.cn/)
                                                            
-> Again, I want to show my respect to [QingdaoU/OnlineJudge](https://github.com/QingdaoU/OnlineJudge), I leaned a lot with this project                                                              
+> Again, I want to show my respect to [QingdaoU/OnlineJudge](https://github.com/QingdaoU/OnlineJudge)                                                             
 
 > If you know Go or Vue and want to develop with me, please contact me at xiaoq37@mail2.sysu.edu.cn
 
