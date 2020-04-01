@@ -12,20 +12,6 @@ type Problem struct {
 
 var pb Problem
 
-func (Problem) GetAllTags(c iris.Context) {
-	_, err := isAdmin(c)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	tags, err := pbdb.GetAllTags()
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	c.JSON(&dto.Res{Error: "", Data: tags})
-}
-
 func (Problem) AddProblem(c iris.Context) {
 	var p dto.Problem
 	err := c.ReadJSON(&p)

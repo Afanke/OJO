@@ -9,6 +9,16 @@ import (
 	"strings"
 )
 
+func main() {
+	data, err := GetData(db)
+	if err != nil {
+		fmt.Printf("error:%v", err)
+		return
+	}
+	res := HandleData(data)
+	WriteData(res)
+}
+
 type Table struct {
 	Name   string `db:"name"`
 	Column []Column
@@ -126,13 +136,3 @@ func WriteData(tables []Table) {
 }
 
 var db *sqlx.DB
-
-func main() {
-	data, err := GetData(db)
-	if err != nil {
-		fmt.Printf("error:%v", err)
-		return
-	}
-	res := HandleData(data)
-	WriteData(res)
-}

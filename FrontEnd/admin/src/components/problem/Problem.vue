@@ -11,7 +11,7 @@
           <el-input style="float:right;width:200px;margin-top:15px;margin-right:20px" placeholder="keywords"
             v-model="keywords" size="small">
             <el-button slot="append" icon="el-icon-search"
-              style="color:#ffffff;background-color:#409EFF;border-top-left-radius:0;border-bottom-left-radius:0;margin-right:-21px"
+              style="color:#ffffff;background-color:#409EFF;border-top-left-radius:0;border-bottom-left-radius:0;margin-right:-21px;margin-top:-7px"
               size="small" @click="handleKeywordsChange"></el-button>
           </el-input>
           <el-select v-model="difficulty" placeholder="Difficulty"
@@ -28,40 +28,19 @@
         </el-row>
         <el-row style="height:1px;float:top;border-top:1px solid #EBEEF5;"></el-row>
         <el-table :data="tableData" style="width: 100%" v-loading="loading" size="small">
-          <el-table-column type="expand">
-            <template slot-scope="props">
-              <el-form label-position="left" inline class="demo-table-expand">
-                <el-form-item label="商品名称">
-                  <span>{{ props.row.name }}</span>
-                </el-form-item>
-                <el-form-item label="所属店铺">
-                  <span>{{ props.row.shop }}</span>
-                </el-form-item>
-                <el-form-item label="商品 ID">
-                  <span>{{ props.row.id }}</span>
-                </el-form-item>
-                <el-form-item label="店铺 ID">
-                  <span>{{ props.row.shopId }}</span>
-                </el-form-item>
-                <el-form-item label="商品分类">
-                  <span>{{ props.row.category }}</span>
-                </el-form-item>
-                <el-form-item label="店铺地址">
-                  <span>{{ props.row.address }}</span>
-                </el-form-item>
-                <el-form-item label="商品描述">
-                  <span>{{ props.row.desc }}</span>
-                </el-form-item>
-              </el-form>
-            </template>
+          <el-table-column label="ID" prop="id" align="center" min-width="30">
           </el-table-column>
-          <el-table-column label="ID" prop="id">
+          <el-table-column label="Display Id" prop="ref" align="center" min-width="30">
           </el-table-column>
-          <el-table-column label="Display Id" prop="ref">
+          <el-table-column label="Title" prop="title" min-width="90">
           </el-table-column>
-          <el-table-column label="Title" prop="title">
+          <el-table-column label="Creator" prop="creatorName" align="center" min-width="30">
           </el-table-column>
-          <el-table-column prop="difficulty" align="center" label="Level" min-width="80">
+          <el-table-column label="Create Time" prop="createTime" align="center" min-width="60">
+          </el-table-column>
+          <el-table-column label="Last Update Time" prop="lastUpdateTime" align="center" min-width="60">
+          </el-table-column>
+          <el-table-column prop="difficulty" align="center" label="Level" min-width="60">
             <template slot-scope="scope">
               <el-button size="mini" type="info" v-if="scope.row.difficulty === 'Casual'">Casual</el-button>
               <el-button size="mini" type="success" v-if="scope.row.difficulty === 'Eazy'">Eazy</el-button>
@@ -80,16 +59,27 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="Visible" width="80">
+          <el-table-column label="Visible" width="80" align="center">
             <template slot-scope="scope">
               <!-- <el-switch v-model="scope.row.visible" active-color="#13ce66" inactive-color="#ff4949">
               </el-switch> -->
               <div @click="switchVisible(scope.row)">
-                 <el-switch  v-model="scope.row.visible" active-color="#409eff" inactive-color="#dcdfe6">
-              </el-switch>
+                <el-switch v-model="scope.row.visible" active-color="#409eff" inactive-color="#dcdfe6">
+                </el-switch>
               </div>
-             
-
+            </template>
+          </el-table-column>
+          <el-table-column label="Option" width="120" align="center">
+            <template slot-scope="scope">
+              <el-row>
+                <el-tooltip content="Edit" placement="top">
+                  <el-button size="mini" class="el-icon-edit-outline" @click="editProblem(scope.row.id)"></el-button>
+                </el-tooltip>
+                <el-tooltip content="Delete" placement="top">
+                  <el-button size="mini" class="el-icon-delete" style="color:red" @click="deleteProblem(scope.row)">
+                  </el-button>
+                </el-tooltip>
+              </el-row>
             </template>
           </el-table-column>
         </el-table>
@@ -97,7 +87,7 @@
           <el-button type="primary" @click="goCreate" size="small" class="el-icon-plus"
             style="margin-left:30px;float:left"> Create</el-button>
           <el-pagination @current-change="handlePageChange" :page-size="10" style="float:right;margin-right:30px"
-            layout="prev, pager, next" :total="count">
+            layout="prev, pager, next" :total="count" :current-page.sync="page">
           </el-pagination>
         </el-row>
         <el-row style="margin-top:20px;">
@@ -118,6 +108,7 @@
         realShowTags: false,
         showTags: false,
         count: 0,
+        page: 1,
         tableData: [{
             id: '12987122',
             name: '好滋好味鸡蛋仔',
@@ -186,24 +177,34 @@
     },
     async mounted() {
       this.show = true
-      try {
-        const {
-          data: res
-        } = await this.$http.post('/admin/problem/getCount', {
-          difficulty: this.difficulty,
-          keywords: this.keywords
-        });
-        if (res.error) {
-          this.$message.error(res.error)
-          return
-        }
-        this.count = res.data
-      } catch (err) {
-        console.log(err);
-      }
       this.queryList()
     },
     methods: {
+      async editProblem(id) {
+        try {
+          const {
+            data: res
+          } = await this.$http.post('/admin/problem/tryEdit', {
+            id: id
+          });
+          if (res.error) {
+            this.$message.error(res.error)
+            return
+          }
+          this.$router.push({
+            path: "/problem/edit",
+            query: {
+              id: id
+            }
+          })
+        } catch (err) {
+          console.log(err);
+          alert(err)
+        }
+      },
+      deleteProblem() {
+
+      },
       params_init() {
         if (this.$route.query.page) {
           this.page = Number(this.$route.query.page);
@@ -253,6 +254,17 @@
             return
           }
           this.tableData = res.data
+          const {
+            data: res1
+          } = await this.$http.post('/admin/problem/getCount', {
+            difficulty: this.difficulty,
+            keywords: this.keywords
+          });
+          if (res1.error) {
+            this.$message.error(res1.error)
+            return
+          }
+          this.count = res1.data
           this.loading = false
         } catch (err) {
           console.log(err);
@@ -266,14 +278,14 @@
             const {
               data: res
             } = await this.$http.post('/admin/problem/setVisibleTrue', {
-              id:obj.id
+              id: obj.id
             });
             if (res.error) {
               this.$message.error(res.error)
-              obj.visible=false
+              obj.visible = false
               return
             }
-              obj.visible=true
+            obj.visible = true
           } catch (err) {
             console.log(err);
             // alert(err)
@@ -283,14 +295,14 @@
             const {
               data: res
             } = await this.$http.post('/admin/problem/setVisibleFalse', {
-              id:obj.id
+              id: obj.id
             });
             if (res.error) {
               this.$message.error(res.error)
-              obj.visible=true
+              obj.visible = true
               return
             }
-              obj.visible=false
+            obj.visible = false
           } catch (err) {
             console.log(err);
             // alert(err)
@@ -334,10 +346,10 @@
         this.loading = true
         setTimeout(() => {
           this.realShowTags = val
-        }, 500)
+        }, 200)
         setTimeout(() => {
           this.loading = false
-        }, 1000)
+        }, 500)
       },
 
     },

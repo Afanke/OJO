@@ -40,7 +40,7 @@ func (Practice) GetAll(form *dto.PracticeForm) ([]dto.PracticeBrief, error) {
 	rows, err := db.NamedQuery(s, &form)
 	if err != nil {
 		log.Warn("error:%v", err)
-		return []dto.PracticeBrief{}, err
+		return nil, err
 	}
 	var rest = make([]dto.PracticeBrief, 0, form.Limit)
 	for rows.Next() {
@@ -48,17 +48,17 @@ func (Practice) GetAll(form *dto.PracticeForm) ([]dto.PracticeBrief, error) {
 		err := rows.StructScan(&res)
 		if err != nil {
 			log.Warn("error:%v", err)
-			return []dto.PracticeBrief{}, err
+			return nil, err
 		}
 		stat, err := pt.GetStatistic(res.Id)
 		if err != nil {
 			log.Warn("error:%v", err)
-			return []dto.PracticeBrief{}, err
+			return nil, err
 		}
-		tag, err := pb.GetProblemTag(res.Id)
+		tag, err := tag.GetBriefByPid(res.Id)
 		if err != nil {
 			log.Warn("error:%v", err)
-			return []dto.PracticeBrief{}, err
+			return nil, err
 		}
 		res.Tags = tag
 		res.Statistic = stat
@@ -123,7 +123,7 @@ func (Practice) GetDetail(pbid int64) (*dto.Practice, error) {
 		log.Warn("error:%v", err)
 		return nil, err
 	}
-	tags, err := pb.GetProblemTag(pbid)
+	tags, err := tag.GetBriefByPid(pbid)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err

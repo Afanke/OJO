@@ -59,7 +59,7 @@ import {
   // TimeSelect,
   // TimePicker,
   Popover,
-  // Tooltip,
+  Tooltip,
   // Breadcrumb,
   // BreadcrumbItem,
   // Radio,
@@ -78,7 +78,7 @@ import {
  
   // Calendar,
   // Backtop,
-  // PageHeader,
+  PageHeader,
   // CascaderPanel,
   // MessageBox,
   // Notification,
@@ -149,7 +149,7 @@ Vue.use(CheckboxGroup);
 // Vue.use(TimeSelect);
 // Vue.use(TimePicker);
 Vue.use(Popover);
-// Vue.use(Tooltip);
+Vue.use(Tooltip);
 // Vue.use(Breadcrumb);
 // Vue.use(BreadcrumbItem);
 // Vue.use(Upload);
@@ -175,7 +175,7 @@ Vue.use(Popover);
 // Vue.use(TimelineItem);
 // Vue.use(Calendar);
 // Vue.use(Backtop);
-// Vue.use(PageHeader);
+Vue.use(PageHeader);
 // Vue.use(CascaderPanel);
 // Vue.prototype.$msgbox = MessageBox;
 // Vue.prototype.$alert = MessageBox.alert;

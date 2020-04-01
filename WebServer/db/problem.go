@@ -48,7 +48,7 @@ func (Problem) GetAll(form *dto.ProblemForm) ([]dto.ProblemBrief, error) {
 			log.Warn("error:%v", err)
 			return []dto.ProblemBrief{}, err
 		}
-		tag, err := pb.GetProblemTag(res.Id)
+		tag, err := tag.GetBriefByPid(res.Id)
 		if err != nil {
 			log.Warn("error:%v", err)
 			return []dto.ProblemBrief{}, err
@@ -103,7 +103,7 @@ func (Problem) GetDetail(id int64) (*dto.Problem, error) {
 		log.Warn("error:%v", err)
 		return nil, err
 	}
-	tags, err := pb.GetProblemTag(id)
+	tags, err := tag.GetBriefByPid(id)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err
@@ -128,14 +128,6 @@ func (Problem) GetDetail(id int64) (*dto.Problem, error) {
 	detail.Sample = samples
 	detail.ProblemCase = cases
 	return &detail, err
-}
-
-func (Problem) GetProblemTag(pbid int64) ([]dto.Tag, error) {
-	var s = `select t.id,t.name from tag t,problem_tag pt 
-			where pt.pid=? and pt.tid=t.id`
-	var tags []dto.Tag
-	err := db.Select(&tags, s, pbid)
-	return tags, err
 }
 
 func (Problem) GetLanguage(pbid int64) ([]dto.Language, error) {
@@ -163,13 +155,6 @@ func (Problem) GetName(pbid int64) (string, error) {
 	var s string
 	err := db.Get(&s, "select title from ojo.problem where id=? limit 1", pbid)
 	return s, err
-}
-
-func (Problem) GetAllTags() ([]dto.Tag, error) {
-	var s = `select id, name from tag `
-	var tags []dto.Tag
-	err := db.Select(&tags, s)
-	return tags, err
 }
 
 func (Problem) InsertProblem(p *dto.Problem) error {

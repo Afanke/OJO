@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-
     <el-container>
   <el-aside width="230px"><app-header></app-header></el-aside>
 
@@ -69,4 +68,7 @@
   .el-select-dropdown__list {
     margin: 0 0px 15px 0px !important;
   }
+
+
+
 </style>

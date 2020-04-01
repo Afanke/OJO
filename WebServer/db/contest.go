@@ -176,7 +176,7 @@ func (Contest) GetProblemDetail(cid, pid int64) (*dto.ContestProblem, error) {
 		log.Warn("error:%v", err)
 		return nil, err
 	}
-	tags, err := pb.GetProblemTag(pid)
+	tags, err := tag.GetBriefByPid(pid)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err

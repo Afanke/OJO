@@ -2,9 +2,11 @@
   <div>
     <transition name="slide-fade">
       <div class="center-box" v-if="show">
-        <el-row style="height:60px;line-height:60px">
+        <el-page-header style="height:60px;line-height:60px;margin-left:20px" title="Back" @back="goBack" content="Create Problem">
+        </el-page-header>
+        <!-- <el-row style="height:60px;line-height:60px">
           <span style="font-size:20px;margin-left:20px">Create Problem</span>
-        </el-row>
+        </el-row> -->
         <el-row style="height:1px;float:top;border-top:1px solid rgb(233, 233, 235);">
         </el-row>
         <el-row style="margin-left:20px;margin-right:20px">
@@ -103,9 +105,9 @@
               <span>&nbsp;Languages</span>
               <el-row class="small-element">
                 <el-checkbox-group v-model="languages">
-                  <el-checkbox label="C"></el-checkbox>
-                  <el-checkbox label="C++"></el-checkbox>
-                  <el-checkbox label="Java"></el-checkbox>
+                  <el-checkbox label="C" disabled></el-checkbox>
+                  <el-checkbox label="C++" disabled></el-checkbox>
+                  <el-checkbox label="Java" disabled></el-checkbox>
                   <el-checkbox label="Python3"></el-checkbox>
                 </el-checkbox-group>
               </el-row>
@@ -127,8 +129,8 @@
                     <span>&nbsp;Input Sample</span>
                   </el-row>
                   <el-row>
-                    <el-input :autosize="{ minRows: 4}" type="textarea" :rows="2" placeholder="Input Sample"
-                      v-model="item.input">
+                    <el-input resize="none" :autosize="{ minRows: 4}" type="textarea" :rows="2"
+                      placeholder="Input Sample" v-model="item.input">
                     </el-input>
                   </el-row>
                 </el-col>
@@ -138,8 +140,8 @@
                     <span>&nbsp;Output Sample</span>
                   </el-row>
                   <el-row>
-                    <el-input :autosize="{ minRows: 4}" type="textarea" :rows="2" placeholder="Output Sample"
-                      v-model="item.output">
+                    <el-input resize="none" :autosize="{ minRows: 4}" type="textarea" :rows="2"
+                      placeholder="Output Sample" v-model="item.output">
                     </el-input>
                   </el-row>
                 </el-col>
@@ -172,7 +174,7 @@
                     <span>&nbsp;Input</span>
                   </el-row>
                   <el-row>
-                    <el-input :autosize="{ minRows: 4}" type="textarea" :rows="2" placeholder="Input Sample"
+                    <el-input resize="none" :autosize="{ minRows: 4}" type="textarea" :rows="2" placeholder="Input"
                       v-model="item.input">
                     </el-input>
                   </el-row>
@@ -183,7 +185,7 @@
                     <span>&nbsp;Output</span>
                   </el-row>
                   <el-row>
-                    <el-input :autosize="{ minRows: 4}" type="textarea" :rows="2" placeholder="Output Sample"
+                    <el-input resize="none" :autosize="{ minRows: 4}" type="textarea" :rows="2" placeholder="Output"
                       v-model="item.output">
                     </el-input>
                   </el-row>
@@ -269,7 +271,7 @@
       }
     },
     created() {
-      this.$bus.emit("changeHeader", "3-2")
+      this.$bus.emit("changeHeader", "3-1")
       this.show = false
     },
     mounted() {
@@ -323,6 +325,9 @@
           }
         }
         return true
+      },
+      goBack(){
+        this.$router.go(-1)
       },
       getRealTags() {
         this.realTags = []
@@ -401,6 +406,7 @@
             message: res.data,
             type: 'success'
           });
+          this.$router.push("/problem")
         } catch (err) {
           console.log(err);
           alert(err)

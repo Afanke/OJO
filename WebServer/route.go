@@ -120,6 +120,7 @@ func BindRoute(app *iris.Application) {
 		var u ctrl.User
 		user.Post("/getInfo", u.GetInfo)
 		user.Post("/login", u.Login)
+		user.Post("/login1", u.Login1)
 		user.Get("/captcha", u.Captcha)
 		user.Post("/logout", u.Logout)
 		user.Post("/register", u.Register)
@@ -166,21 +167,32 @@ func BindRoute(app *iris.Application) {
 	admin := app.Party("/admin")
 	{
 		var pb ctrl.Problem
-		admin.Get("/problem/getAllTags", pb.GetAllTags)
-		admin.Post("/problem/addProblem", pb.AddProblem)
-		admin.Post("/problem/getAll", pb.GetAll)
-		admin.Post("/problem/getCount", pb.GetCount)
-		admin.Post("/problem/setVisibleTrue", pb.SetVisibleTrue)
-		admin.Post("/problem/setVisibleFalse", pb.SetVisibleFalse)
-		admin.Post("/problem/tryEdit", pb.TryEdit)
-		admin.Post("/problem/getDetail", pb.GetDetail)
-		admin.Post("/problem/updateProblem", pb.UpdateProblem)
+		{
+			admin.Post("/problem/addProblem", pb.AddProblem)
+			admin.Post("/problem/getAll", pb.GetAll)
+			admin.Post("/problem/getCount", pb.GetCount)
+			admin.Post("/problem/setVisibleTrue", pb.SetVisibleTrue)
+			admin.Post("/problem/setVisibleFalse", pb.SetVisibleFalse)
+			admin.Post("/problem/tryEdit", pb.TryEdit)
+			admin.Post("/problem/getDetail", pb.GetDetail)
+			admin.Post("/problem/updateProblem", pb.UpdateProblem)
+		}
 		var user ctrl.User
-		admin.Post("/user/getAll", user.GetAll)
-		admin.Post("/user/getCount", user.GetCount)
-		admin.Post("/user/getDetail", user.GetDetail)
-		admin.Post("/user/updateDetail", user.UpdateDetail)
-		admin.Post("/user/enable", user.Enable)
-		admin.Post("/user/disable", user.Disable)
+		{
+			admin.Post("/user/getAll", user.GetAll)
+			admin.Post("/user/getCount", user.GetCount)
+			admin.Post("/user/getDetail", user.GetDetail)
+			admin.Post("/user/updateDetail", user.UpdateDetail)
+			admin.Post("/user/enable", user.Enable)
+			admin.Post("/user/disable", user.Disable)
+		}
+		var tag ctrl.Tag
+		{
+			admin.Post("/tag/getAll", tag.GetAll)
+			admin.Post("/tag/getCount", tag.GetCount)
+			admin.Post("/tag/getAllVisible", tag.GetAllVisible)
+			admin.Post("/tag/getAllCommunal", tag.GetAllCommunal)
+		}
+
 	}
 }

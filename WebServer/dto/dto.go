@@ -84,7 +84,7 @@ type PracticeBrief struct {
 	Title string `json:"title" db:"title"`
 	// Description string             `json:"description" db:"description"`
 	Difficulty string             `json:"difficulty" db:"difficulty"`
-	Tags       []Tag              `json:"tags"`
+	Tags       []TagBrief         `json:"tags"`
 	Statistic  *PracticeStatistic `json:"statistic"`
 }
 type Practice struct {
@@ -108,7 +108,7 @@ type Practice struct {
 	CreatorName string             `json:"creatorName"`
 	Languages   []Language         `json:"language"`
 	Samples     []ProblemSample    `json:"sample"`
-	Tags        []Tag              `json:"tag"`
+	Tags        []TagBrief         `json:"tag"`
 	Statistic   *PracticeStatistic `json:"statistic"`
 }
 type Id struct {
@@ -219,7 +219,7 @@ type ContestProblem struct {
 	CreatorName string            `json:"creatorName"`
 	Languages   []Language        `json:"language"`
 	Samples     []ProblemSample   `json:"sample"`
-	Tags        []Tag             `json:"tag"`
+	Tags        []TagBrief        `json:"tag"`
 	Statistic   *ContestStatistic `json:"statistic"`
 }
 type ContestCaseResult struct {
@@ -368,16 +368,16 @@ type PracticeSubmission struct {
 	Code       string `json:"code" db:"code"`
 }
 type ProblemBrief struct {
-	Visible        bool   `json:"visible" db:"visible"`
-	Id             int64  `json:"id" db:"id"`
-	Cid            int64  `json:"cid" db:"cid"`
-	CreatorName    string `json:"creatorName"`
-	Ref            string `json:"ref" db:"ref"`
-	Title          string `json:"title" db:"title"`
-	Difficulty     string `json:"difficulty" db:"difficulty"`
-	CreateTime     string `json:"createTime" db:"create_time"`
-	LastUpdateTime string `json:"lastUpdateTime" db:"last_update_time"`
-	Tags           []Tag  `json:"tags"`
+	Visible        bool       `json:"visible" db:"visible"`
+	Id             int64      `json:"id" db:"id"`
+	Cid            int64      `json:"cid" db:"cid"`
+	CreatorName    string     `json:"creatorName"`
+	Ref            string     `json:"ref" db:"ref"`
+	Title          string     `json:"title" db:"title"`
+	Difficulty     string     `json:"difficulty" db:"difficulty"`
+	CreateTime     string     `json:"createTime" db:"create_time"`
+	LastUpdateTime string     `json:"lastUpdateTime" db:"last_update_time"`
+	Tags           []TagBrief `json:"tags"`
 }
 type Problem struct {
 	Id                int64           `json:"id" db:"id"`
@@ -399,7 +399,7 @@ type Problem struct {
 	ProblemCase       []ProblemCase   `json:"problemCase" db:"problem_case"`
 	Language          []Language      `json:"language" db:"language"`
 	Sample            []ProblemSample `json:"sample" db:"sample"`
-	Tag               []Tag           `json:"tag"`
+	Tag               []TagBrief      `json:"tag"`
 }
 type ProblemCase struct {
 	Id     int64  `json:"id" db:"id"`
@@ -429,10 +429,32 @@ type Progress struct {
 	Name     string `json:"name" db:"name"`
 	Progress int    `json:"progress" db:"progress"`
 }
+
+type TagForm struct {
+	Mine     bool   `json:"mine"`
+	Cid      int64  `json:"cid" db:"cid"`
+	Page     int    `json:"page" db:"page"`
+	Offset   int    `json:"offset" db:"offset"`
+	Limit    int    `json:"limit" db:"limit"`
+	Keywords string `json:"keywords" db:"keywords"`
+}
+
 type Tag struct {
+	Id             int64  `json:"id" db:"id"`
+	Cid            int64  `json:"cid" db:"cid"`
+	Visible        bool   `json:"visible" db:"visible"`
+	Communal       bool   `json:"communal" db:"communal"`
+	Name           string `json:"name" db:"name"`
+	CreatorName    string `json:"creatorName"`
+	CreateTime     string `json:"createTime" db:"create_time"`
+	LastUpdateTime string `json:"lastUpdateTime" db:"last_update_time"`
+}
+
+type TagBrief struct {
 	Id   int64  `json:"id" db:"id"`
 	Name string `json:"name" db:"name"`
 }
+
 type UserToken struct {
 	Enabled  bool   `json:"enabled" db:"enabled"`
 	Type     int    `json:"type" db:"type"`
