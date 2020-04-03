@@ -6,9 +6,8 @@ import (
 	"github.com/afanke/OJO/WebServer/db"
 	"github.com/afanke/OJO/WebServer/dto"
 	captcha "github.com/afanke/OJO/utils/chapcha"
-	"github.com/afanke/OJO/utils/log"
 	"github.com/afanke/OJO/utils/session"
-	"github.com/kataras/iris"
+	"github.com/kataras/iris/v12"
 	"image/png"
 	"math/rand"
 )
@@ -335,7 +334,7 @@ func isAdmin(c iris.Context) (*dto.UserToken, error) {
 	if user, ok := get.(dto.UserToken); !ok {
 		return nil, errors.New("not login in or not permitted")
 	} else {
-		log.Debug("%#v", user)
+		// log.Debug("%#v", user)
 		if user.Type < 2 {
 			return nil, errors.New("not permitted")
 		}

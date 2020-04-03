@@ -455,6 +455,11 @@ type TagBrief struct {
 	Name string `json:"name" db:"name"`
 }
 
+type Username struct {
+	Id       int64  `json:"id" db:"id"`
+	Username string `json:"username" db:"username"`
+}
+
 type UserToken struct {
 	Enabled  bool   `json:"enabled" db:"enabled"`
 	Type     int    `json:"type" db:"type"`

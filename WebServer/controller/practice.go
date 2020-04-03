@@ -7,7 +7,7 @@ import (
 	"github.com/afanke/OJO/WebServer/dto"
 	"github.com/afanke/OJO/utils/log"
 	"github.com/afanke/OJO/utils/tcp"
-	"github.com/kataras/iris"
+	"github.com/kataras/iris/v12"
 	"strings"
 )
 

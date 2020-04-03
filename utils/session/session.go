@@ -6,7 +6,7 @@ import (
 	"errors"
 	"github.com/afanke/OJO/WebServer/dto"
 	"github.com/afanke/OJO/utils/log"
-	"github.com/kataras/iris"
+	"github.com/kataras/iris/v12"
 	"io/ioutil"
 	"os"
 	"sync"

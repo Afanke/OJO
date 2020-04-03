@@ -5,30 +5,32 @@ import (
 	"github.com/afanke/OJO/WebServer/dto"
 	"github.com/afanke/OJO/utils/log"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/jmoiron/sqlx"
-	"os"
+	"github.com/ilibs/gosql/v2"
+	"time"
 )
 
-var db *sqlx.DB
-
 func init() {
-	var err error
 	cfg := config.Config.DataBase
-	db, err = sqlx.Open(cfg.DriverName, cfg.DataSourceName)
-	if err != nil {
-		log.Warn("error:%v", err)
-		os.Exit(-1)
+	configs := make(map[string]*gosql.Config)
+	configs["default"] = &gosql.Config{
+		Enable:       true,
+		Driver:       cfg.DriverName,
+		Dsn:          cfg.DataSourceName,
+		ShowSql:      false,
+		MaxIdleConns: 10,
+		MaxLifetime:  int(100 * time.Second),
+		MaxOpenConns: 1000,
 	}
-	err = db.Ping()
+	gosql.SetLogger(log.GetLogger())
+	err := gosql.Connect(configs)
 	if err != nil {
-		log.Warn("error:%v", err)
-		os.Exit(-1)
+		log.Fatal("error:%v", err)
 	}
 }
 
 func GetProgress() []dto.Progress {
 	var res []dto.Progress
-	err := db.Select(&res, "select * from ojo.progress")
+	err := gosql.Select(&res, "select * from ojo.progress")
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil

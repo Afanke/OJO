@@ -3,6 +3,7 @@ package db
 import (
 	"github.com/afanke/OJO/WebServer/dto"
 	"github.com/afanke/OJO/utils/log"
+	"github.com/ilibs/gosql/v2"
 )
 
 type Tag struct {
@@ -28,12 +29,13 @@ func (Tag) GetAll(form *dto.TagForm) ([]dto.Tag, error) {
 		s += "and cid=:cid"
 	}
 	s += " order by id desc limit :offset, :limit"
-	rows, err := db.NamedQuery(s, &form)
+	rows, err := gosql.Sqlx().NamedQuery(s, &form)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err
 	}
 	var rest = make([]dto.Tag, 0, form.Limit)
+	var resc = make([]int64, 0, form.Limit)
 	for rows.Next() {
 		var res dto.Tag
 		err := rows.StructScan(&res)
@@ -41,13 +43,17 @@ func (Tag) GetAll(form *dto.TagForm) ([]dto.Tag, error) {
 			log.Warn("error:%v", err)
 			return nil, err
 		}
-		name, err := pb.GetCreatorName(res.Cid)
-		if err != nil {
-			log.Warn("%v", err)
-			return nil, err
-		}
-		res.CreatorName = name
+		resc = append(resc, res.Cid)
 		rest = append(rest, res)
+	}
+	err = pb.SelectCreatorName(resc, func(i int) (target int64) {
+		return rest[i].Cid
+	}, func(i int, res string) {
+		rest[i].CreatorName = res
+	})
+	if err != nil {
+		log.Warn("%v", err)
+		return nil, err
 	}
 	return rest, nil
 }
@@ -63,10 +69,10 @@ func (Tag) GetCount(form *dto.TagForm) (int64, error) {
 	var count int64
 	if form.Mine {
 		s += " where cid=? "
-		err := db.Get(&count, s, form.Cid)
+		err := gosql.Get(&count, s, form.Cid)
 		return count, err
 	}
-	err := db.Get(&count, s)
+	err := gosql.Get(&count, s)
 	return count, err
 }
 
@@ -74,26 +80,26 @@ func (Tag) GetBriefByPid(pbid int64) ([]dto.TagBrief, error) {
 	var s = `select t.id,t.name from tag t,problem_tag pt 
 				where pt.pid=? and pt.tid=t.id`
 	var tags []dto.TagBrief
-	err := db.Select(&tags, s, pbid)
+	err := gosql.Select(&tags, s, pbid)
 	return tags, err
 }
 
 func (Tag) GetAllVisible() ([]dto.TagBrief, error) {
 	var s = `select id, name,cid from tag where visible=1`
 	var tags []dto.TagBrief
-	err := db.Select(&tags, s)
+	err := gosql.Select(&tags, s)
 	return tags, err
 }
 
 func (Tag) GetAllCommunal() ([]dto.TagBrief, error) {
 	var s = `select id, name,cid from tag where communal=1`
 	var tags []dto.TagBrief
-	err := db.Select(&tags, s)
+	err := gosql.Select(&tags, s)
 	return tags, err
 }
 
 func (Tag) GetTagCreatorId(tid int64) (int64, error) {
 	var cid int64
-	err := db.Get(&cid, "select cid from ojo.tag where id=?", tid)
+	err := gosql.Get(&cid, "select cid from ojo.tag where id=?", tid)
 	return cid, err
 }

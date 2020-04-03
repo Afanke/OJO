@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/afanke/OJO/utils/log"
 	"github.com/afanke/OJO/utils/session"
-	"github.com/kataras/iris"
+	"github.com/kataras/iris/v12"
 	"os"
 	"os/signal"
 	"syscall"

@@ -1,9 +1,11 @@
 package db
 
 import (
-	"database/sql"
+	_ "database/sql"
 	"github.com/afanke/OJO/WebServer/dto"
 	"github.com/afanke/OJO/utils/log"
+	"github.com/ilibs/gosql/v2"
+	"time"
 )
 
 type Problem struct {
@@ -15,7 +17,7 @@ var ProblemPageSize = 10
 
 func (Problem) GetCase(pid int64) ([]dto.ProblemCase, error) {
 	var res []dto.ProblemCase
-	err := db.Select(&res, "select * from problem_case where pid=?", pid)
+	err := gosql.Select(&res, "select * from problem_case where pid=?", pid)
 	return res, err
 }
 
@@ -35,32 +37,31 @@ func (Problem) GetAll(form *dto.ProblemForm) ([]dto.ProblemBrief, error) {
 		s += "and difficulty=:difficulty "
 	}
 	s += " order by id desc limit :offset, :limit"
-	rows, err := db.NamedQuery(s, &form)
+	rows, err := gosql.Sqlx().NamedQuery(s, &form)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err
 	}
 	var rest = make([]dto.ProblemBrief, 0, form.Limit)
+	var resc = make([]int64, 0, form.Limit)
 	for rows.Next() {
 		var res dto.ProblemBrief
 		err := rows.StructScan(&res)
 		if err != nil {
 			log.Warn("error:%v", err)
-			return []dto.ProblemBrief{}, err
+			return nil, err
 		}
-		tag, err := tag.GetBriefByPid(res.Id)
-		if err != nil {
-			log.Warn("error:%v", err)
-			return []dto.ProblemBrief{}, err
-		}
-		creatorName, err := pb.GetCreatorName(res.Cid)
-		if err != nil {
-			log.Warn("error:%v", err)
-			return []dto.ProblemBrief{}, err
-		}
-		res.Tags = tag
-		res.CreatorName = creatorName
 		rest = append(rest, res)
+		resc = append(resc, res.Cid)
+	}
+	err = pb.SelectCreatorName(resc, func(i int) int64 {
+		return rest[i].Cid
+	}, func(i int, res string) {
+		rest[i].CreatorName = res
+	})
+	if err != nil {
+		log.Warn("%v", err)
+		return nil, err
 	}
 	return rest, nil
 }
@@ -75,7 +76,7 @@ func (Problem) GetCount(form *dto.ProblemForm) (int, error) {
 		s += "and difficulty=:difficulty "
 	}
 	var count int
-	rows, err := db.NamedQuery(s, &form)
+	rows, err := gosql.Sqlx().NamedQuery(s, &form)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return 0, err
@@ -87,13 +88,13 @@ func (Problem) GetCount(form *dto.ProblemForm) (int, error) {
 
 func (Problem) GetProblem(id int64) (*dto.Problem, error) {
 	var res dto.Problem
-	err := db.Get(&res, `select * from ojo.problem p where p.id=? limit 1`, id)
+	err := gosql.Get(&res, `select * from ojo.problem p where p.id=? limit 1`, id)
 	return &res, err
 }
 
 func (Problem) GetDetail(id int64) (*dto.Problem, error) {
 	var detail dto.Problem
-	err := db.Get(&detail, `select id, cid,
+	err := gosql.Get(&detail, `select id, cid,
        ref, title, description, input_description,
        output_description, hint, create_time,
        last_update_time, cpu_time_limit, memory_limit,
@@ -134,26 +135,45 @@ func (Problem) GetLanguage(pbid int64) ([]dto.Language, error) {
 	var s = `select l.id,l.name from language l,problem_language pl 
 			where pl.pid=? and pl.lid=l.id`
 	var languages []dto.Language
-	err := db.Select(&languages, s, pbid)
+	err := gosql.Select(&languages, s, pbid)
 	return languages, err
 }
 
 func (Problem) GetSample(pbid int64) ([]dto.ProblemSample, error) {
 	var s = `select id,pid, input, output from problem_sample where pid=?`
 	var samples []dto.ProblemSample
-	err := db.Select(&samples, s, pbid)
+	err := gosql.Select(&samples, s, pbid)
 	return samples, err
 }
 
 func (Problem) GetCreatorName(creatorId int64) (string, error) {
 	var s string
-	err := db.Get(&s, "select username from ojo.user  where id=? limit 1", creatorId)
+	err := gosql.Get(&s, "select username from ojo.user where id=? ", creatorId)
 	return s, err
+}
+
+func (Problem) SelectCreatorName(creatorsId []int64, getId func(i int) (target int64), setId func(i int, res string)) error {
+	var s []dto.Username
+	err := gosql.Select(&s, "select id,username from ojo.user  where id in (?) ", creatorsId)
+	if err != nil {
+		return err
+	}
+	start := time.Now().UnixNano()
+	for i, l := 0, len(creatorsId); i < l; i++ {
+		for j, k := 0, len(s); j < k; j++ {
+			if getId(i) == s[j].Id {
+				setId(i, s[j].Username)
+				break
+			}
+		}
+	}
+	log.Debug("%v", time.Now().UnixNano()-start)
+	return nil
 }
 
 func (Problem) GetName(pbid int64) (string, error) {
 	var s string
-	err := db.Get(&s, "select title from ojo.problem where id=? limit 1", pbid)
+	err := gosql.Get(&s, "select title from ojo.problem where id=? limit 1", pbid)
 	return s, err
 }
 
@@ -172,7 +192,7 @@ func (Problem) InsertProblem(p *dto.Problem) error {
                         real_time_limit,
                         source,
                         visible) VALUES(?,?,?,?,?,?,?,now(),now(),?,?,?,?,?,?) `
-	tx, err := db.Begin()
+	tx, err := gosql.Begin()
 	if err != nil {
 		log.Warn("%v", err)
 		return err
@@ -279,7 +299,7 @@ func (Problem) UpdateProblem(p *dto.Problem) error {
                         real_time_limit=?,
                         source=?,
                         visible=? where id=? `
-	tx, err := db.Begin()
+	tx, err := gosql.Begin()
 	if err != nil {
 		log.Warn("%v", err)
 		return err
@@ -388,47 +408,47 @@ func (Problem) UpdateProblem(p *dto.Problem) error {
 	return nil
 }
 
-func (Problem) DeleteProblemCase(tx *sql.Tx, pid int64) error {
+func (Problem) DeleteProblemCase(tx *gosql.DB, pid int64) error {
 	var s = "delete from ojo.problem_case where pid=?"
 	_, err := tx.Exec(s, pid)
 	return err
 }
 
-func (Problem) DeleteProblemLanguage(tx *sql.Tx, pid int64) error {
+func (Problem) DeleteProblemLanguage(tx *gosql.DB, pid int64) error {
 	var s = "delete from ojo.problem_language where pid=?"
 	_, err := tx.Exec(s, pid)
 	return err
 }
-func (Problem) DeleteProblemSample(tx *sql.Tx, pid int64) error {
+func (Problem) DeleteProblemSample(tx *gosql.DB, pid int64) error {
 	var s = "delete from ojo.problem_sample where pid=?"
 	_, err := tx.Exec(s, pid)
 	return err
 }
-func (Problem) DeleteProblemTag(tx *sql.Tx, pid int64) error {
+func (Problem) DeleteProblemTag(tx *gosql.DB, pid int64) error {
 	var s = "delete from ojo.problem_tag where pid=?"
 	_, err := tx.Exec(s, pid)
 	return err
 }
 
-func (Problem) InsertProblemCase(tx *sql.Tx, pc *dto.ProblemCase) error {
+func (Problem) InsertProblemCase(tx *gosql.DB, pc *dto.ProblemCase) error {
 	var s = "insert into ojo.problem_case(pid, input, output,score) VALUES (?,?,?,?)"
 	_, err := tx.Exec(s, pc.Pid, pc.Input, pc.Output, pc.Score)
 	return err
 }
 
-func (Problem) InsertProblemLanguage(tx *sql.Tx, pid, lid int64) error {
+func (Problem) InsertProblemLanguage(tx *gosql.DB, pid, lid int64) error {
 	var s = "insert into ojo.problem_language(pid, lid) VALUES (?,?)"
 	_, err := tx.Exec(s, pid, lid)
 	return err
 }
 
-func (Problem) InsertProblemSample(tx *sql.Tx, ps *dto.ProblemSample) error {
+func (Problem) InsertProblemSample(tx *gosql.DB, ps *dto.ProblemSample) error {
 	var s = "insert into ojo.problem_sample(pid, input, output) VALUES (?,?,?)"
 	_, err := tx.Exec(s, ps.Pid, ps.Input, ps.Output)
 	return err
 }
 
-func (Problem) InsertProblemTag(tx *sql.Tx, pid, tid int64) error {
+func (Problem) InsertProblemTag(tx *gosql.DB, pid, tid int64) error {
 	var s = "insert into ojo.problem_tag(tid, pid) VALUES (?,?)"
 	_, err := tx.Exec(s, tid, pid)
 	return err
@@ -436,18 +456,18 @@ func (Problem) InsertProblemTag(tx *sql.Tx, pid, tid int64) error {
 
 func (Problem) SetVisibleTrue(id int64) error {
 	s := "update ojo.problem set visible=true where id=? limit 1"
-	_, err := db.Exec(s, id)
+	_, err := gosql.Exec(s, id)
 	return err
 }
 
 func (Problem) SetVisibleFalse(id int64) error {
 	s := "update ojo.problem set visible=false where id=? limit 1"
-	_, err := db.Exec(s, id)
+	_, err := gosql.Exec(s, id)
 	return err
 }
 
 func (Problem) GetCreatorId(pid int64) (int64, error) {
 	var cid int64
-	err := db.Get(&cid, "select cid from ojo.problem where id=?", pid)
+	err := gosql.Get(&cid, "select cid from ojo.problem where id=?", pid)
 	return cid, err
 }

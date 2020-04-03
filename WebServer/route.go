@@ -7,8 +7,7 @@ import (
 	"github.com/afanke/OJO/utils/log"
 	"github.com/afanke/OJO/utils/randstr"
 	"github.com/afanke/OJO/utils/session"
-	"github.com/kataras/iris"
-	"github.com/kataras/iris/context"
+	"github.com/kataras/iris/v12"
 	"net/http"
 	"runtime"
 	"time"
@@ -101,7 +100,7 @@ func BindRoute(app *iris.Application) {
 	// app.Use(TemUserMidWare)
 	{
 		var file ctrl.File
-		app.Get("/pp", func(context context.Context) {
+		app.Get("/pp", func(context iris.Context) {
 			log.Fatal("asdwer")
 		})
 		app.Get("/", file.Index)

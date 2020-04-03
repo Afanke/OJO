@@ -1,19 +1,19 @@
 package db
 
 import (
-	"database/sql"
 	"errors"
 	"github.com/afanke/OJO/WebServer/dto"
 	"github.com/afanke/OJO/utils/log"
+	"github.com/ilibs/gosql/v2"
 )
 
 type QueryForm struct {
-	P1     string `db:"p1"`
-	P2     string `db:"p2"`
-	P3     string `db:"p3"`
-	P4     string `db:"p4"`
-	Offset int    `db:"offset"`
-	Limit  int    `db:"limit"`
+	P1     string `gosql:"p1"`
+	P2     string `gosql:"p2"`
+	P3     string `gosql:"p3"`
+	P4     string `gosql:"p4"`
+	Offset int    `gosql:"offset"`
+	Limit  int    `gosql:"limit"`
 }
 
 type Practice struct{}
@@ -37,7 +37,7 @@ func (Practice) GetAll(form *dto.PracticeForm) ([]dto.PracticeBrief, error) {
 		s += "and difficulty=:difficulty "
 	}
 	s += "and p.visible=1 order by p.ref limit :offset, :limit"
-	rows, err := db.NamedQuery(s, &form)
+	rows, err := gosql.Sqlx().NamedQuery(s, &form)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err
@@ -70,7 +70,7 @@ func (Practice) GetAll(form *dto.PracticeForm) ([]dto.PracticeBrief, error) {
 
 func (Practice) GetAllTags() ([]dto.Tag, error) {
 	var tags []dto.Tag
-	err := db.Select(&tags, "select * from ojo.tag")
+	err := gosql.Select(&tags, "select * from ojo.tag")
 	return tags, err
 }
 
@@ -92,7 +92,7 @@ func (Practice) GetCount(form *dto.PracticeForm) (int, error) {
 	}
 	s += "and p.visible=1 "
 	var count int
-	rows, err := db.NamedQuery(s, &form)
+	rows, err := gosql.Sqlx().NamedQuery(s, &form)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return 0, err
@@ -104,13 +104,13 @@ func (Practice) GetCount(form *dto.PracticeForm) (int, error) {
 
 func (Practice) GetStatistic(pbid int64) (*dto.PracticeStatistic, error) {
 	var stat dto.PracticeStatistic
-	err := db.Get(&stat, "select * from practice_statistic where pbid=? limit 1", pbid)
+	err := gosql.Get(&stat, "select * from practice_statistic where pbid=? limit 1", pbid)
 	return &stat, err
 }
 
 func (Practice) GetDetail(pbid int64) (*dto.Practice, error) {
 	var detail dto.Practice
-	err := db.Get(&detail, `select * from ojo.problem p where p.id=? and p.visible=1 limit 1`, pbid)
+	err := gosql.Get(&detail, `select * from ojo.problem p where p.id=? and p.visible=1 limit 1`, pbid)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err
@@ -153,13 +153,13 @@ func (Practice) GetDetail(pbid int64) (*dto.Practice, error) {
 
 func (Practice) GetSubmission(uid, pid int64) (*dto.PracticeSubmission, error) {
 	var s dto.PracticeSubmission
-	err := db.Get(&s, "select * from practice_submission ps where ps.uid=? and ps.pid=? order by ps.submit_time desc limit 1", uid, pid)
+	err := gosql.Get(&s, "select * from practice_submission ps where ps.uid=? and ps.pid=? order by ps.submit_time desc limit 1", uid, pid)
 	return &s, err
 }
 
 func (Practice) GetAllStat(uid int64, offset, limit int) ([]dto.PracticeSubStat, error) {
 	var res []dto.PracticeSubStat
-	err := db.Select(&res, "select ps.id,ps.uid,ps.pid,ps.total_score,ps.language,ps.status,ps.submit_time from practice_submission ps where ps.uid=? order by ps.submit_time desc limit ?,?", uid, offset, limit)
+	err := gosql.Select(&res, "select ps.id,ps.uid,ps.pid,ps.total_score,ps.language,ps.status,ps.submit_time from practice_submission ps where ps.uid=? order by ps.submit_time desc limit ?,?", uid, offset, limit)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err
@@ -177,7 +177,7 @@ func (Practice) GetAllStat(uid int64, offset, limit int) ([]dto.PracticeSubStat,
 
 func (Practice) GetAllStatCount(uid int64) (int, error) {
 	var count int
-	err := db.Get(&count, "select count(*) from practice_submission ps where ps.uid=?", uid)
+	err := gosql.Get(&count, "select count(*) from practice_submission ps where ps.uid=?", uid)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return 0, err
@@ -187,7 +187,7 @@ func (Practice) GetAllStatCount(uid int64) (int, error) {
 
 func (Practice) GetStat(psmid int64) (*dto.PracticeSubStat, error) {
 	var s dto.PracticeSubStat
-	err := db.Get(&s, "select * from practice_submission ps where ps.id=? limit 1", psmid)
+	err := gosql.Get(&s, "select * from practice_submission ps where ps.id=? limit 1", psmid)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err
@@ -209,7 +209,7 @@ func (Practice) GetStat(psmid int64) (*dto.PracticeSubStat, error) {
 
 func (Practice) GetCaseRes(psmid int64) ([]dto.PracticeCaseResult, error) {
 	var res []dto.PracticeCaseResult
-	err := db.Select(&res, "select * from ojo.practice_case_result where psmid=?", psmid)
+	err := gosql.Select(&res, "select * from ojo.practice_case_result where psmid=?", psmid)
 	return res, err
 }
 
@@ -217,7 +217,7 @@ func (Practice) Submit(form dto.SubmitForm) (*dto.PracticeSubmission, error) {
 	var sql = `insert into ojo.practice_submission
 			(uid,pid,language,status,total_score,submit_time,code)
 		values(?,?,?,'Judging',0,now(),?)`
-	exec, err := db.Exec(sql, form.Uid, form.Pid, form.Language, form.Code)
+	exec, err := gosql.Exec(sql, form.Uid, form.Pid, form.Language, form.Code)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err
@@ -228,7 +228,7 @@ func (Practice) Submit(form dto.SubmitForm) (*dto.PracticeSubmission, error) {
 		return nil, err
 	}
 	var res dto.PracticeSubmission
-	err = db.Get(&res, "select * from practice_submission where id=? limit 1", id)
+	err = gosql.Get(&res, "select * from practice_submission where id=? limit 1", id)
 	return &res, err
 }
 
@@ -243,12 +243,12 @@ func (Practice) UpdateStat(pbid int64, total, ac, wa, ce, mle, re, tle, ole int)
                 ce =ce+ ?,
                 ole =ole+ ?
         where pbid = ?`
-	_, err := db.Exec(sql, total, ac, wa, re, tle, mle, ce, ole, pbid)
+	_, err := gosql.Exec(sql, total, ac, wa, re, tle, mle, ce, ole, pbid)
 	return err
 }
 
 func (Practice) SetISE(psmid int64) error {
-	_, err := db.Exec("update ojo.practice_submission set status='ISE' where id=?", psmid)
+	_, err := gosql.Exec("update ojo.practice_submission set status='ISE' where id=?", psmid)
 	if err != nil {
 		log.Warn("error:%v", err)
 	}
@@ -260,7 +260,7 @@ func (Practice) UpdateFlagAndScore(psmid int64, score int, flag string) error {
                 status =?,
                 total_score = ?
         where id = ?`
-	_, err := db.Exec(sql, flag, score, psmid)
+	_, err := gosql.Exec(sql, flag, score, psmid)
 	return err
 }
 
@@ -268,12 +268,12 @@ func (Practice) InsertCaseRes(psmid, uid int64, form dto.OperationForm) error {
 	var sql = `  insert into ojo.practice_case_result
   (psmid,pcaseid,uid,flag,cpu_time,real_time,real_memory,real_output,error_output,score)
   				values(?,?,?,?,?,?,?,?,?,?)`
-	_, err := db.Exec(sql, psmid, form.PcId, uid, form.Flag, form.ActualCpuTime,
+	_, err := gosql.Exec(sql, psmid, form.PcId, uid, form.Flag, form.ActualCpuTime,
 		form.ActualRealTime, form.RealMemory, form.RealOutput, form.ErrorOutput, form.Score)
 	return err
 }
 
-func (Practice) InsertStatistic(tx *sql.Tx, pbid int64) error {
+func (Practice) InsertStatistic(tx *gosql.DB, pbid int64) error {
 	s := "insert into ojo.practice_statistic(pbid) values (?)"
 	_, err := tx.Exec(s, pbid)
 	return err

@@ -3,7 +3,7 @@ package ctrl
 import (
 	"github.com/afanke/OJO/WebServer/db"
 	"github.com/afanke/OJO/WebServer/dto"
-	"github.com/kataras/iris"
+	"github.com/kataras/iris/v12"
 )
 
 type Tag struct {
