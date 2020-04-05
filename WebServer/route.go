@@ -4,10 +4,12 @@ import (
 	"fmt"
 	ctrl "github.com/afanke/OJO/WebServer/controller"
 	"github.com/afanke/OJO/WebServer/dto"
+	jsp "github.com/afanke/OJO/WebServer/judge"
 	"github.com/afanke/OJO/utils/log"
 	"github.com/afanke/OJO/utils/randstr"
 	"github.com/afanke/OJO/utils/session"
 	"github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/context"
 	"net/http"
 	"runtime"
 	"time"
@@ -100,8 +102,11 @@ func BindRoute(app *iris.Application) {
 	// app.Use(TemUserMidWare)
 	{
 		var file ctrl.File
-		app.Get("/pp", func(context iris.Context) {
+		app.Get("/pp", func(c iris.Context) {
 			log.Fatal("asdwer")
+		})
+		app.Get("/test", func(c iris.Context) {
+			_, _ = c.Write([]byte("hello"))
 		})
 		app.Get("/", file.Index)
 		app.Get("/favicon.ico", file.Favicon)
@@ -110,6 +115,7 @@ func BindRoute(app *iris.Application) {
 		app.Get("/css/*", file.File)
 		app.Get("/js/*", file.File)
 		app.Post("/getProgress", file.GetProgress)
+		app.Post("/uploadImg", file.UploadImg)
 		app.Options("*", func(c iris.Context) {
 			c.Next()
 		})
@@ -191,6 +197,21 @@ func BindRoute(app *iris.Application) {
 			admin.Post("/tag/getCount", tag.GetCount)
 			admin.Post("/tag/getAllVisible", tag.GetAllVisible)
 			admin.Post("/tag/getAllCommunal", tag.GetAllCommunal)
+			admin.Post("/tag/setVisibleTrue", tag.SetVisibleTrue)
+			admin.Post("/tag/setVisibleFalse", tag.SetVisibleFalse)
+			admin.Post("/tag/setSharedTrue", tag.SetSharedTrue)
+			admin.Post("/tag/setSharedFalse", tag.SetSharedFalse)
+			admin.Post("/tag/addTag", tag.AddTag)
+			admin.Post("/tag/updateTag", tag.UpdateTag)
+		}
+
+		{
+			admin.Get("/jsp/getAllInfo", func(c context.Context) {
+				_, _ = c.JSON(&dto.Res{
+					Error: "",
+					Data:  jsp.GetAllInfo(),
+				})
+			})
 		}
 
 	}

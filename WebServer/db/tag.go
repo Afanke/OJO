@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"github.com/afanke/OJO/WebServer/dto"
 	"github.com/afanke/OJO/utils/log"
 	"github.com/ilibs/gosql/v2"
@@ -20,7 +21,7 @@ func (Tag) GetAll(form *dto.TagForm) ([]dto.Tag, error) {
 	form.Page -= 1
 	form.Limit = tagPageSize
 	form.Offset = form.Page * tagPageSize
-	s := `select id, name, cid, visible, communal, create_time, last_update_time from tag `
+	s := `select id, name, cid, visible, shared, create_time, last_update_time from tag `
 	s += " where 1=1 "
 	if form.Keywords != "" {
 		s += "and name like concat('%',:keywords,'%') "
@@ -35,7 +36,6 @@ func (Tag) GetAll(form *dto.TagForm) ([]dto.Tag, error) {
 		return nil, err
 	}
 	var rest = make([]dto.Tag, 0, form.Limit)
-	var resc = make([]int64, 0, form.Limit)
 	for rows.Next() {
 		var res dto.Tag
 		err := rows.StructScan(&res)
@@ -43,10 +43,9 @@ func (Tag) GetAll(form *dto.TagForm) ([]dto.Tag, error) {
 			log.Warn("error:%v", err)
 			return nil, err
 		}
-		resc = append(resc, res.Cid)
 		rest = append(rest, res)
 	}
-	err = pb.SelectCreatorName(resc, func(i int) (target int64) {
+	err = pb.SelectCreatorName(len(rest), func(i int) (target int64) {
 		return rest[i].Cid
 	}, func(i int, res string) {
 		rest[i].CreatorName = res
@@ -98,8 +97,56 @@ func (Tag) GetAllCommunal() ([]dto.TagBrief, error) {
 	return tags, err
 }
 
-func (Tag) GetTagCreatorId(tid int64) (int64, error) {
+func (Tag) GetCreatorId(tid int64) (int64, error) {
 	var cid int64
 	err := gosql.Get(&cid, "select cid from ojo.tag where id=?", tid)
 	return cid, err
+}
+
+func (Tag) SetVisibleTrue(id int64) error {
+	s := "update ojo.tag set visible=true,last_update_time=NOW() where id=? limit 1"
+	_, err := gosql.Exec(s, id)
+	return err
+}
+
+func (Tag) SetVisibleFalse(id int64) error {
+	s := "update ojo.tag set visible=false,last_update_time=NOW() where id=? limit 1"
+	_, err := gosql.Exec(s, id)
+	return err
+}
+
+func (Tag) SetSharedTrue(id int64) error {
+	s := "update ojo.tag set shared=true,last_update_time=NOW() where id=? limit 1"
+	_, err := gosql.Exec(s, id)
+	return err
+}
+
+func (Tag) SetSharedFalse(id int64) error {
+	s := "update ojo.tag set shared=false,last_update_time=NOW() where id=? limit 1"
+	_, err := gosql.Exec(s, id)
+	return err
+}
+
+func (Tag) InsertTag(t *dto.Tag) error {
+	var s = `insert into ojo.tag(name, cid, visible, shared, create_time, last_update_time) VALUES(?,?,?,?,now(),now()) `
+	_, err := gosql.Exec(s, t.Name, t.Cid, t.Visible, t.Shared)
+	return err
+}
+
+func (Tag) UpdateTag(t *dto.TagBrief) error {
+	var s = `update ojo.tag set name=?,last_update_time=now() where id=? limit 1`
+	_, err := gosql.Exec(s, t.Name, t.Id)
+	return err
+}
+
+func (Tag) IsShared(tid int64) error {
+	var res int
+	err := gosql.Get(&res, "select shared from ojo.tag where id=?", tid)
+	if err != nil {
+		return err
+	}
+	if res != 1 {
+		return errors.New("not allowed")
+	}
+	return nil
 }

@@ -20,12 +20,12 @@ func init() {
 		log.Fatal("error:%v\n", err)
 		os.Exit(-1)
 	}
+
 }
 
 type ServerConfig struct {
-	Port        int
-	JudgeServer string
-	DataBase    DataBaseConfig
+	Port     int
+	DataBase DataBaseConfig
 }
 
 type DataBaseConfig struct {

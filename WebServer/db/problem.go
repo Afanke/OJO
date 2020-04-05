@@ -5,7 +5,6 @@ import (
 	"github.com/afanke/OJO/WebServer/dto"
 	"github.com/afanke/OJO/utils/log"
 	"github.com/ilibs/gosql/v2"
-	"time"
 )
 
 type Problem struct {
@@ -43,7 +42,6 @@ func (Problem) GetAll(form *dto.ProblemForm) ([]dto.ProblemBrief, error) {
 		return nil, err
 	}
 	var rest = make([]dto.ProblemBrief, 0, form.Limit)
-	var resc = make([]int64, 0, form.Limit)
 	for rows.Next() {
 		var res dto.ProblemBrief
 		err := rows.StructScan(&res)
@@ -52,9 +50,8 @@ func (Problem) GetAll(form *dto.ProblemForm) ([]dto.ProblemBrief, error) {
 			return nil, err
 		}
 		rest = append(rest, res)
-		resc = append(resc, res.Cid)
 	}
-	err = pb.SelectCreatorName(resc, func(i int) int64 {
+	err = pb.SelectCreatorName(len(rest), func(i int) int64 {
 		return rest[i].Cid
 	}, func(i int, res string) {
 		rest[i].CreatorName = res
@@ -152,22 +149,27 @@ func (Problem) GetCreatorName(creatorId int64) (string, error) {
 	return s, err
 }
 
-func (Problem) SelectCreatorName(creatorsId []int64, getId func(i int) (target int64), setId func(i int, res string)) error {
+func (Problem) SelectCreatorName(lens int, getId func(i int) (target int64), setName func(i int, res string)) error {
+	if lens == 0 {
+		return nil
+	}
+	ids := make([]int64, 0, lens)
+	for i := 0; i < lens; i++ {
+		ids = append(ids, getId(i))
+	}
 	var s []dto.Username
-	err := gosql.Select(&s, "select id,username from ojo.user  where id in (?) ", creatorsId)
+	err := gosql.Select(&s, "select id,username from ojo.user  where id in (?) ", ids)
 	if err != nil {
 		return err
 	}
-	start := time.Now().UnixNano()
-	for i, l := 0, len(creatorsId); i < l; i++ {
+	for i := 0; i < lens; i++ {
 		for j, k := 0, len(s); j < k; j++ {
 			if getId(i) == s[j].Id {
-				setId(i, s[j].Username)
+				setName(i, s[j].Username)
 				break
 			}
 		}
 	}
-	log.Debug("%v", time.Now().UnixNano()-start)
 	return nil
 }
 

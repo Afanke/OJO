@@ -2,9 +2,9 @@ package ctrl
 
 import (
 	"encoding/json"
-	"github.com/afanke/OJO/WebServer/config"
 	"github.com/afanke/OJO/WebServer/db"
 	"github.com/afanke/OJO/WebServer/dto"
+	jsp "github.com/afanke/OJO/WebServer/judge"
 	"github.com/afanke/OJO/utils/log"
 	"github.com/afanke/OJO/utils/tcp"
 	"github.com/kataras/iris/v12"
@@ -231,7 +231,12 @@ func (Practice) handleSubmit(form dto.SubmitForm) {
 }
 
 func (Practice) sendToJudge(forms []dto.OperationForm) ([]dto.OperationForm, error) {
-	conn, err := tcp.Dial(config.Config.JudgeServer)
+	addr, err := jsp.GetAddr()
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	conn, err := tcp.Dial(addr)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err

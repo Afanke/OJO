@@ -69,6 +69,16 @@ type UserDetail2 struct {
 	Github    string `json:"github" db:"github"`
 }
 
+type JudgeServer struct {
+	Enabled bool   `json:"enabled" db:"enabled"`
+	Status  bool   `json:"status" db:"status"`
+	Id      int64  `json:"id" db:"id"`
+	Port    int    `json:"port" db:"port"`
+	Weight  int    `json:"weight" db:"weight"`
+	Name    string `json:"name" db:"name"`
+	Address string `json:"address" db:"address"`
+}
+
 type PracticeForm struct {
 	Page       int    `json:"page" db:"page"`
 	Tid        int64  ` json:"tid" db:"tid"`
@@ -443,7 +453,7 @@ type Tag struct {
 	Id             int64  `json:"id" db:"id"`
 	Cid            int64  `json:"cid" db:"cid"`
 	Visible        bool   `json:"visible" db:"visible"`
-	Communal       bool   `json:"communal" db:"communal"`
+	Shared         bool   `json:"shared" db:"shared"`
 	Name           string `json:"name" db:"name"`
 	CreatorName    string `json:"creatorName"`
 	CreateTime     string `json:"createTime" db:"create_time"`

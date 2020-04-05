@@ -6,6 +6,7 @@ import (
 	"github.com/afanke/OJO/JudgeServer/dto"
 	"github.com/afanke/OJO/JudgeServer/operator"
 	tcp "github.com/afanke/OJO/utils/tcp"
+	"github.com/kataras/iris/v12"
 )
 
 var operationMap = map[string]operator.Operator{
@@ -50,22 +51,7 @@ func Worker() {
 }
 
 func main() {
-
-	listen, err := tcp.Listen(":2333")
-	if err != nil {
-		fmt.Printf("error:%v", err)
-		return
-	}
-	fmt.Println("start")
-	fmt.Println(listen.Addr())
-	defer listen.Close()
-	for {
-		conn, err := listen.Accept()
-		fmt.Println("connect")
-		if err != nil {
-			fmt.Printf("error:%v", err)
-			return
-		}
-		go handle(conn)
-	}
+	app := iris.New()
+	BindRoute(app)
+	_ = app.Run(iris.Addr(":2333"))
 }

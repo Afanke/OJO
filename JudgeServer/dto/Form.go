@@ -20,6 +20,11 @@ type OperationForm struct {
 	Flag           string
 }
 
+type Res struct {
+	Error string      `json:"error"`
+	Data  interface{} `json:"data"`
+}
+
 // type RequestForm struct {
 // 	MaxCpuTime     int // 2 seconds
 // 	MaxRealTime    int // 4 seconds
