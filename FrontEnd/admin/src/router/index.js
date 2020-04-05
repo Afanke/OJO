@@ -8,8 +8,10 @@ const ProblemEdit = () => import('@/components/problem/Edit.vue');
 const Problem = () => import('@/components/problem/Problem.vue');
 const Carton = () => import('@/components/problem/Carton.vue');
 const User = () => import('@/components/general/User.vue');
+const JudgeServer = () => import('@/components/general/JudgeServer.vue');
 const ProblemTag = () => import('@/components/problem/Tag.vue');
 const Test = () => import('@/components/Test.vue');
+// const Test2 = () => import('@/components/Test2.vue');
 
 const originalPush = VueRouter.prototype.push;
 VueRouter.prototype.push = function push(location) {
@@ -22,8 +24,9 @@ const routes = [
   { path: '/problem/tag', component: ProblemTag },
   { path: '/problem', component: Problem },
   { path: '/carton', component: Carton },
-  { path: '/user', component: User },
-  { path: '/', component:Test }
+  { path: '/general/user', component: User },
+  { path: '/general/judgeServer', component: JudgeServer },
+  // { path: '/', component:Test2 }
 ];
 
 const router = new VueRouter({

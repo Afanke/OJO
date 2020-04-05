@@ -56,11 +56,11 @@
         // http://192.168.2.125:8080/admin/storage/create
         this.editor = new E(this.$refs.toolbar, this.$refs.editor)
         this.editor.customConfig.uploadImgShowBase64 = false // base 64 存储图片
-        this.editor.customConfig.uploadImgServer = 'http://otp.cdinfotech.top/file/upload_images'// 配置服务器端地址
+        this.editor.customConfig.uploadImgServer = this.$http.defaults.baseURL+"/uploadImg"// 配置服务器端地址
         this.editor.customConfig.uploadImgHeaders = { }// 自定义 header
-        this.editor.customConfig.uploadFileName = 'file' // 后端接受上传文件的参数名
+        this.editor.customConfig.uploadFileName = 'img' // 后端接受上传文件的参数名
         this.editor.customConfig.uploadImgMaxSize = 2 * 1024 * 1024 // 将图片大小限制为 2M
-        this.editor.customConfig.uploadImgMaxLength = 6 // 限制一次最多上传 3 张图片
+        this.editor.customConfig.uploadImgMaxLength = 1 // 限制一次最多上传 3 张图片
         this.editor.customConfig.uploadImgTimeout = 3 * 60 * 1000 // 设置超时时间
 
         // 配置菜单
@@ -109,7 +109,7 @@
              //循环插入图片
             // for (let i = 0; i < 1; i++) {
               // console.log(result)
-              let url = "http://otp.cdinfotech.top"+result.url
+              let url = this.$http.defaults.baseURL+result.url
               insertImg(url)
             // }
           }
@@ -147,14 +147,5 @@
     width:100%;
     min-height:200px;
     height: auto;
-    /* overflow:hidden!important; */
-    /* min-height: 300px; */
-    /* position: absolute;
-	left: 0;
-	top: 0;
-	right: -17px;
-	bottom: 0;
-	overflow-x: hidden;
-	overflow-y: scroll; */
   }
 </style>

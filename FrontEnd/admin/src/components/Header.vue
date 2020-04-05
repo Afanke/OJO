@@ -79,7 +79,7 @@
           const {
             data: res
           } = await this.$http.post('/user/login1', {
-            username:'admin2',
+            username:'admin1',
             password:'11111111'
           });
           if (res.error) {
@@ -125,7 +125,10 @@
           case "1":
             break
           case "2-1":
-            this.$router.push("/user")
+            this.$router.push("/general/user")
+            break
+            case "2-2":
+            this.$router.push("/general/judgeServer")
             break
           case "3-1":
             this.$router.push("/problem")
