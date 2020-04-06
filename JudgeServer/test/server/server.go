@@ -1,65 +1,63 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	"github.com/afanke/OJO/utils/tcp"
+	"log"
+	"net"
+	"net/http"
+	"net/rpc"
+	"time"
 )
 
-var msg = make(chan string, 1)
-var recvmsg = make(chan string, 1)
-
-func handle(conn tcp.Conn) {
-	defer conn.Close()
-	go recv()
-	for {
-		select {
-		case s := <-msg:
-			_, err := conn.Send([]byte(s))
-			if err != nil {
-				fmt.Printf("error:%v\n", err)
-				return
-			}
-		case s := <-recvmsg:
-			fmt.Println(s)
-		}
-	}
-}
-func recv(conn tcp.Conn) {
-	for {
-		_, bytes, err := conn.Recv()
-		if err != nil {
-			fmt.Printf("error:%v\n", err)
-			return
-		}
-		recvmsg <- string(bytes)
-	}
+type Args struct {
+	A, B int
 }
 
-func read() {
-	var s string
-	for {
-		_, err := fmt.Scanln(&s)
-		if err != nil {
-			fmt.Printf("error:%v\n", err)
-			return
-		}
-		msg <- s
+type Quotient struct {
+	Quo, Rem int
+}
+
+type Arith int
+
+func (t *Arith) Multiply(args *Args, reply *int) error {
+	*reply = args.A * args.B
+	panic(100)
+	return nil
+}
+
+func (t *Arith) Divide(args *Args, quo *Quotient) error {
+
+	if args.B == 0 {
+		return errors.New("divide by zero")
 	}
+	quo.Quo = args.A / args.B
+	quo.Rem = args.A % args.B
+	return nil
 }
 
 func main() {
-	go read()
-	listen, err := tcp.Listen(":8888")
+	arith := new(Arith)
+	err := rpc.Register(arith)
 	if err != nil {
 		fmt.Printf("error:%v\n", err)
 		return
 	}
-	for {
-		Conn, err := listen.Accept()
+	rpc.HandleHTTP()
+	l, e := net.Listen("tcp", ":1234")
+	if e != nil {
+		log.Fatal("listen error:", e)
+	}
+	go func() {
+		err := http.Serve(l, nil)
 		if err != nil {
 			fmt.Printf("error:%v\n", err)
 			return
 		}
-		go handle(Conn)
+	}()
+	for {
+		select {
+		case <-time.After(time.Second * 100):
+		}
 	}
 }

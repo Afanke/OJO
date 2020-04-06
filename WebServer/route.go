@@ -109,6 +109,7 @@ func BindRoute(app *iris.Application) {
 			_, _ = c.Write([]byte("hello"))
 		})
 		app.Get("/", file.Index)
+		app.Get("/admin", file.Admin)
 		app.Get("/favicon.ico", file.Favicon)
 		app.Get("/img/*", file.File)
 		app.Get("/fonts/*", file.File)

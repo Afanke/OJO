@@ -45,12 +45,21 @@ func GetAddr() (string, error) {
 	if en == 0 {
 		return "", errors.New("now jsp server available, please wait a minute or contact with the admin")
 	}
-	if count > jsp[current].Weight {
-		current++
-		current = current % lens
-		count = 0
-	} else {
-		count++
+	for {
+		if count > jsp[current].Weight {
+			current++
+			current = current % lens
+			count = 0
+		} else {
+			count++
+		}
+		if jsp[current].Enabled {
+			break
+		} else {
+			current++
+			current = current % lens
+			count = 0
+		}
 	}
 	return jsp[current].Address + ":" + strconv.Itoa(jsp[current].Port), nil
 }
@@ -87,9 +96,9 @@ func UpdateJSP() error {
 func TouchJSP() {
 	lock.RLock()
 	defer lock.RUnlock()
-	log.Debug("%v", len(jsp))
+	// log.Debug("%v", len(jsp))
 	for i, j := 0, len(jsp); i < j; i++ {
-		log.Debug("%v", i)
+		// log.Debug("%v", i)
 		k := i
 		if jsp[k].Enabled {
 			go func() {

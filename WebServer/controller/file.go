@@ -14,7 +14,19 @@ type File struct {
 }
 
 func (File) Index(c iris.Context) {
-	file, err := ioutil.ReadFile("./dist/index2.html")
+	file, err := ioutil.ReadFile("./dist/index.html")
+	if err != nil {
+		c.NotFound()
+	}
+	_, err = c.WriteGzip(file)
+	if err != nil {
+		log.Error("%v", err)
+		return
+	}
+}
+
+func (File) Admin(c iris.Context) {
+	file, err := ioutil.ReadFile("./dist/admin.html")
 	if err != nil {
 		c.NotFound()
 	}

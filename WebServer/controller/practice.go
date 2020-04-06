@@ -1,14 +1,18 @@
 package ctrl
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/afanke/OJO/WebServer/db"
 	"github.com/afanke/OJO/WebServer/dto"
 	jsp "github.com/afanke/OJO/WebServer/judge"
 	"github.com/afanke/OJO/utils/log"
-	"github.com/afanke/OJO/utils/tcp"
 	"github.com/kataras/iris/v12"
+	"io/ioutil"
+	"net/http"
 	"strings"
+	"time"
 )
 
 // Practice 为show=true 的Problem
@@ -231,28 +235,38 @@ func (Practice) handleSubmit(form dto.SubmitForm) {
 }
 
 func (Practice) sendToJudge(forms []dto.OperationForm) ([]dto.OperationForm, error) {
+	fmt.Println(forms)
 	addr, err := jsp.GetAddr()
 	if err != nil {
-		log.Warn("error:%v", err)
+		log.Error("error:%v", err)
 		return nil, err
 	}
-	conn, err := tcp.Dial(addr)
+	client := &http.Client{
+		Timeout: 1 * time.Second,
+	}
+	buff, err := json.Marshal(forms)
 	if err != nil {
-		log.Warn("error:%v", err)
+		log.Error("error:%v", err)
 		return nil, err
 	}
-	bytes, err := json.Marshal(&forms)
-	_, err = conn.Send(bytes)
+	res, err := client.Post("http://"+addr+"/"+forms[0].Language, "application/json", bytes.NewBuffer(buff))
 	if err != nil {
-		log.Warn("error:%v", err)
+		log.Error("error:%v", err)
 		return nil, err
 	}
-	_, recv, err := conn.Recv()
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Warn("error:%v", err)
+		log.Error("error:%v", err)
 		return nil, err
 	}
-	err = json.Unmarshal(recv, &forms)
+	fmt.Println(string(body))
+	err = json.Unmarshal(body, &forms)
+	if err != nil {
+		log.Error("error:%v", err)
+		return nil, err
+	}
+	fmt.Println(forms)
 	return forms, err
 }
 
