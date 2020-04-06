@@ -36,9 +36,9 @@ const routes = [
   { path: '/contest/detail', component: ContestDetail },
   { path: '/contest/answer', component: ContestAnswer },
 
-  // { path: '/', redirect: '/contest' }
+  { path: '/', redirect: '/practice' }
   // { path: '/', component:Test }
-  { path: '/', component:Carton }
+  // { path: '/', component:Carton }
 ];
 // routes.afterEach(function (to) {
 //   document.title = to.name

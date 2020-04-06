@@ -26,7 +26,8 @@ const routes = [
   { path: '/carton', component: Carton },
   { path: '/general/user', component: User },
   { path: '/general/judgeServer', component: JudgeServer },
-  // { path: '/', component:Test2 }
+  // { path: '/', component:Test }
+  { path: '/', component:User }
 ];
 
 const router = new VueRouter({
