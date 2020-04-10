@@ -102,14 +102,14 @@ func (f *FileLogger) LogBG() {
 	for {
 		i++
 		select {
-		case log := <-f.logChan:
-			switch log.Level {
+		case logs := <-f.logChan:
+			switch logs.Level {
 			case DEBUG:
 				if f.debug == nil {
-					l.Print(ERROR, "can't open file:%s/debug.log", cfg.FilePath)
+					l.Print(ERROR, "can't open file:%s/debug.logs", cfg.FilePath)
 					break
 				}
-				_, err := f.debug.WriteString(log.Msg)
+				_, err := f.debug.WriteString(logs.Msg)
 				if err != nil {
 					l.Print(ERROR, "%v", err)
 					break
@@ -142,10 +142,10 @@ func (f *FileLogger) LogBG() {
 				f.debug = logFile
 			case INFO:
 				if f.info == nil {
-					l.Print(ERROR, "can't open file:%s/info.log", cfg.FilePath)
+					l.Print(ERROR, "can't open file:%s/info.logs", cfg.FilePath)
 					break
 				}
-				_, err := f.info.WriteString(log.Msg)
+				_, err := f.info.WriteString(logs.Msg)
 				if err != nil {
 					l.Print(ERROR, "%v", err)
 					break
@@ -178,10 +178,10 @@ func (f *FileLogger) LogBG() {
 				f.info = logFile
 			case WARN:
 				if f.warn == nil {
-					l.Print(ERROR, "can't open file:%s/warn.log", cfg.FilePath)
+					l.Print(ERROR, "can't open file:%s/warn.logs", cfg.FilePath)
 					break
 				}
-				_, err := f.warn.WriteString(log.Msg)
+				_, err := f.warn.WriteString(logs.Msg)
 				if err != nil {
 					l.Print(ERROR, "%v", err)
 					break
@@ -214,10 +214,10 @@ func (f *FileLogger) LogBG() {
 				f.warn = logFile
 			case ERROR:
 				if f.error == nil {
-					l.Print(ERROR, "can't open file:%s/error.log", cfg.FilePath)
+					l.Print(ERROR, "can't open file:%s/error.logs", cfg.FilePath)
 					break
 				}
-				_, err := f.error.WriteString(log.Msg)
+				_, err := f.error.WriteString(logs.Msg)
 				if err != nil {
 					l.Print(ERROR, "%v", err)
 					break
@@ -249,7 +249,7 @@ func (f *FileLogger) LogBG() {
 				}
 				f.error = logFile
 			case FATAL:
-				err := ioutil.WriteFile(cfg.FilePath+"/fatal.log", []byte(log.Msg), 0666)
+				err := ioutil.WriteFile(cfg.FilePath+"/fatal.logs", []byte(logs.Msg), 0666)
 				if err != nil {
 					l.Print(ERROR, "%v\n", err)
 					return

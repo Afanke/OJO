@@ -37,6 +37,18 @@ func (File) Admin(c iris.Context) {
 	}
 }
 
+func (File) VDS(c iris.Context) {
+	file, err := ioutil.ReadFile("./dist/vds.html")
+	if err != nil {
+		c.NotFound()
+	}
+	_, err = c.WriteGzip(file)
+	if err != nil {
+		log.Error("%v", err)
+		return
+	}
+}
+
 func (File) Favicon(c iris.Context) {
 	file, err := ioutil.ReadFile("./dist/favicon.ico")
 	if err != nil {

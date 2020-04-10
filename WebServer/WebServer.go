@@ -46,6 +46,7 @@ func main() {
 	// })
 	//注册中间件
 	// app.Use(irisyaag.New())
+	log.Info("hello")
 	_ = app.Run(iris.Addr(":80"))
 	<-stop
 }

@@ -139,6 +139,21 @@ func (Tag) UpdateTag(t *dto.TagBrief) error {
 	return err
 }
 
+func (Tag) IsDepended(tid int64) (int, error) {
+	var count int
+	err := gosql.Get(&count, "select count(*) from ojo.problem_tag where tid=?", tid)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (Tag) DeleteTag(tid int64) error {
+	var s = `delete from ojo.tag where id=? limit 1`
+	_, err := gosql.Exec(s, tid)
+	return err
+}
+
 func (Tag) IsShared(tid int64) error {
 	var res int
 	err := gosql.Get(&res, "select shared from ojo.tag where id=?", tid)

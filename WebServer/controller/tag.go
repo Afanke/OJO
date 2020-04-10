@@ -5,6 +5,7 @@ import (
 	"github.com/afanke/OJO/WebServer/db"
 	"github.com/afanke/OJO/WebServer/dto"
 	"github.com/kataras/iris/v12"
+	"strconv"
 	"time"
 )
 
@@ -199,6 +200,35 @@ func (Tag) UpdateTag(c iris.Context) {
 		return
 	}
 	c.JSON(&dto.Res{Error: "", Data: "save successfully"})
+}
+
+func (Tag) DeleteTag(c iris.Context) {
+	var id dto.Id
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = tag.isCreator(c, id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	count, err := tagdb.IsDepended(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	if count != 0 {
+		c.JSON(&dto.Res{Error: errors.New("can't delete tag: the tag is depended by " + strconv.Itoa(count) + " problems").Error(), Data: nil})
+		return
+	}
+	err = tagdb.DeleteTag(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: "delete tag successfully"})
 }
 
 func (Tag) isPermitted(c iris.Context, tid int64) error {

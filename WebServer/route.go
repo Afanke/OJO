@@ -102,14 +102,9 @@ func BindRoute(app *iris.Application) {
 	// app.Use(TemUserMidWare)
 	{
 		var file ctrl.File
-		app.Get("/pp", func(c iris.Context) {
-			log.Fatal("asdwer")
-		})
-		app.Get("/test", func(c iris.Context) {
-			_, _ = c.Write([]byte("hello"))
-		})
 		app.Get("/", file.Index)
 		app.Get("/admin", file.Admin)
+		app.Get("/vds", file.VDS)
 		app.Get("/favicon.ico", file.Favicon)
 		app.Get("/img/*", file.File)
 		app.Get("/fonts/*", file.File)
@@ -204,6 +199,7 @@ func BindRoute(app *iris.Application) {
 			admin.Post("/tag/setSharedFalse", tag.SetSharedFalse)
 			admin.Post("/tag/addTag", tag.AddTag)
 			admin.Post("/tag/updateTag", tag.UpdateTag)
+			admin.Post("/tag/deleteTag", tag.DeleteTag)
 		}
 
 		{
