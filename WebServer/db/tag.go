@@ -27,7 +27,7 @@ func (Tag) GetAll(form *dto.TagForm) ([]dto.Tag, error) {
 		s += "and name like concat('%',:keywords,'%') "
 	}
 	if form.Mine {
-		s += "and cid=:cid"
+		s += "and cid=:cid "
 	}
 	s += " order by id desc limit :offset, :limit"
 	rows, err := gosql.Sqlx().NamedQuery(s, &form)
@@ -90,8 +90,8 @@ func (Tag) GetAllVisible() ([]dto.TagBrief, error) {
 	return tags, err
 }
 
-func (Tag) GetAllCommunal() ([]dto.TagBrief, error) {
-	var s = `select id, name,cid from tag where communal=1`
+func (Tag) GetAllShared() ([]dto.TagBrief, error) {
+	var s = `select id, name,cid from tag where shared=1`
 	var tags []dto.TagBrief
 	err := gosql.Select(&tags, s)
 	return tags, err

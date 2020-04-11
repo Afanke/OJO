@@ -61,11 +61,12 @@ func (Problem) GetAll(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	_, err = isAdmin(c)
+	admin, err := isAdmin(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
+	form.Cid = admin.Id
 	data, err := pbdb.GetAll(&form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -101,11 +102,12 @@ func (Problem) GetCount(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	_, err = isAdmin(c)
+	admin, err := isAdmin(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
+	form.Cid = admin.Id
 	tags, err := pbdb.GetCount(&form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -180,7 +182,7 @@ func (Problem) isCreator(c iris.Context, id int64) error {
 	if err != nil {
 		return err
 	}
-	creatorId, err := pbdb.GetCreatorId(id)
+	creatorId, err := ctsdb.GetCreatorId(id)
 	if err != nil {
 		return err
 	}

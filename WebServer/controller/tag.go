@@ -67,13 +67,13 @@ func (Tag) GetAllVisible(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: tags})
 }
 
-func (Tag) GetAllCommunal(c iris.Context) {
+func (Tag) GetAllShared(c iris.Context) {
 	_, err := isAdmin(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	tags, err := tagdb.GetAllCommunal()
+	tags, err := tagdb.GetAllShared()
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return

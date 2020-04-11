@@ -23,6 +23,21 @@ var ctsdb db.Contest
 var cts Contest
 
 // 获得所有的Contest
+func (Contest) GetAllVisible(c iris.Context) {
+	var form dto.ContestForm
+	err := c.ReadJSON(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	res, err := ctsdb.GetAllVisible(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: res})
+}
+
 func (Contest) GetAll(c iris.Context) {
 	var form dto.ContestForm
 	err := c.ReadJSON(&form)
@@ -30,12 +45,61 @@ func (Contest) GetAll(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	res, err := ctsdb.GetAll(&form)
+	admin, err := isAdmin(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	c.JSON(&dto.Res{Error: "", Data: res})
+	form.Cid = admin.Id
+	data, err := ctsdb.GetAll(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: data})
+}
+
+func (Contest) SetVisibleTrue(c iris.Context) {
+	var id dto.Id
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = cts.isPermitted(c, id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = ctsdb.SetVisibleTrue(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: "update successfully"})
+}
+
+func (Contest) SetVisibleFalse(c iris.Context) {
+	var id dto.Id
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = cts.isPermitted(c, id.Id)
+	if err != nil {
+		err := pb.isCreator(c, id.Id)
+		if err != nil {
+			c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+			return
+		}
+	}
+	err = ctsdb.SetVisibleFalse(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: "update successfully"})
 }
 
 // 获得所有的Contest的数量
@@ -46,7 +110,28 @@ func (Contest) GetCount(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
+	admin, err := isAdmin(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	form.Cid = admin.Id
 	res, err := ctsdb.GetCount(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: res})
+}
+
+func (Contest) GetVisibleCount(c iris.Context) {
+	var form dto.ContestForm
+	err := c.ReadJSON(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	res, err := ctsdb.GetVisibleCount(&form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -848,4 +933,31 @@ func (Contest) updateStatistic(cid, pid, csmid, uid int64, forms []dto.Operation
 	}
 	err := ctsdb.UpdateStat(cid, pid, total, ac, wa, ce, mle, re, tle, ole)
 	return err
+}
+
+func (Contest) isCreator(c iris.Context, id int64) error {
+	i, err := session.GetInt64(c, "userid")
+	if err != nil {
+		return err
+	}
+	creatorId, err := ctsdb.GetCreatorId(id)
+	if err != nil {
+		return err
+	}
+	if i != creatorId {
+		return errors.New("not allowed")
+	}
+	return nil
+}
+
+// to see whether he is super admin or the creator of the problem
+func (Contest) isPermitted(c iris.Context, id int64) error {
+	_, err := isSuperAdmin(c)
+	if err != nil {
+		err := pb.isCreator(c, id)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

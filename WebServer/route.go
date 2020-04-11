@@ -143,8 +143,8 @@ func BindRoute(app *iris.Application) {
 	contest := app.Party("/contest")
 	{
 		var c ctrl.Contest
-		contest.Post("/getAll", c.GetAll)
-		contest.Post("/getCount", c.GetCount)
+		contest.Post("/getAll", c.GetAllVisible)
+		contest.Post("/getCount", c.GetVisibleCount)
 		contest.Post("/getDetail", c.GetDetail)
 		contest.Post("/getQualification", c.GetQualification)
 		contest.Post("/qualify", c.Qualify)
@@ -190,9 +190,9 @@ func BindRoute(app *iris.Application) {
 		var tag ctrl.Tag
 		{
 			admin.Post("/tag/getAll", tag.GetAll)
+			admin.Get("/tag/getAllShared", tag.GetAllShared)
 			admin.Post("/tag/getCount", tag.GetCount)
 			admin.Post("/tag/getAllVisible", tag.GetAllVisible)
-			admin.Post("/tag/getAllCommunal", tag.GetAllCommunal)
 			admin.Post("/tag/setVisibleTrue", tag.SetVisibleTrue)
 			admin.Post("/tag/setVisibleFalse", tag.SetVisibleFalse)
 			admin.Post("/tag/setSharedTrue", tag.SetSharedTrue)
@@ -201,7 +201,13 @@ func BindRoute(app *iris.Application) {
 			admin.Post("/tag/updateTag", tag.UpdateTag)
 			admin.Post("/tag/deleteTag", tag.DeleteTag)
 		}
-
+		var cts ctrl.Contest
+		{
+			admin.Post("/contest/getAll", cts.GetAll)
+			admin.Post("/contest/getCount", cts.GetCount)
+			admin.Post("/contest/setVisibleTrue", cts.SetVisibleTrue)
+			admin.Post("/contest/setVisibleFalse", cts.SetVisibleFalse)
+		}
 		{
 			admin.Get("/jsp/getAllInfo", func(c context.Context) {
 				_, _ = c.JSON(&dto.Res{

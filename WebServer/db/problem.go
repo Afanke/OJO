@@ -35,6 +35,9 @@ func (Problem) GetAll(form *dto.ProblemForm) ([]dto.ProblemBrief, error) {
 	if form.Difficulty != "" {
 		s += "and difficulty=:difficulty "
 	}
+	if form.Mine {
+		s += " and cid=:cid "
+	}
 	s += " order by id desc limit :offset, :limit"
 	rows, err := gosql.Sqlx().NamedQuery(s, &form)
 	if err != nil {
@@ -71,6 +74,9 @@ func (Problem) GetCount(form *dto.ProblemForm) (int, error) {
 	}
 	if form.Difficulty != "" {
 		s += "and difficulty=:difficulty "
+	}
+	if form.Mine {
+		s += " and cid=:cid "
 	}
 	var count int
 	rows, err := gosql.Sqlx().NamedQuery(s, &form)

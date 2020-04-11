@@ -16,6 +16,8 @@ type RegisterForm struct {
 	Captcha  string `json:"captcha"`
 }
 type ProblemForm struct {
+	Mine       bool   `json:"mine" db:"mine"`
+	Cid        int64  `json:"cid" db:"cid"`
 	Page       int    `json:"page" db:"page"`
 	Offset     int    `json:"offset" db:"offset"`
 	Limit      int    `json:"limit" db:"limit"`
@@ -191,6 +193,7 @@ type ContestDetail struct {
 	CreatorName string `json:"creatorName" db:"creatorName"`
 }
 type ContestForm struct {
+	Mine     bool   `json:"mine"`
 	Cid      int64  `json:"cid" db:"cid"`
 	Page     int    `json:"page" db:"page"`
 	Rule     string `json:"rule" db:"rule"`
@@ -314,15 +317,20 @@ type Administrator struct {
 	LastLoginTime string `json:"lastLoginTime" db:"last_login_time"`
 }
 type Contest struct {
+	Visible        bool   `json:"visible" db:"visible"`
 	Id             int64  `json:"id" db:"id"`
 	Cid            int64  `json:"cid" db:"cid"`
+	Punish         int    `json:"punish" db:"punish"`
+	SubmitLimit    int    `json:"submitLimit" db:"submit_limit"`
 	Title          string `json:"title" db:"title"`
 	Description    string `json:"description" db:"description"`
 	Rule           string `json:"rule" db:"rule"`
 	StartTime      string `json:"startTime" db:"start_time"`
+	Now            string `json:"now"`
 	EndTime        string `json:"endTime" db:"end_time"`
 	CreateTime     string `json:"createTime" db:"create_time"`
 	LastUpdateTime string `json:"lastUpdateTime" db:"last_update_time"`
+	CreatorName    string `json:"creatorName"`
 	Password       string `json:"password" db:"password"`
 }
 type ContestStatistic struct {

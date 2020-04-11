@@ -12,13 +12,68 @@ type Contest struct{}
 
 var cts Contest
 
-func (Contest) GetAll(form *dto.ContestForm) ([]dto.ContestBrief, error) {
+var ContestPageSize = 10
+
+func (Contest) GetAll(form *dto.ContestForm) ([]dto.Contest, error) {
 	if form.Page < 1 {
 		form.Page = 1
 	}
 	form.Page -= 1
-	form.Limit = 5
-	form.Offset = form.Page * 5
+	form.Limit = ContestPageSize
+	form.Offset = form.Page * ContestPageSize
+	sql := `select id, title, rule, start_time, end_time,create_time,last_update_time,cid,rule,visible,punish,submit_limit  from ojo.contest `
+	sql += `where 1=1 `
+	if form.Keywords != "" {
+		sql += "and title like concat('%',:keywords,'%') "
+	}
+	if form.Rule != "" {
+		sql += "and rule=:rule "
+	}
+	switch form.Status {
+	case 1:
+		sql += ` and now()<start_time `
+	case 2:
+		sql += " and start_time<now() and now()<end_time "
+	case 3:
+		sql += " and end_time<now() "
+	}
+	if form.Mine {
+		sql += " and cid=:cid "
+	}
+	sql += " order by create_time desc limit :offset, :limit"
+	rows, err := gosql.Sqlx().NamedQuery(sql, &form)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, nil
+	}
+	t := time.Now().Format("2006-01-02 15:04:05")
+	var rest = make([]dto.Contest, 0, form.Limit)
+	for rows.Next() {
+		var res dto.Contest
+		err := rows.StructScan(&res)
+		if err != nil {
+			log.Warn("error:%v", err)
+			return nil, nil
+		}
+		res.Now = t
+		rest = append(rest, res)
+	}
+	err = cts.SelectCreatorName(len(rest), func(i int) (target int64) {
+		return rest[i].Cid
+	}, func(i int, res string) {
+		rest[i].CreatorName = res
+	})
+
+	return rest, err
+}
+
+func (Contest) GetAllVisible(form *dto.ContestForm) ([]dto.ContestBrief, error) {
+	if form.Page < 1 {
+		form.Page = 1
+	}
+	form.Page -= 1
+	form.Limit = ContestPageSize
+	form.Offset = form.Page * ContestPageSize
 	sql := `select id, title, rule, start_time, end_time from ojo.contest `
 	sql += `where 1=1 `
 	if form.Keywords != "" {
@@ -35,7 +90,7 @@ func (Contest) GetAll(form *dto.ContestForm) ([]dto.ContestBrief, error) {
 	case 3:
 		sql += " and end_time<now() "
 	}
-	sql += " order by create_time desc limit :offset, :limit"
+	sql += " and visible=1 order by create_time desc limit :offset, :limit"
 	rows, err := gosql.Sqlx().NamedQuery(sql, &form)
 	if err != nil {
 		log.Warn("error:%v", err)
@@ -73,6 +128,38 @@ func (Contest) GetCount(form *dto.ContestForm) (int, error) {
 	case 3:
 		sql += " and end_time<now() "
 	}
+	if form.Mine {
+		sql += " and cid=:cid "
+	}
+	var count int
+	rows, err := gosql.Sqlx().NamedQuery(sql, &form)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return 0, err
+	}
+	_ = rows.Next()
+	err = rows.Scan(&count)
+	return count, err
+}
+
+func (Contest) GetVisibleCount(form *dto.ContestForm) (int, error) {
+	sql := `select count(*) from ojo.contest `
+	sql += `where 1=1 `
+	if form.Keywords != "" {
+		sql += "and title like concat('%',:keywords,'%') "
+	}
+	if form.Rule != "" {
+		sql += "and rule=:rule "
+	}
+	switch form.Status {
+	case 1:
+		sql += ` and now()<start_time `
+	case 2:
+		sql += " and start_time<now() and now()<end_time "
+	case 3:
+		sql += " and end_time<now() "
+	}
+	sql += " and visible=1 "
 	var count int
 	rows, err := gosql.Sqlx().NamedQuery(sql, &form)
 	if err != nil {
@@ -589,4 +676,46 @@ func (Contest) GetACMWrong(form *dto.SubmitForm) (int, error) {
 	var count int
 	err := gosql.Get(&count, sql, form.Cid, form.Uid)
 	return count, err
+}
+
+func (Contest) SelectCreatorName(lens int, getId func(i int) (target int64), setName func(i int, res string)) error {
+	if lens == 0 {
+		return nil
+	}
+	ids := make([]int64, 0, lens)
+	for i := 0; i < lens; i++ {
+		ids = append(ids, getId(i))
+	}
+	var s []dto.Username
+	err := gosql.Select(&s, "select id,username from ojo.user  where id in (?) ", ids)
+	if err != nil {
+		return err
+	}
+	for i := 0; i < lens; i++ {
+		for j, k := 0, len(s); j < k; j++ {
+			if getId(i) == s[j].Id {
+				setName(i, s[j].Username)
+				break
+			}
+		}
+	}
+	return nil
+}
+
+func (Contest) GetCreatorId(id int64) (int64, error) {
+	var cid int64
+	err := gosql.Get(&cid, "select cid from ojo.contest where id=?", id)
+	return cid, err
+}
+
+func (Contest) SetVisibleTrue(id int64) error {
+	s := "update ojo.contest set visible=true where id=? limit 1"
+	_, err := gosql.Exec(s, id)
+	return err
+}
+
+func (Contest) SetVisibleFalse(id int64) error {
+	s := "update ojo.contest set visible=false where id=? limit 1"
+	_, err := gosql.Exec(s, id)
+	return err
 }
