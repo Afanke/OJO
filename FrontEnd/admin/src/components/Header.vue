@@ -6,7 +6,7 @@
           <h1>Hello OJO</h1>
         </el-row>
 
-         <el-menu-item index="1">
+        <el-menu-item index="1">
           <i class="el-icon-odometer"></i>
           <span slot="title">Dash Board</span>
         </el-menu-item>
@@ -49,17 +49,17 @@
         activeIndex: '3-1',
       }
     },
-    created(){
-      this.$bus.on("changeHeader",this.changeHeader)
+    created() {
+      this.$bus.on("changeHeader", this.changeHeader)
     },
     methods: {
-      async login1(){
-            try {
+      async login1() {
+        try {
           const {
             data: res
           } = await this.$http.post('/user/login1', {
-            username:'root',
-            password:'11111111'
+            username: 'root',
+            password: '11111111'
           });
           if (res.error) {
             this.$message.error(res.error)
@@ -74,13 +74,13 @@
           alert(err)
         }
       },
-       async login2(){
-            try {
+      async login2() {
+        try {
           const {
             data: res
           } = await this.$http.post('/user/login1', {
-            username:'admin1',
-            password:'11111111'
+            username: 'admin1',
+            password: '11111111'
           });
           if (res.error) {
             this.$message.error(res.error)
@@ -95,13 +95,13 @@
           alert(err)
         }
       },
-       async login3(){
-            try {
+      async login3() {
+        try {
           const {
             data: res
           } = await this.$http.post('/user/login1', {
-            username:'admin2',
-            password:'11111111'
+            username: 'admin2',
+            password: '11111111'
           });
           if (res.error) {
             this.$message.error(res.error)
@@ -116,8 +116,8 @@
           alert(err)
         }
       },
-      changeHeader(val){
-        this.activeIndex=val
+      changeHeader(val) {
+        this.activeIndex = val
       },
       handleSelect(key) {
         console.log(key);
@@ -127,7 +127,7 @@
           case "2-1":
             this.$router.push("/general/user")
             break
-            case "2-2":
+          case "2-2":
             this.$router.push("/general/judgeServer")
             break
           case "3-1":
@@ -136,8 +136,11 @@
           case "3-2":
             this.$router.push("/problem/tag")
             break
+          case "4-1":
+            this.$router.push("/contest")
             break
-          case "4":
+          case "4-2":
+            this.$router.push("/contest/create")
             break
         }
 

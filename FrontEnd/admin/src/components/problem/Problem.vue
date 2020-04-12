@@ -20,6 +20,9 @@
             <el-option v-for="item in difficultyOptions" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
+          <div style="float:right;margin-top:16px;margin-right:80px">
+            <my-switch v-model="mine" @toggle="toggle"></my-switch>
+          </div>
           <div style="margin-right:20px;float:right">
             <span style="color:grey;font-size:13px">Tags:&nbsp;</span>
             <el-switch @change="switchTags" v-model="showTags">
@@ -98,6 +101,7 @@
 
 </template>
 <script>
+  import SwitchButton from "@/components/Switch.vue"
   export default {
     data() {
       return {
@@ -109,6 +113,7 @@
         showTags: false,
         count: 0,
         page: 1,
+        mine: false,
         tableData: [{
             id: '12987122',
             name: '好滋好味鸡蛋仔',
@@ -180,6 +185,13 @@
       this.queryList()
     },
     methods: {
+      toggle(checked) {
+        this.mine = checked
+        let obj = this.paramsQuery();
+        obj.mine = this.mine;
+        obj.page = 1;
+        this.fresh(obj);
+      },
       async editProblem(id) {
         try {
           const {
@@ -205,7 +217,7 @@
       deleteProblem() {
 
       },
-      params_init() {
+      paramsInit() {
         if (this.$route.query.page) {
           this.page = Number(this.$route.query.page);
         } else {
@@ -221,8 +233,21 @@
         } else {
           this.keywords = '';
         }
+        if (this.$route.query.mine) {
+          if (typeof (this.$route.query.mine) === typeof(true)) {
+            this.mine = this.$route.query.mine
+          } else {
+            if (this.$route.query.mine === "true") {
+              this.mine = true
+            } else {
+              this.mine = false
+            }
+          }
+        } else {
+          this.mine = false
+        }
       },
-      params_query() {
+      paramsQuery() {
         let obj = {};
         if (this.$route.query.page) {
           obj.page = Number(this.$route.query.page);
@@ -236,18 +261,24 @@
         if (this.$route.query.keywords) {
           obj.keywords = this.$route.query.keywords;
         }
+        if (this.$route.query.mine) {
+          obj.mine = true
+        } else {
+          obj.mine = false
+        }
         return obj;
       },
       async queryList() {
         this.loading = true
-        this.params_init()
+        this.paramsInit()
         try {
           const {
             data: res
           } = await this.$http.post('/admin/problem/getAll', {
             page: this.page,
             difficulty: this.difficulty,
-            keywords: this.keywords
+            keywords: this.keywords,
+            mine: this.mine,
           });
           if (res.error) {
             this.$message.error(res.error)
@@ -258,7 +289,8 @@
             data: res1
           } = await this.$http.post('/admin/problem/getCount', {
             difficulty: this.difficulty,
-            keywords: this.keywords
+            keywords: this.keywords,
+            mine: this.mine,
           });
           if (res1.error) {
             this.$message.error(res1.error)
@@ -310,18 +342,18 @@
         }
       },
       handlePageChange(val) {
-        let obj = this.params_query();
+        let obj = this.paramsQuery();
         obj.page = Number(val);
         this.fresh(obj);
       },
       handleDifficultChange(val) {
-        let obj = this.params_query();
+        let obj = this.paramsQuery();
         obj.difficulty = val;
         obj.page = 1;
         this.fresh(obj);
       },
       handleKeywordsChange() {
-        let obj = this.params_query();
+        let obj = this.paramsQuery();
         obj.keywords = this.keywords;
         obj.page = 1;
         this.fresh(obj);
@@ -358,7 +390,9 @@
         this.queryList();
       }
     },
-    components: {}
+    components: {
+      mySwitch: SwitchButton
+    }
   };
 </script>
 

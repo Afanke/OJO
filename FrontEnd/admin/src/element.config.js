@@ -55,14 +55,14 @@ import {
   // Cascader,
   // ColorPicker,
   // Transfer,
-  // DatePicker,
+  DatePicker,
   // TimeSelect,
   // TimePicker,
   Popover,
   Tooltip,
   // Breadcrumb,
   // BreadcrumbItem,
-  // Radio,
+  Radio,
   // RadioGroup,
   // RadioButton,
   Checkbox,
@@ -85,8 +85,9 @@ import {
   Avatar,
   Tag
 } from 'element-ui';
-
-
+import lang from 'element-ui/lib/locale/lang/en'
+import locale from 'element-ui/lib/locale'
+locale.use(lang)
 const element = {
   install: function (Vue) {
 Vue.use(Pagination);
@@ -134,7 +135,7 @@ Vue.use(Col);
 Vue.prototype.$loading = Loading.service;
 
 Vue.prototype.$message = Message;
-// Vue.use(Radio);
+Vue.use(Radio);
 // Vue.use(RadioGroup);
 // Vue.use(RadioButton);
 Vue.use(Checkbox);
@@ -145,7 +146,7 @@ Vue.use(CheckboxGroup);
 // Vue.use(Tag);
 // Vue.use(Tree);
 // Vue.use(Alert);
-// Vue.use(DatePicker);
+Vue.use(DatePicker);
 // Vue.use(TimeSelect);
 // Vue.use(TimePicker);
 Vue.use(Popover);

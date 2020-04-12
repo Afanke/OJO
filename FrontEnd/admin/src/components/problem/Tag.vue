@@ -53,7 +53,7 @@
                   <el-button size="mini" class="el-icon-edit-outline" @click="goEditTag(scope.row)"></el-button>
                 </el-tooltip>
                 <el-tooltip content="Delete" placement="top">
-                  <el-button size="mini" class="el-icon-delete" style="color:red" @click="deleteTag(scope.row)">
+                  <el-button size="mini" class="el-icon-delete" style="color:red" @click="deleteTag(scope.row.id)">
                   </el-button>
                 </el-tooltip>
               </el-row>
@@ -130,7 +130,7 @@
     data() {
       return {
         show: false,
-        id:0,
+        id: 0,
         showEditTag: false,
         tableData: [],
         mine: false,
@@ -192,15 +192,15 @@
       },
       handleEditClose(done) {
         this.tagName = ''
-        this.id=0
-          this.showEditTag = false
+        this.id = 0
+        this.showEditTag = false
         if (done) {
           done()
         }
       },
       goEditTag(obj) {
         this.tagName = obj.name
-        this.id=obj.id
+        this.id = obj.id
         this.showEditTag = true
       },
       toggle(checked) {
@@ -237,8 +237,26 @@
           alert(err)
         }
       },
-      deleteTag() {
-
+      async deleteTag(id) {
+        try {
+          const {
+            data: res
+          } = await this.$http.post('/admin/tag/deleteTag', {
+            id: id,
+          });
+          if (res.error) {
+            this.$message.error(res.error)
+            return
+          }
+          this.$message({
+            message: res.data,
+            type: 'success'
+          });
+          this.queryList()
+        } catch (err) {
+          console.log(err);
+          alert(err)
+        }
       },
       paramsInit() {
         if (this.$route.query.page) {
@@ -267,7 +285,6 @@
         }
         if (this.$route.query.mine) {
           obj.mine = true
-
         } else {
           obj.mine = false
         }

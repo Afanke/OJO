@@ -6,6 +6,9 @@ Vue.use(VueRouter);
 const ProblemCreate = () => import('@/components/problem/Create.vue');
 const ProblemEdit = () => import('@/components/problem/Edit.vue');
 const Problem = () => import('@/components/problem/Problem.vue');
+const Contest = () => import('@/components/contest/Contest.vue');
+const ContestCreate = () => import('@/components/contest/Create.vue');
+const ContestEdit = () => import('@/components/contest/Edit.vue');
 const Carton = () => import('@/components/problem/Carton.vue');
 const User = () => import('@/components/general/User.vue');
 const JudgeServer = () => import('@/components/general/JudgeServer.vue');
@@ -23,6 +26,9 @@ const routes = [
   { path: '/problem/edit', component: ProblemEdit },
   { path: '/problem/tag', component: ProblemTag },
   { path: '/problem', component: Problem },
+  { path: '/contest', component: Contest },
+  { path: '/contest/create', component: ContestCreate },
+  { path: '/contest/edit', component: ContestEdit },
   { path: '/carton', component: Carton },
   { path: '/general/user', component: User },
   { path: '/general/judgeServer', component: JudgeServer },
