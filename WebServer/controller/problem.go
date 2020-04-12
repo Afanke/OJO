@@ -145,11 +145,8 @@ func (Problem) SetVisibleFalse(c iris.Context) {
 	}
 	err = pb.isPermitted(c, id.Id)
 	if err != nil {
-		err := pb.isCreator(c, id.Id)
-		if err != nil {
-			c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-			return
-		}
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
 	}
 	err = pbdb.SetVisibleFalse(id.Id)
 	if err != nil {
@@ -168,11 +165,8 @@ func (Problem) TryEdit(c iris.Context) {
 	}
 	err = pb.isPermitted(c, id.Id)
 	if err != nil {
-		err := pb.isCreator(c, id.Id)
-		if err != nil {
-			c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-			return
-		}
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
 	}
 	c.JSON(&dto.Res{Error: "", Data: "ok"})
 }
@@ -182,7 +176,7 @@ func (Problem) isCreator(c iris.Context, id int64) error {
 	if err != nil {
 		return err
 	}
-	creatorId, err := ctsdb.GetCreatorId(id)
+	creatorId, err := pbdb.GetCreatorId(id)
 	if err != nil {
 		return err
 	}

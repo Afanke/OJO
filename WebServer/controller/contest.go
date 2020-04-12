@@ -88,11 +88,8 @@ func (Contest) SetVisibleFalse(c iris.Context) {
 	}
 	err = cts.isPermitted(c, id.Id)
 	if err != nil {
-		err := pb.isCreator(c, id.Id)
-		if err != nil {
-			c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-			return
-		}
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
 	}
 	err = ctsdb.SetVisibleFalse(id.Id)
 	if err != nil {
@@ -140,14 +137,14 @@ func (Contest) GetVisibleCount(c iris.Context) {
 }
 
 // 获得对应id的Contest的详细信息
-func (Contest) GetDetail(c iris.Context) {
+func (Contest) GetVisibleDetail(c iris.Context) {
 	var id dto.Id
 	err := c.ReadJSON(&id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	res, err := ctsdb.GetDetail(id.Id)
+	res, err := ctsdb.GetVisibleDetail(id.Id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -601,6 +598,7 @@ func (Contest) GetACMRankCount(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: detail})
 }
 
+// -------------------------------------------------------------
 // 提交代码
 func (Contest) Submit(c iris.Context) {
 	var form dto.SubmitForm
@@ -639,7 +637,7 @@ func (Contest) Submit(c iris.Context) {
 }
 
 func (Contest) handleSubmit(form *dto.SubmitForm) {
-	contest, err := ctsdb.GetDetail(form.Cid)
+	contest, err := ctsdb.GetVisibleDetail(form.Cid)
 	if err != nil {
 		log.Warn("error:%v", err)
 		_ = ctsdb.SetISE(form.Sid)
@@ -935,6 +933,86 @@ func (Contest) updateStatistic(cid, pid, csmid, uid int64, forms []dto.Operation
 	return err
 }
 
+// -------------------------------------------------------------
+
+func (Contest) AddContest(c iris.Context) {
+	var contest dto.Contest
+	err := c.ReadJSON(&contest)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	log.Debug("%v", contest)
+	admin, err := isAdmin(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	contest.Cid = admin.Id
+	err = ctsdb.InsertContest(&contest)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: "add contest successfully"})
+}
+
+func (Contest) TryEdit(c iris.Context) {
+	var id dto.Id
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = cts.isPermitted(c, id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: "ok"})
+}
+
+func (Contest) GetDetail(c iris.Context) {
+	var id dto.Id
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = cts.isPermitted(c, id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	data, err := ctsdb.GetDetail(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: data})
+}
+
+func (Contest) UpdateContest(c iris.Context) {
+	var contest dto.Contest
+	err := c.ReadJSON(&contest)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	log.Debug("%#v", contest)
+	err = cts.isPermitted(c, contest.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = ctsdb.UpdateContest(&contest)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: "save successfully"})
+}
+
 func (Contest) isCreator(c iris.Context, id int64) error {
 	i, err := session.GetInt64(c, "userid")
 	if err != nil {
@@ -950,11 +1028,11 @@ func (Contest) isCreator(c iris.Context, id int64) error {
 	return nil
 }
 
-// to see whether he is super admin or the creator of the problem
+// to see whether he is super admin or the creator of the contest
 func (Contest) isPermitted(c iris.Context, id int64) error {
 	_, err := isSuperAdmin(c)
 	if err != nil {
-		err := pb.isCreator(c, id)
+		err := cts.isCreator(c, id)
 		if err != nil {
 			return err
 		}

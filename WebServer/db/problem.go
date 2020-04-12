@@ -292,7 +292,6 @@ func (Problem) InsertProblem(p *dto.Problem) error {
 }
 
 func (Problem) UpdateProblem(p *dto.Problem) error {
-
 	var s = `update ojo.problem set cid=?,
                         ref=?,
                         title=?,
@@ -427,11 +426,13 @@ func (Problem) DeleteProblemLanguage(tx *gosql.DB, pid int64) error {
 	_, err := tx.Exec(s, pid)
 	return err
 }
+
 func (Problem) DeleteProblemSample(tx *gosql.DB, pid int64) error {
 	var s = "delete from ojo.problem_sample where pid=?"
 	_, err := tx.Exec(s, pid)
 	return err
 }
+
 func (Problem) DeleteProblemTag(tx *gosql.DB, pid int64) error {
 	var s = "delete from ojo.problem_tag where pid=?"
 	_, err := tx.Exec(s, pid)

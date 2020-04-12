@@ -145,7 +145,7 @@ func BindRoute(app *iris.Application) {
 		var c ctrl.Contest
 		contest.Post("/getAll", c.GetAllVisible)
 		contest.Post("/getCount", c.GetVisibleCount)
-		contest.Post("/getDetail", c.GetDetail)
+		contest.Post("/getDetail", c.GetVisibleDetail)
 		contest.Post("/getQualification", c.GetQualification)
 		contest.Post("/qualify", c.Qualify)
 		contest.Post("/getAllProblem", c.GetAllProblem)
@@ -207,6 +207,10 @@ func BindRoute(app *iris.Application) {
 			admin.Post("/contest/getCount", cts.GetCount)
 			admin.Post("/contest/setVisibleTrue", cts.SetVisibleTrue)
 			admin.Post("/contest/setVisibleFalse", cts.SetVisibleFalse)
+			admin.Post("/contest/addContest", cts.AddContest)
+			admin.Post("/contest/tryEdit", cts.TryEdit)
+			admin.Post("/contest/getDetail", cts.GetDetail)
+			admin.Post("/contest/updateContest", cts.UpdateContest)
 		}
 		{
 			admin.Get("/jsp/getAllInfo", func(c context.Context) {

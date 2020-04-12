@@ -21,27 +21,27 @@ func (Contest) GetAll(form *dto.ContestForm) ([]dto.Contest, error) {
 	form.Page -= 1
 	form.Limit = ContestPageSize
 	form.Offset = form.Page * ContestPageSize
-	sql := `select id, title, rule, start_time, end_time,create_time,last_update_time,cid,rule,visible,punish,submit_limit  from ojo.contest `
-	sql += `where 1=1 `
+	s := `select id, title, rule, start_time, end_time,create_time,last_update_time,cid,rule,visible,punish,submit_limit  from ojo.contest `
+	s += `where 1=1 `
 	if form.Keywords != "" {
-		sql += "and title like concat('%',:keywords,'%') "
+		s += "and title like concat('%',:keywords,'%') "
 	}
 	if form.Rule != "" {
-		sql += "and rule=:rule "
+		s += "and rule=:rule "
 	}
 	switch form.Status {
 	case 1:
-		sql += ` and now()<start_time `
+		s += ` and now()<start_time `
 	case 2:
-		sql += " and start_time<now() and now()<end_time "
+		s += " and start_time<now() and now()<end_time "
 	case 3:
-		sql += " and end_time<now() "
+		s += " and end_time<now() "
 	}
 	if form.Mine {
-		sql += " and cid=:cid "
+		s += " and cid=:cid "
 	}
-	sql += " order by create_time desc limit :offset, :limit"
-	rows, err := gosql.Sqlx().NamedQuery(sql, &form)
+	s += " order by create_time desc limit :offset, :limit"
+	rows, err := gosql.Sqlx().NamedQuery(s, &form)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, nil
@@ -63,7 +63,6 @@ func (Contest) GetAll(form *dto.ContestForm) ([]dto.Contest, error) {
 	}, func(i int, res string) {
 		rest[i].CreatorName = res
 	})
-
 	return rest, err
 }
 
@@ -171,9 +170,9 @@ func (Contest) GetVisibleCount(form *dto.ContestForm) (int, error) {
 	return count, err
 }
 
-func (Contest) GetDetail(id int64) (*dto.ContestDetail, error) {
+func (Contest) GetVisibleDetail(id int64) (*dto.ContestDetail, error) {
 	var data dto.ContestDetail
-	err := gosql.Get(&data, "select id, title, description, rule, start_time, end_time, cid,punish_time from contest where id=?", id)
+	err := gosql.Get(&data, "select id, title, description, rule, start_time, end_time, cid, punish from contest where id=?", id)
 	if err != nil {
 		log.Warn("error:%v\n", err)
 		return nil, err
@@ -717,5 +716,150 @@ func (Contest) SetVisibleTrue(id int64) error {
 func (Contest) SetVisibleFalse(id int64) error {
 	s := "update ojo.contest set visible=false where id=? limit 1"
 	_, err := gosql.Exec(s, id)
+	return err
+}
+
+func (Contest) InsertContest(c *dto.Contest) error {
+	s := `insert into ojo.contest(
+                title, description, rule,
+                cid, password,punish,visible,
+				submit_limit,                        
+                start_time, end_time, create_time,
+                last_update_time ) 
+                VALUES (?,?,?,?,?,?,?,?,?,?,now(),now())`
+	db, err := gosql.Begin()
+	if err != nil {
+		log.Warn("%v", err)
+		return err
+	}
+	res, err := db.Exec(s, c.Title, c.Description, c.Rule,
+		c.Cid, c.Password, c.Punish, c.Visible, c.SubmitLimit, c.StartTime, c.EndTime)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := db.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	id, err := res.LastInsertId()
+	for i, j := 0, len(c.IPLimit); i < j; i++ {
+		err := cts.InsertIPRange(db, id, c.IPLimit[i].Address)
+		if err != nil {
+			log.Warn("%v", err)
+			err2 := db.Rollback()
+			if err2 != nil {
+				log.Warn("%v", err2)
+			}
+			return err
+		}
+	}
+	err = db.Commit()
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := db.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	return err
+}
+
+func (Contest) InsertIPRange(db *gosql.DB, cid int64, address string) error {
+	s := `insert into ojo.contest_ip_limit(cid, address) VALUES (?,?)`
+	_, err := db.Exec(s, cid, address)
+	return err
+}
+
+func (Contest) GetDetail(id int64) (*dto.Contest, error) {
+	var detail dto.Contest
+	err := gosql.Get(&detail, `select id, title,
+       description, rule, start_time,
+       end_time, create_time, last_update_time,
+       cid, password, punish, visible, submit_limit
+       from ojo.contest c where c.id=? limit 1`, id)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	limit, err := cts.GetIPLimit(id)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	detail.IPLimit = limit
+	return &detail, err
+}
+
+func (Contest) GetIPLimit(id int64) ([]dto.ContestIPLimit, error) {
+	var res []dto.ContestIPLimit
+	err := gosql.Select(&res, `select id, cid,address
+       from ojo.contest_ip_limit c where c.cid=?`, id)
+	return res, err
+}
+
+func (Contest) UpdateContest(c *dto.Contest) error {
+	var s = `update ojo.contest set 
+                        title=?,
+                        description=?,
+                        rule=?,
+                        password=?,
+                        punish=?,
+                        visible=?,
+						submit_limit=?,                        
+                		start_time=?,
+                        end_time=?, 
+                        last_update_time=now()
+			 where id=?`
+	tx, err := gosql.Begin()
+	if err != nil {
+		log.Warn("%v", err)
+		return err
+	}
+	_, err = tx.Exec(s, c.Title, c.Description, c.Rule,
+		c.Password, c.Punish, c.Visible, c.SubmitLimit, c.StartTime, c.EndTime, c.Id)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	err = cts.DeleteIPLimit(tx, c.Id)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	for i, j := 0, len(c.IPLimit); i < j; i++ {
+		err := cts.InsertIPRange(tx, c.Id, c.IPLimit[i].Address)
+		if err != nil {
+			log.Warn("%v", err)
+			err2 := tx.Rollback()
+			if err2 != nil {
+				log.Warn("%v", err2)
+			}
+			return err
+		}
+	}
+	err = tx.Commit()
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	return nil
+}
+
+func (Contest) DeleteIPLimit(db *gosql.DB, id int64) error {
+	_, err := db.Exec("delete from contest_ip_limit where cid=?", id)
 	return err
 }

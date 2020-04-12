@@ -317,21 +317,27 @@ type Administrator struct {
 	LastLoginTime string `json:"lastLoginTime" db:"last_login_time"`
 }
 type Contest struct {
-	Visible        bool   `json:"visible" db:"visible"`
-	Id             int64  `json:"id" db:"id"`
-	Cid            int64  `json:"cid" db:"cid"`
-	Punish         int    `json:"punish" db:"punish"`
-	SubmitLimit    int    `json:"submitLimit" db:"submit_limit"`
-	Title          string `json:"title" db:"title"`
-	Description    string `json:"description" db:"description"`
-	Rule           string `json:"rule" db:"rule"`
-	StartTime      string `json:"startTime" db:"start_time"`
-	Now            string `json:"now"`
-	EndTime        string `json:"endTime" db:"end_time"`
-	CreateTime     string `json:"createTime" db:"create_time"`
-	LastUpdateTime string `json:"lastUpdateTime" db:"last_update_time"`
-	CreatorName    string `json:"creatorName"`
-	Password       string `json:"password" db:"password"`
+	Visible        bool             `json:"visible" db:"visible"`
+	Id             int64            `json:"id" db:"id"`
+	Cid            int64            `json:"cid" db:"cid"`
+	Punish         int              `json:"punish" db:"punish"`
+	SubmitLimit    int              `json:"submitLimit" db:"submit_limit"`
+	Title          string           `json:"title" db:"title"`
+	Description    string           `json:"description" db:"description"`
+	Rule           string           `json:"rule" db:"rule"`
+	StartTime      string           `json:"startTime" db:"start_time"`
+	Now            string           `json:"now"`
+	EndTime        string           `json:"endTime" db:"end_time"`
+	CreateTime     string           `json:"createTime" db:"create_time"`
+	LastUpdateTime string           `json:"lastUpdateTime" db:"last_update_time"`
+	CreatorName    string           `json:"creatorName"`
+	Password       string           `json:"password" db:"password"`
+	IPLimit        []ContestIPLimit `json:"IPLimit"`
+}
+type ContestIPLimit struct {
+	Id      int    `json:"id" db:"id"`
+	Cid     int    `json:"cid" db:"cid"`
+	Address string `json:"address" db:"address"`
 }
 type ContestStatistic struct {
 	Pid   int64 `json:"pid" db:"pid"`
