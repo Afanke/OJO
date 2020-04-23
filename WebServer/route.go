@@ -102,6 +102,7 @@ func BindRoute(app *iris.Application) {
 	// app.Use(TemUserMidWare)
 	{
 		var file ctrl.File
+		var sys ctrl.System
 		app.Get("/", file.Index)
 		app.Get("/admin", file.Admin)
 		app.Get("/vds", file.VDS)
@@ -110,6 +111,7 @@ func BindRoute(app *iris.Application) {
 		app.Get("/fonts/*", file.File)
 		app.Get("/css/*", file.File)
 		app.Get("/js/*", file.File)
+		app.Get("/sys/getWebConfig", sys.GetWebConfig)
 		app.Post("/getProgress", file.GetProgress)
 		app.Post("/uploadImg", file.UploadImg)
 		app.Options("*", func(c iris.Context) {
@@ -211,6 +213,12 @@ func BindRoute(app *iris.Application) {
 			admin.Post("/contest/tryEdit", cts.TryEdit)
 			admin.Post("/contest/getDetail", cts.GetDetail)
 			admin.Post("/contest/updateContest", cts.UpdateContest)
+		}
+		var sys ctrl.System
+		{
+			admin.Get("/sys/getAll", sys.GetAll)
+			admin.Post("/sys/updateSMTP", sys.UpdateSMTP)
+			admin.Post("/sys/updateWeb", sys.UpdateWeb)
 		}
 		{
 			admin.Get("/jsp/getAllInfo", func(c context.Context) {

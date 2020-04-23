@@ -44,7 +44,7 @@ func main() {
 	// 	DocPath:  "apidoc.html",        //生成API文档名称存放路径
 	// 	BaseUrls: map[string]string{"Production": "", "Staging": ""},
 	// })
-	//注册中间件
+	// 注册中间件
 	// app.Use(irisyaag.New())
 	log.Info("hello")
 	_ = app.Run(iris.Addr(":80"))

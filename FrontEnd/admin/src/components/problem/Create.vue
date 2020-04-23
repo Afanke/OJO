@@ -85,7 +85,6 @@
                   </el-option>
                 </el-select>
               </el-row>
-
             </el-col>
             <el-col :span="8" :offset="1">
               <span style="color:#ffffff">*</span>
@@ -148,7 +147,6 @@
               </el-row>
             </el-row>
           </el-row>
-
           <el-row id="add-button">
             <div @click="addSample">
               <i class="el-icon-plus"></i>
@@ -445,7 +443,7 @@
         try {
           const {
             data: res
-          } = await this.$http.get('/admin/problem/getAllTags');
+          } = await this.$http.get('/admin/tag/getAllShared');
           // console.log(res);
           if (res.error) {
             this.$message.error(res.error)
@@ -472,6 +470,10 @@
     border-radius: 10px;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   }
+
+.center-box >>> .w-e-text{
+  overflow:visible!important
+}
 
   #add-button {
     border: 1px solid rgb(233, 233, 235);

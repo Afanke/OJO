@@ -509,3 +509,32 @@ type User struct {
 	Major         string `json:"major" db:"major"`
 	Github        string `json:"github" db:"github"`
 }
+type SystemConfig struct {
+	Server        string `json:"server" db:"server"`
+	Port          int    `json:"port" db:"port"`
+	Email         string `json:"email" db:"email"`
+	Password      string `json:"password" db:"password"`
+	Name          string `json:"name" db:"name"`
+	Footer        string `json:"footer" db:"footer"`
+	AllowRegister bool   `json:"allowRegister" db:"allow_register"`
+}
+
+type Announcement struct {
+	Visible        bool   `json:"visible" db:"visible"`
+	Id             int64  `json:"id" db:"id"`
+	Cid            int64  `json:"cid" db:"cid"`
+	CreateTime     string `json:"createTime" db:"create_time"`
+	LastUpdateTime string `json:"lastUpdateTime" db:"last_update_time"`
+	CreatorName    string `json:"creatorName"`
+	Title          string `json:"title" db:"title"`
+	Content        string `json:"content" db:"content"`
+}
+
+type AnnouncementForm struct {
+	Mine     bool   `json:"mine" db:"mine"`
+	Cid      int64  `json:"cid" db:"cid"`
+	Page     int    `json:"page" db:"page"`
+	Offset   int    `json:"offset" db:"offset"`
+	Limit    int    `json:"limit" db:"limit"`
+	Keywords string `json:"keywords" db:"keywords"`
+}
