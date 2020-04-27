@@ -63,8 +63,8 @@ import {
   // Breadcrumb,
   // BreadcrumbItem,
   Radio,
-  // RadioGroup,
-  // RadioButton,
+  RadioGroup,
+  RadioButton,
   Checkbox,
   CheckboxButton,
   CheckboxGroup,
@@ -136,8 +136,8 @@ Vue.prototype.$loading = Loading.service;
 
 Vue.prototype.$message = Message;
 Vue.use(Radio);
-// Vue.use(RadioGroup);
-// Vue.use(RadioButton);
+Vue.use(RadioGroup);
+Vue.use(RadioButton);
 Vue.use(Checkbox);
 Vue.use(CheckboxButton);
 Vue.use(CheckboxGroup);

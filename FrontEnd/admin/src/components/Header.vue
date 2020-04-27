@@ -1,9 +1,10 @@
 <template>
   <div>
     <el-row style="height:100%;bottom:0;">
-      <el-menu :default-active="activeIndex" style="height:100%" @select="handleSelect">
+      <el-menu :unique-opened="true" :default-active="activeIndex" style="height:100%" @select="handleSelect">
         <el-row style="text-align:center">
-          <h1>Hello OJO</h1>
+          <img src="../assets/rocket.png" alt="" style="width:50%">
+          <!-- <h1>Hello OJO</h1> -->
         </el-row>
 
         <el-menu-item index="1">
@@ -16,7 +17,9 @@
             <span style="font-size:15px">General</span>
           </template>
           <el-menu-item index="2-1">User</el-menu-item>
-          <el-menu-item index="2-2">Judge Server</el-menu-item>
+          <el-menu-item index="2-2">Announcement</el-menu-item>
+          <el-menu-item index="2-3">Judge Server</el-menu-item>
+          <el-menu-item index="2-4">System Config</el-menu-item>
         </el-submenu>
         <el-submenu index="3">
           <template slot="title">
@@ -123,12 +126,19 @@
         console.log(key);
         switch (key) {
           case "1":
+            this.$router.push("/dashboard")
             break
           case "2-1":
             this.$router.push("/general/user")
             break
           case "2-2":
+            this.$router.push("/general/announcement")
+            break
+          case "2-3":
             this.$router.push("/general/judgeServer")
+            break
+          case "2-4":
+            this.$router.push("/general/system")
             break
           case "3-1":
             this.$router.push("/problem")

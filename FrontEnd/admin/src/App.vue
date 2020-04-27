@@ -1,29 +1,39 @@
 <template>
   <div id="app">
     <el-container>
-  <el-aside width="230px"><app-header></app-header></el-aside>
+      <el-aside width="230px">
+        <app-header></app-header>
+      </el-aside>
+        <!-- <el-scrollbar style="height:100%"> -->
 
-  <el-container>
-    <el-main style="min-width:1050px">
-      <router-view> 
+      <el-container>
 
-      </router-view>
-      </el-main>
-  </el-container>
+        <el-header style="padding:0;background-color:#ffffff" height="50px" >
+          <i class="el-icon-refresh-right"></i>
+        </el-header>
 
-</el-container>
+          <el-main style="min-width:1050px">
+            <router-view>
+            </router-view>
+          </el-main>
+        <!-- <el-footer> -->
+        <!-- </el-footer> -->
+      </el-container>
+        <!-- </el-scrollbar> -->
+
+    </el-container>
   </div>
 </template>
 <script>
   import Header from '@/components/Header.vue';
-  // import ScorllBar from "element-ui/lib/scrollbar"
+  import ScorllBar from "element-ui/lib/scrollbar"
 
 
   export default {
     name: 'app',
     components: {
       appHeader: Header,
-      // elScrollbar: ScorllBar
+      elScrollbar: ScorllBar
     },
     data() {
       return {};
@@ -56,19 +66,13 @@
     height: 100%;
     display: flex;
   }
-  .el-aside{
+
+  .el-aside {
     height: 100%;
     background-color: #ffffff;
   }
 
-  .el-scrollbar__wrap {
-    overflow-x: hidden !important;
-  }
-
-  .el-select-dropdown__list {
-    margin: 0 0px 15px 0px !important;
-  }
-
-
-
+.el-scrollbar__wrap.default-scrollbar__wrap {
+  overflow-x: auto;
+}
 </style>

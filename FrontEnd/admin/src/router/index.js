@@ -12,8 +12,11 @@ const ContestEdit = () => import('@/components/contest/Edit.vue');
 const Carton = () => import('@/components/problem/Carton.vue');
 const User = () => import('@/components/general/User.vue');
 const JudgeServer = () => import('@/components/general/JudgeServer.vue');
+const System = () => import('@/components/general/System.vue');
+const Announcement = () => import('@/components/general/Announcement.vue');
 const ProblemTag = () => import('@/components/problem/Tag.vue');
 const Test = () => import('@/components/Test.vue');
+const DashBoard = () => import('@/components/DashBoard.vue');
 // const Test2 = () => import('@/components/Test2.vue');
 
 const originalPush = VueRouter.prototype.push;
@@ -32,6 +35,9 @@ const routes = [
   { path: '/carton', component: Carton },
   { path: '/general/user', component: User },
   { path: '/general/judgeServer', component: JudgeServer },
+  { path: '/general/system', component: System },
+  { path: '/general/announcement', component: Announcement },
+  { path: '/dashboard', component: DashBoard },
   // { path: '/', component:Test }
   { path: '/', component:User }
 ];

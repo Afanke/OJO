@@ -1,8 +1,6 @@
 <template>
-
   <div>
     <transition name="slide-fade">
-
       <div class="center-box" v-if="show">
         <el-row style="height:60px;line-height:60px;">
           <span style="font-size:20px;margin-left:20px">Judge Server</span>
@@ -36,12 +34,10 @@
           </el-col>
           <el-col :span="8">
             <el-row class="create-card">
-
             </el-row>
           </el-col>
         </el-row>
         <el-row style="height:30px">
-
         </el-row>
       </div>
     </transition>
