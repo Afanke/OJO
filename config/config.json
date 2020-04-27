@@ -5,8 +5,8 @@
     "DataSourceName": "root:123123@tcp(127.0.0.1:3306)/ojo?charset=utf8mb4"
   },
   "Session": {
-    "CleanCycle" :6000,
-    "SaveCycle": 60,
+    "CleanCycle" :3600,
+    "SaveCycle": 600,
     "MaxAge": 15000
   },
   "Log": {

@@ -5,6 +5,7 @@ import (
 	"github.com/afanke/OJO/WebServer/dto"
 	"github.com/afanke/OJO/utils/log"
 	"github.com/ilibs/gosql/v2"
+	"time"
 )
 
 type QueryForm struct {
@@ -277,4 +278,72 @@ func (Practice) InsertStatistic(tx *gosql.DB, pbid int64) error {
 	s := "insert into ojo.practice_statistic(pbid) values (?)"
 	_, err := tx.Exec(s, pbid)
 	return err
+}
+
+func (Practice) GetTodayCount() ([]dto.TodayCount, error) {
+	var data []dto.TodayCount
+	err := gosql.Select(&data, `SELECT
+    DATE_FORMAT(submit_time, '%H') hour,
+       count( * ) AS count
+	FROM
+    ojo.practice_submission
+	WHERE
+    submit_time between curdate()  and date_sub(curdate(),interval -1 day )
+	GROUP BY
+    hour
+	ORDER BY
+    hour;`)
+	return data, err
+}
+
+func (Practice) GetWeekCount() (dto.WeekCount, error) {
+	var data []dto.DayCount
+	err := gosql.Select(&data, `SELECT
+    DATE_FORMAT(submit_time, '%Y-%m-%d') day,
+    count( * ) AS count
+FROM
+    ojo.practice_submission
+WHERE
+    submit_time between date_sub(curdate(),interval 30 day) and curdate()
+GROUP BY
+    day
+ORDER BY
+    day;`)
+	if err != nil {
+		log.Warn("%v", err)
+		return dto.WeekCount{}, err
+	}
+	var res dto.WeekCount
+	res.DayCount = data
+	var now = time.Now()
+	res.Today.Year = now.Year()
+	res.Today.Month = int(now.Month())
+	res.Today.Day = now.Day()
+	return res, err
+}
+
+func (Practice) GetMonthCount() (dto.MonthCount, error) {
+	var data []dto.DayCount
+	err := gosql.Select(&data, `SELECT
+    DATE_FORMAT(submit_time, '%Y-%m-%d') day,
+    count( * ) AS count
+FROM
+    ojo.practice_submission
+WHERE
+    submit_time between date_sub(curdate(),interval 30 day) and curdate()
+GROUP BY
+    day
+ORDER BY
+    day;`)
+	if err != nil {
+		log.Warn("%v", err)
+		return dto.MonthCount{}, err
+	}
+	var res dto.MonthCount
+	res.DayCount = data
+	var now = time.Now()
+	res.Today.Year = now.Year()
+	res.Today.Month = int(now.Month())
+	res.Today.Day = now.Day()
+	return res, err
 }

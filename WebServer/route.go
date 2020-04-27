@@ -180,6 +180,12 @@ func BindRoute(app *iris.Application) {
 			admin.Post("/problem/getDetail", pb.GetDetail)
 			admin.Post("/problem/updateProblem", pb.UpdateProblem)
 		}
+		var pct ctrl.Practice
+		{
+			admin.Post("/practice/getTodayCount", pct.GetTodayCount)
+			admin.Post("/contest/getWeekCount", pct.GetWeekCount)
+			admin.Post("/contest/getMonthCount", pct.GetMonthCount)
+		}
 		var user ctrl.User
 		{
 			admin.Post("/user/getAll", user.GetAll)
@@ -213,6 +219,9 @@ func BindRoute(app *iris.Application) {
 			admin.Post("/contest/tryEdit", cts.TryEdit)
 			admin.Post("/contest/getDetail", cts.GetDetail)
 			admin.Post("/contest/updateContest", cts.UpdateContest)
+			admin.Post("/contest/getTodayCount", cts.GetTodayCount)
+			admin.Post("/contest/getWeekCount", cts.GetWeekCount)
+			admin.Post("/contest/getMonthCount", cts.GetMonthCount)
 		}
 		var sys ctrl.System
 		{

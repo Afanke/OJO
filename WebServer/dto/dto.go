@@ -538,3 +538,30 @@ type AnnouncementForm struct {
 	Limit    int    `json:"limit" db:"limit"`
 	Keywords string `json:"keywords" db:"keywords"`
 }
+type TodayCount struct {
+	Hour  string `json:"hour" db:"hour"`
+	Count int    `json:"count" db:"count"`
+}
+
+type WeekCount struct {
+	Today struct {
+		Year  int `json:"year"`
+		Month int `json:"month"`
+		Day   int `json:"day"`
+	} `json:"today"`
+	DayCount []DayCount `json:"dayCount"`
+}
+
+type MonthCount struct {
+	Today struct {
+		Year  int `json:"year"`
+		Month int `json:"month"`
+		Day   int `json:"day"`
+	} `json:"today"`
+	DayCount []DayCount `json:"dayCount"`
+}
+
+type DayCount struct {
+	Day   string `json:"day" db:"day"`
+	Count int    `json:"count" db:"count"`
+}

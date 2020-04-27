@@ -181,6 +181,33 @@ func (Practice) GetAllStatusCount(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
+func (Practice) GetTodayCount(c iris.Context) {
+	res, err := pctdb.GetTodayCount()
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: res})
+}
+
+func (Practice) GetWeekCount(c iris.Context) {
+	res, err := pctdb.GetWeekCount()
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: res})
+}
+
+func (Practice) GetMonthCount(c iris.Context) {
+	res, err := pctdb.GetMonthCount()
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: res})
+}
+
 // 提交代码
 func (Practice) Submit(c iris.Context) {
 	var form dto.SubmitForm

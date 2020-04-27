@@ -1013,6 +1013,33 @@ func (Contest) UpdateContest(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: "save successfully"})
 }
 
+func (Contest) GetTodayCount(c iris.Context) {
+	res, err := ctsdb.GetTodayCount()
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: res})
+}
+
+func (Contest) GetWeekCount(c iris.Context) {
+	res, err := pctdb.GetWeekCount()
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: res})
+}
+
+func (Contest) GetMonthCount(c iris.Context) {
+	res, err := pctdb.GetMonthCount()
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: res})
+}
+
 func (Contest) isCreator(c iris.Context, id int64) error {
 	i, err := session.GetInt64(c, "userid")
 	if err != nil {
