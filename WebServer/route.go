@@ -220,6 +220,16 @@ func BindRoute(app *iris.Application) {
 			admin.Post("/sys/updateSMTP", sys.UpdateSMTP)
 			admin.Post("/sys/updateWeb", sys.UpdateWeb)
 		}
+		var anno ctrl.Announcement
+		{
+			admin.Post("/announcement/getAll", anno.GetAll)
+			admin.Post("/announcement/getCount", anno.GetCount)
+			admin.Post("/announcement/setVisibleTrue", anno.SetVisibleTrue)
+			admin.Post("/announcement/setVisibleFalse", anno.SetVisibleFalse)
+			admin.Post("/announcement/addAnnouncement", anno.AddAnnouncement)
+			admin.Post("/announcement/getDetail", anno.GetDetail)
+			admin.Post("/announcement/updateAnnouncement", anno.UpdateAnnouncement)
+		}
 		{
 			admin.Get("/jsp/getAllInfo", func(c context.Context) {
 				_, _ = c.JSON(&dto.Res{

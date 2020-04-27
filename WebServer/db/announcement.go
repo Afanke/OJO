@@ -79,7 +79,7 @@ func (Announcement) GetCount(form *dto.AnnouncementForm) (int, error) {
 
 func (Announcement) GetDetail(id int64) (*dto.Announcement, error) {
 	var detail dto.Announcement
-	err := gosql.Get(&detail, `select title,content from ojo.announcement a where a.id=? limit 1`, id)
+	err := gosql.Get(&detail, `select title,content,visible from ojo.announcement a where a.id=? limit 1`, id)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err
@@ -118,7 +118,7 @@ func (Announcement) InsertAnnouncement(a *dto.Announcement) error {
                              cid,
                              create_time,
                              last_update_time) VALUES(?,?,?,?,now(),now()) `
-	_, err := gosql.Exec(s, a.Title, a.Content, a.Visible, a.Cid, a.CreateTime, a.LastUpdateTime)
+	_, err := gosql.Exec(s, a.Title, a.Content, a.Visible, a.Cid)
 	if err != nil {
 		log.Warn("%v", err)
 		return err
