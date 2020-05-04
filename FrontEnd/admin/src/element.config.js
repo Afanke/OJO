@@ -69,9 +69,9 @@ import {
   CheckboxButton,
   CheckboxGroup,
   // Autocomplete,
-  // Dropdown,
-  // DropdownMenu,
-  // DropdownItem,
+  Dropdown,
+  DropdownMenu,
+  DropdownItem,
   // Timeline,
   // TimelineItem,
 
@@ -169,9 +169,9 @@ Vue.use(Tooltip);
 // Vue.use(ColorPicker);
 // Vue.use(Transfer);
 // Vue.use(Autocomplete);
-// Vue.use(Dropdown);
-// Vue.use(DropdownMenu);
-// Vue.use(DropdownItem);
+Vue.use(Dropdown);
+Vue.use(DropdownMenu);
+Vue.use(DropdownItem);
 // Vue.use(Timeline);
 // Vue.use(TimelineItem);
 // Vue.use(Calendar);

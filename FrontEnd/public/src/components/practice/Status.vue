@@ -240,6 +240,8 @@ export default {
         case "AC":    
                   return "Accepted"
           break
+          default:
+            return "Internal Server Error"
       }
     },
     formatType:function(value){
@@ -265,6 +267,8 @@ export default {
         case "AC":
           return "success"
           break
+          default:
+            return "danger"
       }
     }
   }

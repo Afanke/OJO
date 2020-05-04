@@ -3,20 +3,21 @@ import VueRouter from 'vue-router';
 
 Vue.use(VueRouter);
 
-const ProblemCreate = () => import('@/components/problem/Create.vue');
-const ProblemEdit = () => import('@/components/problem/Edit.vue');
-const Problem = () => import('@/components/problem/Problem.vue');
-const Contest = () => import('@/components/contest/Contest.vue');
-const ContestCreate = () => import('@/components/contest/Create.vue');
-const ContestEdit = () => import('@/components/contest/Edit.vue');
-const Carton = () => import('@/components/problem/Carton.vue');
-const User = () => import('@/components/general/User.vue');
-const JudgeServer = () => import('@/components/general/JudgeServer.vue');
-const System = () => import('@/components/general/System.vue');
-const Announcement = () => import('@/components/general/Announcement.vue');
-const ProblemTag = () => import('@/components/problem/Tag.vue');
-const Test = () => import('@/components/Test.vue');
-const DashBoard = () => import('@/components/DashBoard.vue');
+const ProblemCreate = () => import('@/views/problem/Create.vue');
+const ProblemEdit = () => import('@/views/problem/Edit.vue');
+const Problem = () => import('@/views/problem/Problem.vue');
+const Contest = () => import('@/views/contest/Contest.vue');
+const ContestCreate = () => import('@/views/contest/Create.vue');
+const ContestEdit = () => import('@/views/contest/Edit.vue');
+const Carton = () => import('@/views/problem/Carton.vue');
+const User = () => import('@/views/general/User.vue');
+const JudgeServer = () => import('@/views/general/JudgeServer.vue');
+const System = () => import('@/views/general/System.vue');
+const Announcement = () => import('@/views/general/Announcement.vue');
+const ProblemTag = () => import('@/views/problem/Tag.vue');
+
+
+const DashBoard = () => import('@/views/DashBoard.vue');
 // const Test2 = () => import('@/components/Test2.vue');
 
 const originalPush = VueRouter.prototype.push;
@@ -38,8 +39,8 @@ const routes = [
   { path: '/general/system', component: System },
   { path: '/general/announcement', component: Announcement },
   { path: '/dashboard', component: DashBoard },
-  // { path: '/', component:Test }
-  { path: '/', component:User }
+  { path: '/', redirect:"/dashboard" }
+  // { path: '/', component:Login }
 ];
 
 const router = new VueRouter({

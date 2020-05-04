@@ -15,6 +15,7 @@ const Test            = () => import('@/components/Test.vue');
 const PracticeAnswer  = () => import('@/components/practice/Answer.vue');
 const ContestAnswer   = () => import('@/components/contest/Answer.vue');
 const ContestDetail   = () => import('@/components/contest/Detail.vue');
+const Announcement    = () => import('@/components/Announcement.vue');
 const Carton   = () => import('@/components/Carton.vue');
 
 const originalPush = VueRouter.prototype.push;
@@ -23,7 +24,7 @@ VueRouter.prototype.push = function push(location) {
 };
 
 const routes = [
-  { path: '/home', component: Home },
+  { path: '/home', component: Announcement },
   { path: '/practice', component: Practice },
   { path: '/practice/answer', component: PracticeAnswer},
   { path: '/contest', component: Contest },

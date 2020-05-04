@@ -36,9 +36,6 @@
           <el-menu-item index="4-2">Create Contest</el-menu-item>
         </el-submenu>
       </el-menu>
-      <el-button @click="login1">root</el-button>
-      <el-button @click="login2">admin1</el-button>
-      <el-button @click="login3">admin2</el-button>
     </el-row>
   </div>
 </template>
@@ -52,71 +49,9 @@
     },
     created() {
       this.$bus.on("changeHeader", this.changeHeader)
+
     },
     methods: {
-      async login1() {
-        try {
-          const {
-            data: res
-          } = await this.$http.post('/user/login1', {
-            username: 'root',
-            password: '11111111'
-          });
-          if (res.error) {
-            this.$message.error(res.error)
-            return
-          }
-          this.$message({
-            message: res.data,
-            type: 'success'
-          });
-        } catch (err) {
-          console.log(err);
-          alert(err)
-        }
-      },
-      async login2() {
-        try {
-          const {
-            data: res
-          } = await this.$http.post('/user/login1', {
-            username: 'admin1',
-            password: '11111111'
-          });
-          if (res.error) {
-            this.$message.error(res.error)
-            return
-          }
-          this.$message({
-            message: res.data,
-            type: 'success'
-          });
-        } catch (err) {
-          console.log(err);
-          alert(err)
-        }
-      },
-      async login3() {
-        try {
-          const {
-            data: res
-          } = await this.$http.post('/user/login1', {
-            username: 'admin2',
-            password: '11111111'
-          });
-          if (res.error) {
-            this.$message.error(res.error)
-            return
-          }
-          this.$message({
-            message: res.data,
-            type: 'success'
-          });
-        } catch (err) {
-          console.log(err);
-          alert(err)
-        }
-      },
       changeHeader(val) {
         this.activeIndex = val
       },
