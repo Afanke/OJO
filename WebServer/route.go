@@ -123,6 +123,7 @@ func BindRoute(app *iris.Application) {
 		var u ctrl.User
 		user.Post("/getInfo", u.GetInfo)
 		user.Post("/login", u.Login)
+		user.Post("/adminLogin", u.AdminLogin)
 		user.Post("/login1", u.Login1)
 		user.Get("/captcha", u.Captcha)
 		user.Post("/logout", u.Logout)
@@ -167,6 +168,13 @@ func BindRoute(app *iris.Application) {
 		contest.Post("/getACMTop10", c.GetACMTop10)
 		contest.Post("/getACMRankCount", c.GetACMRankCount)
 	}
+	announcement := app.Party("/announcement")
+	{
+		var anno ctrl.Announcement
+		announcement.Post("/getAll", anno.GetAllVisible)
+		announcement.Post("/getCount", anno.GetVisibleCount)
+		announcement.Post("/getDetail", anno.GetVisibleDetail)
+	}
 	admin := app.Party("/admin")
 	{
 		var pb ctrl.Problem
@@ -183,12 +191,13 @@ func BindRoute(app *iris.Application) {
 		var pct ctrl.Practice
 		{
 			admin.Post("/practice/getTodayCount", pct.GetTodayCount)
-			admin.Post("/contest/getWeekCount", pct.GetWeekCount)
-			admin.Post("/contest/getMonthCount", pct.GetMonthCount)
+			admin.Post("/practice/getWeekCount", pct.GetWeekCount)
+			admin.Post("/practice/getMonthCount", pct.GetMonthCount)
 		}
 		var user ctrl.User
 		{
 			admin.Post("/user/getAll", user.GetAll)
+			admin.Post("/user/getInfo", user.GetAdminInfo)
 			admin.Post("/user/getCount", user.GetCount)
 			admin.Post("/user/getDetail", user.GetDetail)
 			admin.Post("/user/updateDetail", user.UpdateDetail)
@@ -222,6 +231,7 @@ func BindRoute(app *iris.Application) {
 			admin.Post("/contest/getTodayCount", cts.GetTodayCount)
 			admin.Post("/contest/getWeekCount", cts.GetWeekCount)
 			admin.Post("/contest/getMonthCount", cts.GetMonthCount)
+			admin.Post("/contest/getRecentCount", cts.GetRecentCount)
 		}
 		var sys ctrl.System
 		{

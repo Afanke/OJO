@@ -544,20 +544,12 @@ type TodayCount struct {
 }
 
 type WeekCount struct {
-	Today struct {
-		Year  int `json:"year"`
-		Month int `json:"month"`
-		Day   int `json:"day"`
-	} `json:"today"`
+	Today    string     `json:"today"`
 	DayCount []DayCount `json:"dayCount"`
 }
 
 type MonthCount struct {
-	Today struct {
-		Year  int `json:"year"`
-		Month int `json:"month"`
-		Day   int `json:"day"`
-	} `json:"today"`
+	Today    string     `json:"today"`
 	DayCount []DayCount `json:"dayCount"`
 }
 

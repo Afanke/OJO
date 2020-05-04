@@ -76,6 +76,50 @@ func (Announcement) GetAll(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
+func (Announcement) GetAllVisible(c iris.Context) {
+	var form dto.AnnouncementForm
+	err := c.ReadJSON(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	data, err := annodb.GetAllVisible(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: data})
+}
+
+func (Announcement) GetVisibleCount(c iris.Context) {
+	var form dto.AnnouncementForm
+	err := c.ReadJSON(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	tags, err := annodb.GetVisibleCount(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: tags})
+}
+func (Announcement) GetVisibleDetail(c iris.Context) {
+	var id dto.Id
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	data, err := annodb.GetVisibleDetail(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: data})
+}
+
 func (Announcement) GetDetail(c iris.Context) {
 	var id dto.Id
 	err := c.ReadJSON(&id)

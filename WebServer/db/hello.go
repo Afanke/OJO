@@ -16,10 +16,10 @@ func init() {
 		Enable:       true,
 		Driver:       cfg.DriverName,
 		Dsn:          cfg.DataSourceName,
-		ShowSql:      false,
+		ShowSql:      true,
 		MaxIdleConns: 10,
 		MaxLifetime:  int(100 * time.Second),
-		MaxOpenConns: 1000,
+		MaxOpenConns: 100,
 	}
 	gosql.SetLogger(log.GetLogger())
 	err := gosql.Connect(configs)

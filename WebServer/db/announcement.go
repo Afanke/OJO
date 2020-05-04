@@ -57,6 +57,56 @@ func (Announcement) GetAll(form *dto.AnnouncementForm) ([]dto.Announcement, erro
 	return rest, nil
 }
 
+func (Announcement) GetAllVisible(form *dto.AnnouncementForm) ([]dto.Announcement, error) {
+	if form.Page < 1 {
+		form.Page = 1
+	}
+	form.Page -= 1
+	form.Limit = AnnouncementPageSize
+	form.Offset = form.Page * AnnouncementPageSize
+	var s = `select id, title, cid, create_time, last_update_time
+			from ojo.announcement  where visible=1  order by id desc limit :offset, :limit `
+	rows, err := gosql.Sqlx().NamedQuery(s, &form)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	var rest = make([]dto.Announcement, 0, form.Limit)
+	for rows.Next() {
+		var res dto.Announcement
+		err := rows.StructScan(&res)
+		if err != nil {
+			log.Warn("error:%v", err)
+			return nil, err
+		}
+		rest = append(rest, res)
+	}
+	err = anno.SelectCreatorName(len(rest), func(i int) int64 {
+		return rest[i].Cid
+	}, func(i int, res string) {
+		rest[i].CreatorName = res
+	})
+	if err != nil {
+		log.Warn("%v", err)
+		return nil, err
+	}
+	return rest, nil
+}
+
+func (Announcement) GetVisibleCount(form *dto.AnnouncementForm) (int, error) {
+	var s = `select count(*)
+			from ojo.announcement  where visible=1 `
+	var count int
+	rows, err := gosql.Sqlx().NamedQuery(s, &form)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return 0, err
+	}
+	_ = rows.Next()
+	err = rows.Scan(&count)
+	return count, err
+}
+
 func (Announcement) GetCount(form *dto.AnnouncementForm) (int, error) {
 	var s = `select count(*)
 			from ojo.announcement  where 1=1 `
@@ -75,6 +125,16 @@ func (Announcement) GetCount(form *dto.AnnouncementForm) (int, error) {
 	_ = rows.Next()
 	err = rows.Scan(&count)
 	return count, err
+}
+
+func (Announcement) GetVisibleDetail(id int64) (*dto.Announcement, error) {
+	var detail dto.Announcement
+	err := gosql.Get(&detail, `select title,content from ojo.announcement a where a.id=? and visible=1 limit 1`, id)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	return &detail, err
 }
 
 func (Announcement) GetDetail(id int64) (*dto.Announcement, error) {

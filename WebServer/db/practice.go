@@ -304,7 +304,7 @@ func (Practice) GetWeekCount() (dto.WeekCount, error) {
 FROM
     ojo.practice_submission
 WHERE
-    submit_time between date_sub(curdate(),interval 30 day) and curdate()
+    submit_time between date_sub(curdate(),interval 7 day) and curdate()
 GROUP BY
     day
 ORDER BY
@@ -316,9 +316,7 @@ ORDER BY
 	var res dto.WeekCount
 	res.DayCount = data
 	var now = time.Now()
-	res.Today.Year = now.Year()
-	res.Today.Month = int(now.Month())
-	res.Today.Day = now.Day()
+	res.Today = now.Format("2006-01-02")
 	return res, err
 }
 
@@ -342,8 +340,6 @@ ORDER BY
 	var res dto.MonthCount
 	res.DayCount = data
 	var now = time.Now()
-	res.Today.Year = now.Year()
-	res.Today.Month = int(now.Month())
-	res.Today.Day = now.Day()
+	res.Today = now.Format("2006-01-02")
 	return res, err
 }

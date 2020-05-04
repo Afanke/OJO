@@ -1023,7 +1023,7 @@ func (Contest) GetTodayCount(c iris.Context) {
 }
 
 func (Contest) GetWeekCount(c iris.Context) {
-	res, err := pctdb.GetWeekCount()
+	res, err := ctsdb.GetWeekCount()
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -1032,7 +1032,15 @@ func (Contest) GetWeekCount(c iris.Context) {
 }
 
 func (Contest) GetMonthCount(c iris.Context) {
-	res, err := pctdb.GetMonthCount()
+	res, err := ctsdb.GetMonthCount()
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: res})
+}
+func (Contest) GetRecentCount(c iris.Context) {
+	res, err := ctsdb.GetRecentCount()
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return

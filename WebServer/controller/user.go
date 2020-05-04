@@ -56,6 +56,50 @@ func (User) Login(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: res})
 }
 
+func (User) AdminLogin(c iris.Context) {
+	var loginForm dto.LoginForm
+	err := c.ReadJSON(&loginForm)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	s, err := session.GetSession(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	// cp, ok := s.Get("captcha").(string)
+	// if !ok {
+	// 	c.JSON(&dto.Res{Error: errors.New("please refresh your captcha").Error(), Data: nil})
+	// 	return
+	// }
+	// if cp != loginForm.Captcha {
+	// 	c.JSON(&dto.Res{Error: errors.New("captcha is not correct").Error(), Data: nil})
+	// 	return
+	// }
+	res, err := userdb.Query(loginForm.Username, loginForm.Password)
+	if err != nil {
+		c.JSON(&dto.Res{Error: errors.New("username or password not correct").Error(), Data: nil})
+		return
+	}
+	if !res.Enabled {
+		c.JSON(&dto.Res{Error: errors.New("you are not allowed to login").Error(), Data: nil})
+		return
+	}
+	if res.Type < 2 {
+		c.JSON(&dto.Res{Error: errors.New("username or password not correct").Error(), Data: nil})
+		return
+	}
+	err = userdb.UpdateLoginTime(res.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	s.Set("user", res)
+	s.Set("userid", res.Id)
+	c.JSON(&dto.Res{Error: "", Data: res})
+}
+
 func (User) Login1(c iris.Context) {
 	var loginForm dto.LoginForm
 	err := c.ReadJSON(&loginForm)
@@ -108,6 +152,24 @@ func (User) GetInfo(c iris.Context) {
 		return
 	}
 	user := res.(dto.UserToken)
+	c.JSON(&dto.Res{Error: "", Data: user})
+}
+
+func (User) GetAdminInfo(c iris.Context) {
+	s, err := session.GetSession(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	res := s.Get("user")
+	if res == nil {
+		c.JSON(&dto.Res{Error: errors.New("not log in").Error(), Data: nil})
+		return
+	}
+	user := res.(dto.UserToken)
+	if user.Type < 2 {
+		c.JSON(&dto.Res{Error: errors.New("you are not admin").Error(), Data: nil})
+	}
 	c.JSON(&dto.Res{Error: "", Data: user})
 }
 
