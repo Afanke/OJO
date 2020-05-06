@@ -280,11 +280,6 @@ func (User) GetDetail(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	_, err = isSuperAdmin(c)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
 	data, err := userdb.GetDetail(id.Id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})

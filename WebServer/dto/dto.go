@@ -24,6 +24,11 @@ type ProblemForm struct {
 	Difficulty string `json:"difficulty" db:"difficulty"`
 	Keywords   string `json:"keywords" db:"keywords"`
 }
+type RankForm struct {
+	Page   int `json:"page" db:"page"`
+	Offset int `json:"offset" db:"offset"`
+	Limit  int `json:"limit" db:"limit"`
+}
 type UserForm struct {
 	Page     int    `json:"page" db:"page"`
 	Offset   int    `json:"offset" db:"offset"`
@@ -285,6 +290,14 @@ type ACMRank struct {
 	ACMDetail []ACMDetail `json:"ACMDetail" db:"acm_detail"`
 }
 
+type ACMRank2 struct {
+	Uid       int64  `json:"uid" db:"uid"`
+	Total     int    `json:"total" db:"total"`
+	AC        int    `json:"ac" db:"ac"`
+	Username  string `json:"username" db:"username"`
+	Signature string `json:"signature" db:"signature"`
+}
+
 type ACMDetail struct {
 	Id             int64 `json:"id" db:"id"`
 	Cid            int64 `json:"cid" db:"cid"`
@@ -482,6 +495,12 @@ type TagBrief struct {
 type Username struct {
 	Id       int64  `json:"id" db:"id"`
 	Username string `json:"username" db:"username"`
+}
+
+type UsernameAndSig struct {
+	Id        int64  `json:"id" db:"id"`
+	Username  string `json:"username" db:"username"`
+	Signature string `json:"signature" db:"signature"`
 }
 
 type UserToken struct {

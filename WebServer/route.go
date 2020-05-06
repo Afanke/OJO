@@ -128,6 +128,7 @@ func BindRoute(app *iris.Application) {
 		user.Get("/captcha", u.Captcha)
 		user.Post("/logout", u.Logout)
 		user.Post("/register", u.Register)
+		user.Post("/getDetail", u.GetDetail)
 	}
 	practice := app.Party("/practice")
 	{
@@ -174,6 +175,13 @@ func BindRoute(app *iris.Application) {
 		announcement.Post("/getAll", anno.GetAllVisible)
 		announcement.Post("/getCount", anno.GetVisibleCount)
 		announcement.Post("/getDetail", anno.GetVisibleDetail)
+	}
+	rank := app.Party("/rank")
+	{
+		var rk ctrl.Rank
+		rank.Post("/getACMTop10", rk.GetACMTop10)
+		rank.Post("/getACMRank", rk.GetACMRank)
+		rank.Post("/getACMRankCount", rk.GetACMRankCount)
 	}
 	admin := app.Party("/admin")
 	{

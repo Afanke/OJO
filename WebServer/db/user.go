@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"github.com/afanke/OJO/WebServer/dto"
 	"github.com/afanke/OJO/utils/log"
 	"github.com/ilibs/gosql/v2"
@@ -117,4 +118,54 @@ func (User) Disable(id int64) error {
 	s := `update ojo.user set enabled=0 where id=?`
 	_, err := gosql.Exec(s, id)
 	return err
+}
+
+func (User) SelectUserName(lens int, getId func(i int) (target int64), setName func(i int, res string)) error {
+	if lens <= 0 {
+		return nil
+	}
+	ids := make([]int64, 0, lens)
+	for i := 0; i < lens; i++ {
+		ids = append(ids, getId(i))
+	}
+	var s []dto.Username
+	err := gosql.Select(&s, "select id,username from ojo.user where id in (?) ", ids)
+	if err != nil {
+		return err
+	}
+	fmt.Println(s)
+	for i := 0; i < lens; i++ {
+		for j, k := 0, len(s); j < k; j++ {
+			if getId(i) == s[j].Id {
+				setName(i, s[j].Username)
+				break
+			}
+		}
+	}
+	return nil
+}
+
+func (User) SelectUserNameAndSig(lens int, getId func(i int) (target int64), setData func(i int, res *dto.UsernameAndSig)) error {
+	if lens <= 0 {
+		return nil
+	}
+	ids := make([]int64, 0, lens)
+	for i := 0; i < lens; i++ {
+		ids = append(ids, getId(i))
+	}
+	var s []dto.UsernameAndSig
+	err := gosql.Select(&s, "select id,username,signature from ojo.user where id in (?) ", ids)
+	if err != nil {
+		return err
+	}
+	fmt.Println(s)
+	for i := 0; i < lens; i++ {
+		for j, k := 0, len(s); j < k; j++ {
+			if getId(i) == s[j].Id {
+				setData(i, &s[j])
+				break
+			}
+		}
+	}
+	return nil
 }
