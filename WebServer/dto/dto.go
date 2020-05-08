@@ -308,6 +308,12 @@ type ACMDetail struct {
 	AC             bool  `json:"ac" db:"ac"`
 	FirstAC        bool  `json:"firstAC" db:"first_ac"`
 }
+type UserStatistic struct {
+	AC         int   `json:"ac"`
+	Submission int   `json:"submission"`
+	Score      int   `json:"score"`
+	SolvedList []int `json:"solvedList"`
+}
 
 // ------------------------------------------------------------------------------
 type ContestSubmission struct {

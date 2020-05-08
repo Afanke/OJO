@@ -106,7 +106,7 @@ func BindRoute(app *iris.Application) {
 		app.Get("/", file.Index)
 		app.Get("/admin", file.Admin)
 		app.Get("/vds", file.VDS)
-		app.Get("/favicon.ico", file.Favicon)
+		app.Favicon("./dist/favicon.ico")
 		app.Get("/img/*", file.File)
 		app.Get("/fonts/*", file.File)
 		app.Get("/css/*", file.File)
@@ -129,6 +129,7 @@ func BindRoute(app *iris.Application) {
 		user.Post("/logout", u.Logout)
 		user.Post("/register", u.Register)
 		user.Post("/getDetail", u.GetDetail)
+		user.Post("/getStatistic", u.GetStatistic)
 	}
 	practice := app.Party("/practice")
 	{

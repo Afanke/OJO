@@ -288,6 +288,41 @@ func (User) GetDetail(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
+func (User) GetStatistic(c iris.Context) {
+	var id dto.Id
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	var res dto.UserStatistic
+	data, err := pctdb.GetUserACCount(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	res.AC = data
+	data, err = pctdb.GetUserSubmissionCount(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	res.Submission = data
+	data, err = pctdb.GetUserScore(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	res.Score = data
+	sl, err := pctdb.GetUserSolvedList(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	res.SolvedList = sl
+	c.JSON(&dto.Res{Error: "", Data: res})
+}
+
 func (User) UpdateDetail(c iris.Context) {
 	var form dto.UserDetail2
 	err := c.ReadJSON(&form)

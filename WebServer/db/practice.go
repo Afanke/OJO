@@ -343,3 +343,39 @@ ORDER BY
 	res.Today = now.Format("2006-01-02")
 	return res, err
 }
+
+func (Practice) GetUserSubmissionCount(uid int64) (int, error) {
+	var count int
+	s := `select count(*) 
+			from ojo.practice_submission ps
+			where ps.uid=?`
+	err := gosql.Get(&count, s, uid)
+	return count, err
+}
+func (Practice) GetUserACCount(uid int64) (int, error) {
+	var count int
+	s := `select count(*)
+			from ojo.practice_submission ps
+			where ps.uid=? and ps.status='AC'`
+	err := gosql.Get(&count, s, uid)
+	return count, err
+}
+
+func (Practice) GetUserScore(uid int64) (int, error) {
+	var count int
+	s := `select sum(a.score) from (select max(ps.total_score) score
+			from ojo.practice_submission ps
+			where ps.uid=?
+			group by ps.pid) a`
+	err := gosql.Get(&count, s, uid)
+	return count, err
+}
+
+func (Practice) GetUserSolvedList(uid int64) ([]int, error) {
+	var data []int
+	s := `select distinct ps.pid
+		from ojo.practice_submission ps
+		where ps.uid=? and ps.status='AC'`
+	err := gosql.Select(&data, s, uid)
+	return data, err
+}

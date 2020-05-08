@@ -14,11 +14,36 @@ type File struct {
 }
 
 func (File) Index(c iris.Context) {
-	file, err := ioutil.ReadFile("./dist/index.html")
+	file, err := os.Open("./dist/index.html")
 	if err != nil {
 		c.NotFound()
+		return
 	}
-	_, err = c.WriteGzip(file)
+	defer func() {
+		err2 := file.Close()
+		if err2 != nil {
+			log.Error("%v\n", err)
+			return
+		}
+	}()
+	stat, err := file.Stat()
+	if err != nil {
+		c.NotFound()
+		return
+	}
+	if modified, err := c.CheckIfModifiedSince(stat.ModTime()); !modified && err == nil {
+		c.Header("Cache-Control", "max-age=64200")
+		c.WriteNotModified()
+		return
+	}
+	bytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		c.NotFound()
+		return
+	}
+	c.SetLastModified(stat.ModTime())
+	c.Header("Cache-Control", "max-age=64200")
+	_, err = c.WriteGzip(bytes)
 	if err != nil {
 		log.Error("%v", err)
 		return
@@ -59,11 +84,40 @@ func (File) Favicon(c iris.Context) {
 
 func (File) File(c iris.Context) {
 	path := c.Path()
-	file, err := ioutil.ReadFile("./dist" + path)
+	file, err := os.Open("./dist" + path)
 	if err != nil {
 		c.NotFound()
+		return
 	}
-	_, _ = c.WriteGzip(file)
+	defer func() {
+		err2 := file.Close()
+		if err2 != nil {
+			log.Error("%v\n", err)
+			return
+		}
+	}()
+	stat, err := file.Stat()
+	if err != nil {
+		c.NotFound()
+		return
+	}
+	if modified, err := c.CheckIfModifiedSince(stat.ModTime()); !modified && err == nil {
+		c.Header("Cache-Control", "max-age=64200")
+		c.WriteNotModified()
+		return
+	}
+	bytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		c.NotFound()
+		return
+	}
+	c.SetLastModified(stat.ModTime())
+	c.Header("Cache-Control", "max-age=64200")
+	_, err = c.WriteGzip(bytes)
+	if err != nil {
+		log.Error("%v", err)
+		return
+	}
 }
 
 func (File) GetProgress(c iris.Context) {
