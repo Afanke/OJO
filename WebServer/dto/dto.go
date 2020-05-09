@@ -9,6 +9,12 @@ type LoginForm struct {
 	Password string `json:"password"`
 	Captcha  string `json:"captcha"`
 }
+type UpdateForm struct {
+	Password string `json:"password"`
+	New      string `json:"new"`
+	Id       int64  `json:"id"`
+}
+
 type RegisterForm struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
@@ -511,11 +517,8 @@ type UsernameAndSig struct {
 
 type UserToken struct {
 	Enabled  bool   `json:"enabled" db:"enabled"`
-	Type     int    `json:"type" db:"type"`
 	Id       int64  `json:"id" db:"id"`
 	Username string `json:"username" db:"username"`
-	IconPath string `json:"iconPath" db:"icon_path"`
-	RealName string `json:"realName" db:"real_name"`
 }
 type User struct {
 	Id            int64  `json:"id" db:"id"`

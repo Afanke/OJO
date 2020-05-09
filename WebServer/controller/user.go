@@ -9,12 +9,17 @@ import (
 	"github.com/afanke/OJO/utils/session"
 	"github.com/kataras/iris/v12"
 	"image/png"
+	"io/ioutil"
 	"math/rand"
+	"strconv"
+	"time"
 )
 
 type User struct{}
 
 var userdb = db.User{}
+
+var ImgMaxSize int64 = 2 << 20 // 2MB
 
 func (User) Login(c iris.Context) {
 	var loginForm dto.LoginForm
@@ -155,6 +160,42 @@ func (User) GetInfo(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: user})
 }
 
+func (User) UploadImg(c iris.Context) {
+	userId, err := getUserId(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	file, info, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	defer file.Close()
+	if info.Size > ImgMaxSize {
+		c.JSON(&dto.Res{Error: errors.New("file to large").Error(), Data: nil})
+		return
+	}
+	bytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	path := "/img/user/" + strconv.Itoa(int(userId)) + "_" +
+		time.Now().Format("2006_01_02_15_04_05") + "_" + info.Filename
+	err = ioutil.WriteFile("./dist"+path, bytes, 0666)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = userdb.UpdateIcon(userId, path)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: "upload icon successfully"})
+}
+
 func (User) GetAdminInfo(c iris.Context) {
 	s, err := session.GetSession(c)
 	if err != nil {
@@ -280,6 +321,14 @@ func (User) GetDetail(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
+	if id.Id == 0 {
+		userId, err := getUserId(c)
+		if err != nil {
+			c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+			return
+		}
+		id.Id = userId
+	}
 	data, err := userdb.GetDetail(id.Id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -343,14 +392,84 @@ func (User) UpdateDetail(c iris.Context) {
 	s, err := session.GetSessionByInt64("userid", form.Id)
 	if err == nil {
 		if token, ok := s.Get("user").(dto.UserToken); ok {
-			token.Type = form.Type
 			token.Username = form.Username
-			token.IconPath = form.IconPath
-			token.RealName = form.RealName
 			s.Set("user", token)
 		}
 	}
 	c.JSON(&dto.Res{Error: "", Data: "update user successfully"})
+}
+
+func (User) UpdateProfile(c iris.Context) {
+	var form dto.UserDetail
+	err := c.ReadJSON(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	id, err := getUserId(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	form.Id = id
+	err = userdb.UpdateProfile(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: "update profile successfully"})
+}
+
+func (User) UpdatePassword(c iris.Context) {
+	var form dto.UpdateForm
+	err := c.ReadJSON(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	id, err := getUserId(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	form.Id = id
+	err = userdb.CheckPassword(form.Id, form.Password)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = userdb.UpdatePassword(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: "update profile successfully"})
+}
+
+func (User) UpdateEmail(c iris.Context) {
+	var form dto.UpdateForm
+	err := c.ReadJSON(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	id, err := getUserId(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	form.Id = id
+	err = userdb.CheckPassword(form.Id, form.Password)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = userdb.UpdateEmail(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: "update profile successfully"})
 }
 
 func (User) Enable(c iris.Context) {

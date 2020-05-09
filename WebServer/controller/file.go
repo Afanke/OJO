@@ -102,7 +102,7 @@ func (File) File(c iris.Context) {
 		return
 	}
 	if modified, err := c.CheckIfModifiedSince(stat.ModTime()); !modified && err == nil {
-		c.Header("Cache-Control", "max-age=64200")
+		c.Header("Cache-Control", "public,max-age=64200")
 		c.WriteNotModified()
 		return
 	}
@@ -112,7 +112,7 @@ func (File) File(c iris.Context) {
 		return
 	}
 	c.SetLastModified(stat.ModTime())
-	c.Header("Cache-Control", "max-age=64200")
+	c.Header("Cache-Control", "public,max-age=64200")
 	_, err = c.WriteGzip(bytes)
 	if err != nil {
 		log.Error("%v", err)

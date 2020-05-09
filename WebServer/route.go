@@ -130,6 +130,10 @@ func BindRoute(app *iris.Application) {
 		user.Post("/register", u.Register)
 		user.Post("/getDetail", u.GetDetail)
 		user.Post("/getStatistic", u.GetStatistic)
+		user.Post("/uploadImg", u.UploadImg)
+		user.Post("/updateProfile", u.UpdateProfile)
+		user.Post("/updatePassword", u.UpdatePassword)
+		user.Post("/updateEmail", u.UpdateEmail)
 	}
 	practice := app.Party("/practice")
 	{

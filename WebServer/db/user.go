@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 	"github.com/afanke/OJO/WebServer/dto"
 	"github.com/afanke/OJO/utils/log"
@@ -14,7 +15,7 @@ var UserPageSize = 10
 
 func (User) Query(username string, password string) (dto.UserToken, error) {
 	var user dto.UserToken
-	err := gosql.Get(&user, `select id,username,type,icon_path,real_name,enabled from ojo.user  
+	err := gosql.Get(&user, `select id,username,enabled from ojo.user  
 		where username=? and password=?  limit 1`, username, password)
 	return user, err
 }
@@ -96,6 +97,11 @@ func (User) GetDetail(id int64) (*dto.UserDetail, error) {
 	return &s, err
 }
 
+func (User) UpdateIcon(id int64, path string) error {
+	_, err := gosql.Exec("update ojo.user set icon_path=? where id=?", path, id)
+	return err
+}
+
 func (User) UpdateDetail(form *dto.UserDetail2) error {
 	s := `update ojo.user set username=:username,email=:email,
  			type=:type,real_name=:real_name,signature=:signature,school=:school,
@@ -106,6 +112,48 @@ func (User) UpdateDetail(form *dto.UserDetail2) error {
 	s += " where id=:id"
 	_, err := gosql.Sqlx().NamedExec(s, form)
 	return err
+}
+
+func (User) UpdateProfile(form *dto.UserDetail) error {
+	s := `update ojo.user set 
+			real_name=?,
+			signature=?,
+			school=?,
+			major=?,
+			github=?,
+			blog=?
+			where id=?`
+	_, err := gosql.Exec(s, form.RealName, form.Signature, form.School,
+		form.Major, form.Github, form.Blog, form.Id)
+	return err
+}
+func (User) UpdatePassword(form *dto.UpdateForm) error {
+	s := `update ojo.user set 
+			password=?
+			where id=?`
+	_, err := gosql.Exec(s, form.New, form.Id)
+	return err
+}
+
+func (User) UpdateEmail(form *dto.UpdateForm) error {
+	s := `update ojo.user set 
+			email=?
+			where id=?`
+	_, err := gosql.Exec(s, form.New, form.Id)
+	return err
+}
+
+func (User) CheckPassword(id int64, password string) error {
+	var count int
+	s := `select count(*) from ojo.user where id=? and password=?`
+	err := gosql.Get(&count, s, id, password)
+	if err != nil {
+		return err
+	}
+	if count != 1 {
+		return errors.New("password not correct")
+	}
+	return nil
 }
 
 func (User) Enable(id int64) error {
