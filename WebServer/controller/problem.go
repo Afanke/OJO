@@ -172,7 +172,7 @@ func (Problem) TryEdit(c iris.Context) {
 }
 
 func (Problem) isCreator(c iris.Context, id int64) error {
-	i, err := session.GetInt64(c, "userid")
+	i, err := session.GetInt64(c, "userId")
 	if err != nil {
 		return err
 	}

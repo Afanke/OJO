@@ -127,6 +127,7 @@ func (User) UpdateProfile(form *dto.UserDetail) error {
 		form.Major, form.Github, form.Blog, form.Id)
 	return err
 }
+
 func (User) UpdatePassword(form *dto.UpdateForm) error {
 	s := `update ojo.user set 
 			password=?
@@ -166,6 +167,13 @@ func (User) Disable(id int64) error {
 	s := `update ojo.user set enabled=0 where id=?`
 	_, err := gosql.Exec(s, id)
 	return err
+}
+
+func (User) GetUserType(id int64) (int, error) {
+	var userType int
+	s := `select type from ojo.user where id=?`
+	err := gosql.Get(&userType, s, id)
+	return userType, err
 }
 
 func (User) SelectUserName(lens int, getId func(i int) (target int64), setName func(i int, res string)) error {

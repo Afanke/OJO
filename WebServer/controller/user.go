@@ -56,8 +56,7 @@ func (User) Login(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	s.Set("user", res)
-	s.Set("userid", res.Id)
+	s.Set("userId", res.Id)
 	c.JSON(&dto.Res{Error: "", Data: res})
 }
 
@@ -100,8 +99,7 @@ func (User) AdminLogin(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	s.Set("user", res)
-	s.Set("userid", res.Id)
+	s.Set("userId", res.Id)
 	c.JSON(&dto.Res{Error: "", Data: res})
 }
 
@@ -140,8 +138,7 @@ func (User) Login1(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	s.Set("user", res)
-	s.Set("userid", res.Id)
+	s.Set("userId", res.Id)
 	c.JSON(&dto.Res{Error: "", Data: res})
 }
 
@@ -389,7 +386,7 @@ func (User) UpdateDetail(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	s, err := session.GetSessionByInt64("userid", form.Id)
+	s, err := session.GetSessionByInt64("userId", form.Id)
 	if err == nil {
 		if token, ok := s.Get("user").(dto.UserToken); ok {
 			token.Username = form.Username
@@ -443,7 +440,7 @@ func (User) UpdatePassword(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	c.JSON(&dto.Res{Error: "", Data: "update profile successfully"})
+	c.JSON(&dto.Res{Error: "", Data: "update password successfully"})
 }
 
 func (User) UpdateEmail(c iris.Context) {
@@ -469,7 +466,7 @@ func (User) UpdateEmail(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	c.JSON(&dto.Res{Error: "", Data: "update profile successfully"})
+	c.JSON(&dto.Res{Error: "", Data: "update email successfully"})
 }
 
 func (User) Enable(c iris.Context) {
@@ -513,24 +510,12 @@ func (User) Disable(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	session.DelByInt64("userid", id.Id)
+	session.DelByInt64("userId", id.Id)
 	c.JSON(&dto.Res{Error: "", Data: "update user successfully"})
 }
 
-func getUserToken(c iris.Context) (*dto.UserToken, error) {
-	get, err := session.Get(c, "user")
-	if err != nil {
-		return nil, errors.New("please login")
-	}
-	if user, ok := get.(dto.UserToken); !ok {
-		return nil, errors.New("please login")
-	} else {
-		return &user, nil
-	}
-}
-
 func getUserId(c iris.Context) (int64, error) {
-	id, err := session.GetInt64(c, "userid")
+	id, err := session.GetInt64(c, "userId")
 	if err != nil {
 		return 0, errors.New("please login")
 	}
@@ -545,7 +530,6 @@ func isAdmin(c iris.Context) (*dto.UserToken, error) {
 	if user, ok := get.(dto.UserToken); !ok {
 		return nil, errors.New("not login in or not permitted")
 	} else {
-		// log.Debug("%#v", user)
 		if user.Type < 2 {
 			return nil, errors.New("not permitted")
 		}

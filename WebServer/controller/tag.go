@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/afanke/OJO/WebServer/db"
 	"github.com/afanke/OJO/WebServer/dto"
+	"github.com/afanke/OJO/utils/session"
 	"github.com/kataras/iris/v12"
 	"strconv"
 	"time"
@@ -232,39 +233,44 @@ func (Tag) DeleteTag(c iris.Context) {
 }
 
 func (Tag) isPermitted(c iris.Context, tid int64) error {
-	token, err := getUserToken(c)
+	id, err := session.GetInt64(c, "userId")
 	if err != nil {
 		return errors.New("please log in")
 	}
-	if token.Type < 2 {
+	userType, err := userdb.GetUserType(id)
+	if userType < 2 {
 		return errors.New("not allowed")
 	}
-	if token.Type == 3 {
+	if userType == 3 {
 		return nil
 	}
-	id, err := tagdb.GetCreatorId(tid)
+	creatorId, err := tagdb.GetCreatorId(tid)
 	if err != nil {
 		return err
 	}
-	if id == token.Id {
+	if id == creatorId {
 		return nil
 	}
 	return tagdb.IsShared(tid)
 }
 
 func (Tag) isCreator(c iris.Context, tid int64) error {
-	token, err := getUserToken(c)
+	id, err := session.GetInt64(c, "userId")
 	if err != nil {
 		return errors.New("please log in")
 	}
-	if token.Type == 3 {
+	userType, err := userdb.GetUserType(id)
+	if userType < 2 {
+		return errors.New("not allowed")
+	}
+	if userType == 3 {
 		return nil
 	}
-	id, err := tagdb.GetCreatorId(tid)
+	creatorId, err := tagdb.GetCreatorId(tid)
 	if err != nil {
 		return err
 	}
-	if id != token.Id {
+	if id != creatorId {
 		return errors.New("not allowed")
 	}
 	return nil

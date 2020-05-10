@@ -192,7 +192,7 @@ func (Contest) Qualify(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	user, err := getUserToken(c)
+	userId, err := getUserId(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -215,7 +215,7 @@ func (Contest) Qualify(c iris.Context) {
 		c.JSON(&dto.Res{Error: errors.New("the password is not correct").Error(), Data: nil})
 		return
 	}
-	err = ctsdb.AddQualification(user.Id, form.Id)
+	err = ctsdb.AddQualification(userId, form.Id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -1049,7 +1049,7 @@ func (Contest) GetRecentCount(c iris.Context) {
 }
 
 func (Contest) isCreator(c iris.Context, id int64) error {
-	i, err := session.GetInt64(c, "userid")
+	i, err := session.GetInt64(c, "userId")
 	if err != nil {
 		return err
 	}

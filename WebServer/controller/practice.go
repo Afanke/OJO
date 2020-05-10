@@ -94,12 +94,12 @@ func (Practice) GetCurrentStatus(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	user, err := getUserToken(c)
+	userId, err := getUserId(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	detail, err := pctdb.GetSubmission(user.Id, ptid.Id)
+	detail, err := pctdb.GetSubmission(userId, ptid.Id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -153,12 +153,12 @@ func (Practice) GetAllStatus(c iris.Context) {
 		form.Offset = (form.Page - 1) * 10
 	}
 	form.Limit = 10
-	user, err := getUserToken(c)
+	userId, err := getUserId(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	data, err := pctdb.GetAllStat(user.Id, form.Offset, form.Limit)
+	data, err := pctdb.GetAllStat(userId, form.Offset, form.Limit)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -168,12 +168,12 @@ func (Practice) GetAllStatus(c iris.Context) {
 
 // 获得当前用户的所有Practice提交的记录之和
 func (Practice) GetAllStatusCount(c iris.Context) {
-	user, err := getUserToken(c)
+	userId, err := getUserId(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	data, err := pctdb.GetAllStatCount(user.Id)
+	data, err := pctdb.GetAllStatCount(userId)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -216,12 +216,12 @@ func (Practice) Submit(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	user, err := getUserToken(c)
+	userId, err := getUserId(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	form.Uid = user.Id
+	form.Uid = userId
 	data, err := pctdb.Submit(form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})

@@ -519,6 +519,7 @@ type UserToken struct {
 	Enabled  bool   `json:"enabled" db:"enabled"`
 	Id       int64  `json:"id" db:"id"`
 	Username string `json:"username" db:"username"`
+	Type     int    `json:"type" db:"type"`
 }
 type User struct {
 	Id            int64  `json:"id" db:"id"`

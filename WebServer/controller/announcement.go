@@ -202,7 +202,7 @@ func (Announcement) SetVisibleFalse(c iris.Context) {
 }
 
 func (Announcement) isCreator(c iris.Context, id int64) error {
-	i, err := session.GetInt64(c, "userid")
+	i, err := session.GetInt64(c, "userId")
 	if err != nil {
 		return err
 	}
