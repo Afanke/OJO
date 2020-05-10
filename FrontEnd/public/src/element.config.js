@@ -40,7 +40,7 @@ import {
   // Alert,
   // Slider,
 
-  // Upload,
+  Upload,
 
   // Spinner,
   // Badge,
@@ -69,9 +69,9 @@ import {
   // CheckboxButton,
   // CheckboxGroup,
   // Autocomplete,
-  // Dropdown,
-  // DropdownMenu,
-  // DropdownItem,
+  Dropdown,
+  DropdownMenu,
+  DropdownItem,
   // Timeline,
   // TimelineItem,
 
@@ -152,7 +152,7 @@ Vue.prototype.$message = Message;
 // Vue.use(Tooltip);
 // Vue.use(Breadcrumb);
 // Vue.use(BreadcrumbItem);
-// Vue.use(Upload);
+Vue.use(Upload);
 // Vue.use(Slider);
 
 // Vue.use(Spinner);
@@ -168,9 +168,9 @@ Vue.prototype.$message = Message;
 // Vue.use(ColorPicker);
 // Vue.use(Transfer);
 // Vue.use(Autocomplete);
-// Vue.use(Dropdown);
-// Vue.use(DropdownMenu);
-// Vue.use(DropdownItem);
+Vue.use(Dropdown);
+Vue.use(DropdownMenu);
+Vue.use(DropdownItem);
 // Vue.use(Timeline);
 // Vue.use(TimelineItem);
 // Vue.use(Calendar);

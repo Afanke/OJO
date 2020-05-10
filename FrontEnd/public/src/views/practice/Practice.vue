@@ -177,10 +177,10 @@
         this.practiseListLoading=true
         setTimeout(()=>{
                           this.realShowTags=val
-        },500)
+        },200)
         setTimeout(()=>{
           this.practiseListLoading=false
-        },1000)
+        },500)
       },
       logout() {
         this.$router.push('/login');

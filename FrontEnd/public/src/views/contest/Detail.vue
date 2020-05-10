@@ -185,9 +185,9 @@
   </div>
 </template>
 <script>
-import Status from '@/components/contest/Status.vue';
-import OIRank from '@/components/contest/OIRank.vue';
-import ACMRank from '@/components/contest/ACMRank.vue';
+import Status from '@/views/contest/Status.vue';
+import OIRank from '@/views/contest/OIRank.vue';
+import ACMRank from '@/views/contest/ACMRank.vue';
 
 export default {
   created() {

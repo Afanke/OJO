@@ -324,7 +324,6 @@
     },
     filters: {
       formatFlags: function (value) {
-        alert(value)
         switch (value) {
           case 'RE':
             return 'Runtime Error';

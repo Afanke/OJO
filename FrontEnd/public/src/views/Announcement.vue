@@ -15,7 +15,7 @@
               </el-table-column>
               <el-table-column align="left" label="Id" min-width="180">
                 <template slot-scope="scope">
-                  <el-link type="primary" :underline="false" @click="getDetail(scope.row.id)">{{ scope.row.title }}
+                  <el-link type="primary"  @click="getDetail(scope.row.id)" >{{ scope.row.title }}
                   </el-link>
                 </template>
               </el-table-column>
@@ -168,34 +168,12 @@
     min-width: 600px;
     margin-top: 20px !important;
     margin: 0 auto;
-    width: 80%;
+    width: 90%;
     background-color: #ffffff;
     border-radius: 10px;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   }
-
-  .el-col {
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  img {
-    /* margin: 0 auto; */
-    margin-top: 100px;
-    width: 300px;
-    height: 300px;
-    /* margin: 0 auto; */
-    /* border-radius: 50%;  */
-    /* left: 50%; */
-    /* transform: translate(-5%, 0); */
-    background-color: #ffffff;
-    /* display: flex;
-  justify-content: center;
-  align-items: center; */
-  }
-
+  
   .slide-fade-enter-active {
     transition: all 0.8s ease;
   }

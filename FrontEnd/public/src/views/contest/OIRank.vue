@@ -160,7 +160,6 @@ export default {
       this.count = Number(res3.data);
       this.loading=false
       this.getRank();
-
     } catch (err) {
       console.log(err);
       alert(err);

@@ -394,7 +394,6 @@
     },
     mounted() {
 
-
     },
     async beforeCreate() {
       this.show = false;
@@ -448,6 +447,7 @@
       copyToClipBoard(id) { //复制到剪切板
         if (document.execCommand) {
           var e = document.getElementById(id);
+          console.log(e)
           e.select();
           document.execCommand("Copy");
           return true;

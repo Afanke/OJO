@@ -5,13 +5,11 @@
   <div class="center-box" v-if="show">
     <div class="star-night">
     <div class="stars">
-      <!-- 321 -->
       <div
         v-for="(item, index) in startsCount"
         :key="index"
         class="star"
         ref="star">
-         <!-- 123 -->
       </div>
     </div>
     <div class="main-box">

@@ -17,7 +17,7 @@
 <script>
   import NProgress from 'nprogress';
   import 'nprogress/nprogress.css';
-  import AppHeader from '@/components/Header.vue';
+  import AppHeader from '@/views/Header.vue';
 
 
   import ScorllBar from "element-ui/lib/scrollbar"
@@ -98,6 +98,7 @@
     width: 100%;
     height: 40px;
     /* background-color: red; */
+    float:left;
   }
 
   .el-scrollbar__wrap {
