@@ -210,7 +210,6 @@ func BindRoute(app *iris.Application) {
 		var user ctrl.User
 		{
 			admin.Post("/user/getAll", user.GetAll)
-			admin.Post("/user/getInfo", user.GetAdminInfo)
 			admin.Post("/user/getCount", user.GetCount)
 			admin.Post("/user/getDetail", user.GetDetail)
 			admin.Post("/user/updateDetail", user.UpdateDetail)

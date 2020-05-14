@@ -24,12 +24,12 @@ func (Tag) GetAll(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	admin, err := isAdmin(c)
+	userId, err := isAdmin(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	form.Cid = admin.Id
+	form.Cid = userId
 	tags, err := tagdb.GetAll(&form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -45,12 +45,12 @@ func (Tag) GetCount(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	admin, err := isAdmin(c)
+	userId, err := isAdmin(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	form.Cid = admin.Id
+	form.Cid = userId
 	tags, err := tagdb.GetCount(&form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -169,12 +169,12 @@ func (Tag) AddTag(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	user, err := isAdmin(c)
+	userId, err := isAdmin(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	t.Cid = user.Id
+	t.Cid = userId
 	err = tagdb.InsertTag(&t)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})

@@ -15,7 +15,7 @@ var UserPageSize = 10
 
 func (User) Query(username string, password string) (dto.UserToken, error) {
 	var user dto.UserToken
-	err := gosql.Get(&user, `select id,username,enabled from ojo.user  
+	err := gosql.Get(&user, `select id,username,enabled,type from ojo.user  
 		where username=? and password=?  limit 1`, username, password)
 	return user, err
 }

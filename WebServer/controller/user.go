@@ -67,11 +67,6 @@ func (User) AdminLogin(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	s, err := session.GetSession(c)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
 	// cp, ok := s.Get("captcha").(string)
 	// if !ok {
 	// 	c.JSON(&dto.Res{Error: errors.New("please refresh your captcha").Error(), Data: nil})
@@ -81,6 +76,7 @@ func (User) AdminLogin(c iris.Context) {
 	// 	c.JSON(&dto.Res{Error: errors.New("captcha is not correct").Error(), Data: nil})
 	// 	return
 	// }
+	fmt.Println(loginForm)
 	res, err := userdb.Query(loginForm.Username, loginForm.Password)
 	if err != nil {
 		c.JSON(&dto.Res{Error: errors.New("username or password not correct").Error(), Data: nil})
@@ -99,7 +95,11 @@ func (User) AdminLogin(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	s.Set("userId", res.Id)
+	err = session.SetInt64(c, "userId", res.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
 	c.JSON(&dto.Res{Error: "", Data: res})
 }
 
@@ -148,7 +148,7 @@ func (User) GetInfo(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	res := s.Get("user")
+	res := s.Get("userId")
 	if res == nil {
 		c.JSON(&dto.Res{Error: errors.New("not log in").Error(), Data: nil})
 		return
@@ -199,7 +199,7 @@ func (User) GetAdminInfo(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	res := s.Get("user")
+	res := s.Get("userId")
 	if res == nil {
 		c.JSON(&dto.Res{Error: errors.New("not log in").Error(), Data: nil})
 		return
@@ -496,12 +496,12 @@ func (User) Disable(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	spAdmin, err := isSuperAdmin(c)
+	userId, err := isSuperAdmin(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	if spAdmin.Id == id.Id {
+	if userId == id.Id {
 		c.JSON(&dto.Res{Error: errors.New("can't disable yourself").Error(), Data: nil})
 		return
 	}
@@ -517,37 +517,31 @@ func (User) Disable(c iris.Context) {
 func getUserId(c iris.Context) (int64, error) {
 	id, err := session.GetInt64(c, "userId")
 	if err != nil {
-		return 0, errors.New("please login")
+		return 0, errors.New("please login ")
 	}
 	return id, nil
 }
 
-func isAdmin(c iris.Context) (*dto.UserToken, error) {
-	get, err := session.Get(c, "user")
+func isAdmin(c iris.Context) (int64, error) {
+	userId, err := session.GetInt64(c, "userId")
 	if err != nil {
-		return nil, errors.New("not login in or not permitted")
+		return 0, errors.New("please login")
 	}
-	if user, ok := get.(dto.UserToken); !ok {
-		return nil, errors.New("not login in or not permitted")
-	} else {
-		if user.Type < 2 {
-			return nil, errors.New("not permitted")
-		}
-		return &user, nil
+	userType, err := userdb.GetUserType(userId)
+	if userType < 2 {
+		return 0, errors.New("not allowed")
 	}
+	return userId, err
 }
 
-func isSuperAdmin(c iris.Context) (*dto.UserToken, error) {
-	get, err := session.Get(c, "user")
+func isSuperAdmin(c iris.Context) (int64, error) {
+	userId, err := session.GetInt64(c, "userId")
 	if err != nil {
-		return nil, errors.New("not login in or not permitted")
+		return 0, errors.New("not login in or not permitted")
 	}
-	if user, ok := get.(dto.UserToken); !ok {
-		return nil, errors.New("not login in or not permitted")
-	} else {
-		if user.Type < 3 {
-			return nil, errors.New("not permitted")
-		}
-		return &user, nil
+	userType, err := userdb.GetUserType(userId)
+	if userType < 3 {
+		return 0, errors.New("not allowed")
 	}
+	return userId, err
 }

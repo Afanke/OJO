@@ -43,19 +43,19 @@ func BindRoute(app *iris.Application) {
 		app.Post("/Python3", func(c iris.Context) {
 			var forms []dto.OperationForm
 			err := c.ReadJSON(&forms)
-			fmt.Println(1, forms)
+			// fmt.Println(1, forms)
 			if err != nil {
 				for i, j := 0, len(forms); i < j; i++ {
 					forms[i].Flag = "ISE"
 				}
+				fmt.Println(err)
 				c.JSON(&forms)
 				return
 			}
-
 			for i, j := 0, len(forms); i < j; i++ {
 				py3.Operate(&forms[i])
 			}
-			fmt.Println(2, forms)
+			// fmt.Println(2, forms)
 			c.JSON(&forms)
 		})
 	}

@@ -21,7 +21,15 @@ type Practice struct{}
 
 var pt = Practice{}
 
+var PracticePageSize = 20
+
 func (Practice) GetAll(form *dto.PracticeForm) ([]dto.PracticeBrief, error) {
+	if form.Page < 1 {
+		form.Offset = 0
+	} else {
+		form.Offset = (form.Page - 1) * PracticePageSize
+	}
+	form.Limit = PracticePageSize
 	var s = `select p.id, p.ref, p.title, p.difficulty
 			from ojo.problem p `
 	if form.Tid != 0 {

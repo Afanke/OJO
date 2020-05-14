@@ -30,12 +30,6 @@ func (Practice) GetAll(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	if form.Page < 1 {
-		form.Offset = 0
-	} else {
-		form.Offset = (form.Page - 1) * 5
-	}
-	form.Limit = 5
 	res, err := pctdb.GetAll(&form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})

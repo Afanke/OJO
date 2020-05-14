@@ -194,7 +194,7 @@ type ContestBrief struct {
 type ContestDetail struct {
 	Id          int64  `json:"id" db:"id"`
 	Cid         int64  `json:"cid" db:"cid"`
-	PunishTime  int    `json:"punishTime" db:"punish_time"`
+	Punish      int    `json:"punishTime" db:"punish"`
 	Title       string `json:"title" db:"title"`
 	Description string `json:"description" db:"description"`
 	Rule        string `json:"rule" db:"rule"`

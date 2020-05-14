@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/afanke/OJO/WebServer/db"
 	"github.com/afanke/OJO/WebServer/dto"
 	jsp "github.com/afanke/OJO/WebServer/judge"
@@ -45,12 +44,12 @@ func (Contest) GetAll(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	admin, err := isAdmin(c)
+	userId, err := isAdmin(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	form.Cid = admin.Id
+	form.Cid = userId
 	data, err := ctsdb.GetAll(&form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -107,12 +106,12 @@ func (Contest) GetCount(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	admin, err := isAdmin(c)
+	userId, err := isAdmin(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	form.Cid = admin.Id
+	form.Cid = userId
 	res, err := ctsdb.GetCount(&form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -648,7 +647,6 @@ func (Contest) handleSubmit(form *dto.SubmitForm) {
 	} else {
 		handleACM(contest, form)
 	}
-
 }
 
 func handleOI(contest *dto.ContestDetail, form *dto.SubmitForm) {
@@ -734,9 +732,9 @@ func handleACM(contest *dto.ContestDetail, form *dto.SubmitForm) {
 		}
 		du := duration
 		if flag != "AC" {
-			du += (wrong + 1) * contest.PunishTime
+			du += (wrong + 1) * contest.Punish
 		} else {
-			du += wrong * contest.PunishTime
+			du += wrong * contest.Punish
 		}
 		err = ctsdb.UpdateACMOverAll(form, du, flag == "AC")
 		if err != nil {
@@ -747,7 +745,7 @@ func handleACM(contest *dto.ContestDetail, form *dto.SubmitForm) {
 	} else {
 		du := duration
 		if flag != "AC" {
-			du += contest.PunishTime
+			du += contest.Punish
 		}
 		err = ctsdb.InsertACMOverAll(form, du, flag == "AC")
 		if err != nil {
@@ -764,7 +762,6 @@ func handleACM(contest *dto.ContestDetail, form *dto.SubmitForm) {
 	}
 	first, err := ctsdb.HasACMFirstDetail(form)
 	if yes {
-		fmt.Println(5)
 		err = ctsdb.UpdateACMDetail(form, duration, flag == "AC", first && flag == "AC")
 		if err != nil {
 			log.Warn("error:%v", err)
@@ -772,7 +769,6 @@ func handleACM(contest *dto.ContestDetail, form *dto.SubmitForm) {
 			return
 		}
 	} else {
-		fmt.Println(6)
 		if err != nil {
 			log.Warn("error:%v", err)
 			_ = ctsdb.SetISE(form.Sid)
@@ -943,12 +939,12 @@ func (Contest) AddContest(c iris.Context) {
 		return
 	}
 	log.Debug("%v", contest)
-	admin, err := isAdmin(c)
+	userId, err := isAdmin(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	contest.Cid = admin.Id
+	contest.Cid = userId
 	err = ctsdb.InsertContest(&contest)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -1039,6 +1035,7 @@ func (Contest) GetMonthCount(c iris.Context) {
 	}
 	c.JSON(&dto.Res{Error: "", Data: res})
 }
+
 func (Contest) GetRecentCount(c iris.Context) {
 	res, err := ctsdb.GetRecentCount()
 	if err != nil {

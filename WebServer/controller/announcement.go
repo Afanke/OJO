@@ -21,12 +21,12 @@ func (Announcement) AddAnnouncement(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	user, err := isAdmin(c)
+	userId, err := isAdmin(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	a.Cid = user.Id
+	a.Cid = userId
 	err = annodb.InsertAnnouncement(&a)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -62,12 +62,12 @@ func (Announcement) GetAll(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	admin, err := isAdmin(c)
+	userId, err := isAdmin(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	form.Cid = admin.Id
+	form.Cid = userId
 	data, err := annodb.GetAll(&form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -147,12 +147,12 @@ func (Announcement) GetCount(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	admin, err := isAdmin(c)
+	userId, err := isAdmin(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	form.Cid = admin.Id
+	form.Cid = userId
 	tags, err := annodb.GetCount(&form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})

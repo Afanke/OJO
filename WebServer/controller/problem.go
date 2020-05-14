@@ -19,12 +19,12 @@ func (Problem) AddProblem(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	user, err := isAdmin(c)
+	userId, err := isAdmin(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	p.Cid = user.Id
+	p.Cid = userId
 	err = pbdb.InsertProblem(&p)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -40,12 +40,12 @@ func (Problem) UpdateProblem(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	user, err := isAdmin(c)
+	userId, err := isAdmin(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	p.Cid = user.Id
+	p.Cid = userId
 	err = pbdb.UpdateProblem(&p)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -61,12 +61,12 @@ func (Problem) GetAll(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	admin, err := isAdmin(c)
+	userId, err := isAdmin(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	form.Cid = admin.Id
+	form.Cid = userId
 	data, err := pbdb.GetAll(&form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -102,12 +102,12 @@ func (Problem) GetCount(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	admin, err := isAdmin(c)
+	userId, err := isAdmin(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	form.Cid = admin.Id
+	form.Cid = userId
 	tags, err := pbdb.GetCount(&form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})

@@ -1,6 +1,7 @@
 package dto
 
 type OperationForm struct {
+	UseSPJ         bool
 	MaxCpuTime     int // 2 seconds
 	ActualCpuTime  int
 	MaxRealTime    int // 4 seconds
@@ -9,6 +10,8 @@ type OperationForm struct {
 	RealMemory     int
 	Score          int
 	PcId           int // Problem case Id
+	SPJCode        string
+	SPJPath        string
 	Language       string
 	FilePath       string
 	CmdLine        string // use to start program or see version
