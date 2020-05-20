@@ -11,38 +11,49 @@ import (
 )
 
 func main() {
-	var forms = make([]dto.OperationForm, 0, 1)
-	form1 := dto.OperationForm{
-		Language:     "Python3",
-		FilePath:     "",
-		CmdLine:      "",
-		Code:         `print(input())`,
-		Input:        "321",
-		ExpectOutput: "321\n",
-		RealOutput:   "",
-		ErrorOutput:  "",
-		Flag:         "",
-		MaxCpuTime:   2,
-		MaxRealTime:  2,
-		MaxMemory:    20000000,
-		Score:        10,
-		UseSPJ:       true,
+	form := dto.JudgeForm{
+		UseSPJ:      true,
+		MaxCpuTime:  2,
+		MaxRealTime: 2,
+		MaxMemory:   20000000,
+		TotalScore:  0,
+		Id:          0,
 		SPJCode: `import sys
-f1=open(sys.argv[1], mode='r')
-f2=open(sys.argv[3],mode='r')
-if f1.read()+'\n'==f2.read():
+f1=open(sys.argv[1],'r').read()
+f2=open(sys.argv[2],'r').read()
+f3=open(sys.argv[3],'r').read()
+if f1==f3:
 	print("AC",end="")`,
+		Code: `print(input(),end="")`,
+		Flag: "",
+		TestCase: []dto.TestCase{
+			{
+				Input:        "qwe",
+				ExpectOutput: "qwe",
+				Score:        10,
+			},
+			{
+				Input:        "123",
+				ExpectOutput: "123",
+				Score:        10,
+			},
+			{
+				Input:        "1241",
+				ExpectOutput: "1241",
+				Score:        10,
+			},
+		},
 	}
-	forms = append(forms, form1)
 	client := &http.Client{
 		Timeout: 1 * time.Second,
 	}
-	buff, err := json.Marshal(forms)
+	buff, err := json.Marshal(form)
 	if err != nil {
 		fmt.Printf("error:%v\n", err)
 		return
 	}
-	res, err := client.Post("http://192.168.111.132:2333/"+forms[0].Language, "application/json", bytes.NewBuffer(buff))
+	// res, err := client.Post("http://192.168.111.132:2333/Python3", "application/json", bytes.NewBuffer(buff))
+	res, err := client.Post("http://49.234.91.99:2333/Python3", "application/json", bytes.NewBuffer(buff))
 	if err != nil {
 		fmt.Printf("error:%v\n", err)
 		return
@@ -53,10 +64,11 @@ if f1.read()+'\n'==f2.read():
 		fmt.Printf("error:%v\n", err)
 		return
 	}
-	err = json.Unmarshal(body, &forms)
+	// fmt.Println(string(body))
+	err = json.Unmarshal(body, &form)
 	if err != nil {
 		fmt.Printf("error:%v\n", err)
 		return
 	}
-	fmt.Printf("%#v", forms)
+	fmt.Printf("%+v", form)
 }

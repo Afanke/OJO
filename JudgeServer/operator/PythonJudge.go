@@ -1,65 +1,140 @@
 package operator
 
 import (
+	"context"
+	"fmt"
 	"github.com/afanke/OJO/JudgeServer/dto"
 	"github.com/afanke/OJO/utils/log"
 	"io/ioutil"
 	"math/rand"
 	"os"
 	"os/exec"
+	"path"
+	"runtime"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type PythonOperator struct {
 }
 
-func (py PythonOperator) Operate(form *dto.OperationForm) {
+func (py PythonOperator) operate(form *dto.JudgeForm, i int) {
+	ts := &dto.TempStorage{
+		FilePath: "",
+		SPJPath:  "",
+		CmdLine:  "",
+	}
+	useSPJ := false
 	defer func() {
 		if err := recover(); err != nil {
 			log.Error("%v", err)
-			form.Flag = "ISE"
-			form.Score = 0
+			i := 0
+			for {
+				pc, fileName, line, ok := runtime.Caller(i)
+				if !ok {
+					form.TestCase[i].Flag = "ISE"
+					form.TestCase[i].Score = 0
+					return
+				}
+				funcName := runtime.FuncForPC(pc).Name()
+				fileName = path.Base(fileName)
+				fmt.Println(fileName, funcName, line)
+				i++
+			}
 		}
-		py.afterRun(form)
+		py.afterRun(useSPJ, ts)
 	}()
-	err := py.beforeRun(form)
+	err := py.beforeRun(form, i, ts)
 	if err != nil {
+		form.TestCase[i].Flag = "ISE"
 		log.Error("%v", err)
 		return
 	}
-	err = py.run(form)
+	err = py.run(form, i, ts)
 	if err != nil {
+		form.TestCase[i].Flag = "ISE"
 		log.Error("%v", err)
 		return
 	}
-	err = py.judge(form)
+	err = py.judge(form, i)
 	if err != nil {
+		form.TestCase[i].Flag = "ISE"
 		log.Error("%v", err)
 		return
 	}
-	if form.UseSPJ {
-		err = py.beforeSPJ(form)
+	useSPJ = form.UseSPJ && form.TestCase[i].Flag == "JUG"
+	if useSPJ {
+		err = py.beforeSPJ(form, i, ts)
 		if err != nil {
+			form.TestCase[i].Flag = "ISE"
 			log.Error("%v", err)
 			return
 		}
-		err = py.SPJ(form)
+		err = py.spj(form, i, ts)
 		if err != nil {
+			form.TestCase[i].Flag = "ISE"
 			log.Error("%v", err)
 			return
 		}
 	}
 }
 
-func (py PythonOperator) beforeRun(form *dto.OperationForm) error {
-	if form.CmdLine == "version" {
-		form.CmdLine = "python3 python3 --version" + " " + strconv.Itoa(form.MaxRealTime) + strconv.Itoa(form.MaxCpuTime) + " " + strconv.Itoa(form.MaxMemory)
+func (py PythonOperator) loopOperate(form *dto.JudgeForm) {
+	for i := 0; i < len(form.TestCase); i++ {
+		form.TestCase[i].Flag = "JUG"
+		py.operate(form, i)
+		log.Debug("i=%v", i)
+	}
+}
+
+func (py PythonOperator) Mark(form *dto.JudgeForm) {
+	py.loopOperate(form)
+	py.summary(form)
+}
+
+func (py PythonOperator) summary(form *dto.JudgeForm) {
+	form.TotalScore = 0
+	for i := 0; i < len(form.TestCase); i++ {
+		form.TotalScore += form.TestCase[i].Score
+	}
+	hasAC := false
+	hasWA := false
+	for i := 0; i < len(form.TestCase); i++ {
+		flag := form.TestCase[i].Flag
+		if flag == "AC" {
+			hasAC = true
+			continue
+		}
+		switch flag {
+		case "WA":
+			hasWA = true
+			continue
+		default:
+			form.Flag = flag
+			return
+		}
+	}
+	if hasAC && !hasWA {
+		form.Flag = "AC"
+		return
+	}
+	if hasAC && hasWA {
+		form.Flag = "PA"
+		return
+	}
+	form.Flag = "WA"
+}
+
+func (py PythonOperator) beforeRun(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
+	if ts.CmdLine == "version" {
+		ts.CmdLine = "python3 python3 --version" + " " + strconv.Itoa(form.MaxRealTime) + strconv.Itoa(form.MaxCpuTime) + " " + strconv.Itoa(form.MaxMemory)
 		return nil
 	}
-	path := form.Language + "_" + strconv.Itoa(rand.Int())
-	form.CmdLine = "python3 python3 " + path + ".py " + path + "_input.txt " + strconv.Itoa(form.MaxRealTime) + " " + strconv.Itoa(form.MaxCpuTime) + " " + strconv.Itoa(form.MaxMemory)
-	file, err := os.Create(path + ".py")
+	p := "Python3_" + strconv.Itoa(rand.Int())
+	ts.FilePath = p
+	ts.CmdLine = "python3 python3 " + p + ".py " + p + "_input.txt " + strconv.Itoa(form.MaxRealTime) + " " + strconv.Itoa(form.MaxCpuTime) + " " + strconv.Itoa(form.MaxMemory)
+	file, err := os.Create(p + ".py")
 	if err != nil {
 		log.Error("%v", err)
 		return err
@@ -70,13 +145,13 @@ func (py PythonOperator) beforeRun(form *dto.OperationForm) error {
 		log.Error("%v", err)
 		return err
 	}
-	file2, err := os.Create(path + "_input.txt")
+	file2, err := os.Create(p + "_input.txt")
 	if err != nil {
 		log.Error("%v", err)
 		return err
 	}
 	defer file2.Close()
-	_, err = file2.WriteString(form.Input)
+	_, err = file2.WriteString(form.TestCase[i].Input)
 	if err != nil {
 		log.Error("%v", err)
 		return err
@@ -84,7 +159,7 @@ func (py PythonOperator) beforeRun(form *dto.OperationForm) error {
 	return nil
 }
 
-func (py PythonOperator) run(form *dto.OperationForm) error {
+func (py PythonOperator) run(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
 	cmd := exec.Command("/bin/bash")
 	stdoutPipe, err := cmd.StdoutPipe()
 	stderrPipe, err := cmd.StderrPipe()
@@ -98,7 +173,7 @@ func (py PythonOperator) run(form *dto.OperationForm) error {
 	// if err != nil {
 	// 	panic(err)
 	// }
-	_, err = stdinPipe.Write([]byte("./SandBoxRunner " + form.CmdLine + "\n"))
+	_, err = stdinPipe.Write([]byte("./SandBoxRunner " + ts.CmdLine + "\n"))
 	if err != nil {
 		log.Error("%v", err)
 		return err
@@ -121,111 +196,111 @@ func (py PythonOperator) run(form *dto.OperationForm) error {
 	res := string(stdout)
 	esr := string(stderr)
 	err = cmd.Wait()
+	tc := &form.TestCase[i]
 	// fmt.Println(esr)
 	if !strings.HasPrefix(esr, "^") {
-		form.Flag = "ISE"
-		form.RealOutput = "ISE"
-		form.ErrorOutput = "ISE"
-		form.ActualRealTime = 0
-		form.ActualCpuTime = 0
-		form.RealMemory = 0
-		form.UseSPJ = false
+		tc.Flag = "ISE"
+		tc.RealOutput = "ISE"
+		tc.ErrorOutput = "ISE"
+		tc.ActualRealTime = 0
+		tc.ActualCpuTime = 0
+		tc.RealMemory = 0
 	}
-	form.ErrorOutput = esr
-	// fmt.Println("esr", esr)
-	form.RealOutput = res
-	if len(form.RealOutput) >= 64000 {
-		form.Flag = "OLE"
+	tc.ErrorOutput = esr
+	tc.RealOutput = res
+	if len(tc.RealOutput) >= 64000 {
+		tc.Flag = "OLE"
 	}
 	return nil
 }
 
-func (py PythonOperator) judge(form *dto.OperationForm) error {
-	if form.Flag != "" {
-		form.Score = 0
+func (py PythonOperator) judge(form *dto.JudgeForm, i int) error {
+	tc := &form.TestCase[i]
+	if tc.Flag != "JUG" {
+		tc.Score = 0
 		return nil
 	}
-	esr := form.ErrorOutput
+	esr := tc.ErrorOutput
+	log.Debug("%+v", esr)
 	res, err := strconv.Atoi(esr[strings.IndexByte(esr, 'c')+1 : strings.IndexByte(esr, 'r')])
 	if err != nil {
 		log.Error("%v", err)
 		return err
 	}
-	form.ActualCpuTime = res
+	tc.ActualCpuTime = res
 	res, err = strconv.Atoi(esr[strings.IndexByte(esr, 'r')+1 : strings.IndexByte(esr, '$')])
 	if err != nil {
 		log.Error("%v", err)
 		return err
 	}
-	form.ActualRealTime = res
+	tc.ActualRealTime = res
 	res, err = strconv.Atoi(esr[strings.IndexByte(esr, 'm')+1 : strings.IndexByte(esr, 'c')])
 	if err != nil {
 		log.Error("%v", err)
 		return err
 	}
-	form.RealMemory = res
-	form.ErrorOutput = esr[strings.IndexByte(esr, '$')+1:]
+	tc.RealMemory = res
+	tc.ErrorOutput = esr[strings.IndexByte(esr, '$')+1:]
 	if esr[1:2] == "s" {
 		sig := esr[2:strings.IndexByte(esr, 'm')]
-		form.Score = 0
+		tc.Score = 0
 		switch sig {
 		case "24":
-			form.Flag = "TLE"
-			if form.ActualCpuTime < form.MaxCpuTime*1000 {
-				form.ActualCpuTime = form.MaxCpuTime
+			tc.Flag = "TLE"
+			if tc.ActualCpuTime < form.MaxCpuTime*1000 {
+				tc.ActualCpuTime = form.MaxCpuTime
 			}
 		case "14":
-			form.Flag = "TLE"
+			tc.Flag = "TLE"
 		case "11":
-			form.Flag = "MLE"
-			form.RealMemory = form.MaxMemory
+			tc.Flag = "MLE"
+			tc.RealMemory = form.MaxMemory
 		default:
-			form.Flag = "RE"
+			tc.Flag = "RE"
 		}
-		form.UseSPJ = false
 		return nil
 	}
-	form.ExpectOutput = strings.ReplaceAll(form.ExpectOutput, "\r\n", "\n")
-	if form.ErrorOutput != "" {
-		form.Score = 0
-		if strings.Contains(form.ErrorOutput, "Traceback (") {
-			form.Flag = "RE"
-		} else if strings.Contains(form.ErrorOutput, "Error") {
-			form.Flag = "CE"
+	tc.ExpectOutput = strings.ReplaceAll(tc.ExpectOutput, "\r\n", "\n")
+	if tc.ErrorOutput != "" {
+		tc.Score = 0
+		if strings.Contains(tc.ErrorOutput, "Traceback (") {
+			tc.Flag = "RE"
+		} else if strings.Contains(tc.ErrorOutput, "Error") {
+			tc.Flag = "CE"
 		} else {
-			form.Flag = "RE"
+			tc.Flag = "RE"
 		}
-		form.UseSPJ = false
 		return nil
 	}
 	if form.UseSPJ {
 		return nil
 	}
-	if form.ExpectOutput == form.RealOutput {
-		form.Flag = "AC"
+	if tc.ExpectOutput == tc.RealOutput {
+		tc.Flag = "AC"
 		return nil
 	}
-	form.Flag = "WA"
-	form.Score = 0
+	tc.Flag = "WA"
+	tc.Score = 0
 	return nil
 }
 
-func (py PythonOperator) afterRun(form *dto.OperationForm) {
-	_ = os.Remove(form.FilePath + ".py")
-	_ = os.Remove(form.FilePath + "_input.txt")
-	if form.UseSPJ && form.SPJPath != "" {
-		_ = os.Remove(form.SPJPath + ".py")
-		_ = os.Remove(form.SPJPath + "_input.txt")
-		_ = os.Remove(form.SPJPath + "_expectOutput.txt")
-		_ = os.Remove(form.SPJPath + "_realOutput.txt")
+func (py PythonOperator) afterRun(useSPJ bool, ts *dto.TempStorage) {
+	_ = os.Remove(ts.FilePath + ".py")
+	_ = os.Remove(ts.FilePath + "_input.txt")
+	if useSPJ && ts.SPJPath != "" {
+		_ = os.Remove(ts.SPJPath + ".py")
+		_ = os.Remove(ts.SPJPath + "_input.txt")
+		_ = os.Remove(ts.SPJPath + "_expectOutput.txt")
+		_ = os.Remove(ts.SPJPath + "_realOutput.txt")
 	}
 }
 
-func (py PythonOperator) beforeSPJ(form *dto.OperationForm) error {
-	path := form.Language + "_" + strconv.Itoa(rand.Int())
-	form.SPJPath = path
-	form.CmdLine = "python3 " + path + ".py" + " " + path + "_input.txt" + " " + path + "_expectOutput.txt" + " " + path + "_realOutput.txt"
-	file, err := os.Create(path + ".py")
+func (py PythonOperator) beforeSPJ(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
+	tc := &form.TestCase[i]
+	p := "Python3_" + strconv.Itoa(rand.Int())
+	ts.SPJPath = p
+	ts.CmdLine = "python3 " + p + ".py" + " " + p + "_input.txt" + " " + p + "_expectOutput.txt" + " " + p + "_realOutput.txt"
+	file, err := os.Create(p + ".py")
 	if err != nil {
 		log.Error("%v", err)
 		return err
@@ -236,35 +311,35 @@ func (py PythonOperator) beforeSPJ(form *dto.OperationForm) error {
 		log.Error("%v", err)
 		return err
 	}
-	file2, err := os.Create(path + "_input.txt")
+	file2, err := os.Create(p + "_input.txt")
 	if err != nil {
 		log.Error("%v", err)
 		return err
 	}
 	defer file2.Close()
-	_, err = file2.WriteString(form.Input)
+	_, err = file2.WriteString(tc.Input)
 	if err != nil {
 		log.Error("%v", err)
 		return err
 	}
-	file3, err := os.Create(path + "_expectOutput.txt")
+	file3, err := os.Create(p + "_expectOutput.txt")
 	if err != nil {
 		log.Error("%v", err)
 		return err
 	}
 	defer file3.Close()
-	_, err = file3.WriteString(form.ExpectOutput)
+	_, err = file3.WriteString(tc.ExpectOutput)
 	if err != nil {
 		log.Error("%v", err)
 		return err
 	}
-	file4, err := os.Create(path + "_realOutput.txt")
+	file4, err := os.Create(p + "_realOutput.txt")
 	if err != nil {
 		log.Error("%v", err)
 		return err
 	}
 	defer file4.Close()
-	_, err = file4.WriteString(form.RealOutput)
+	_, err = file4.WriteString(tc.RealOutput)
 	if err != nil {
 		log.Error("%v", err)
 		return err
@@ -272,16 +347,32 @@ func (py PythonOperator) beforeSPJ(form *dto.OperationForm) error {
 	return nil
 }
 
-func (py PythonOperator) SPJ(form *dto.OperationForm) error {
-	cmd := exec.Command("/bin/bash")
+func (py PythonOperator) spj(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
+	tc := &form.TestCase[i]
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(form.MaxRealTime))
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "/bin/bash")
 	stdoutPipe, err := cmd.StdoutPipe()
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
+	stderrPipe, err := cmd.StderrPipe()
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
 	stdinPipe, err := cmd.StdinPipe()
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
 	err = cmd.Start()
 	if err != nil {
 		log.Error("%v", err)
 		return err
 	}
-	_, err = stdinPipe.Write([]byte(form.CmdLine))
+	_, err = stdinPipe.Write([]byte(ts.CmdLine))
 	if err != nil {
 		log.Error("%v", err)
 		return err
@@ -296,18 +387,24 @@ func (py PythonOperator) SPJ(form *dto.OperationForm) error {
 		log.Error("%v", err)
 		return err
 	}
-	res := string(stdout)
+	stderr, err := ioutil.ReadAll(stderrPipe)
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
+	tc.SPJOutput = string(stdout)
+	tc.SPJErrorOutput = string(stderr)
 	err = cmd.Wait()
 	if err != nil {
 		log.Error("%v", err)
 		return err
 	}
-	switch res {
+	switch tc.SPJOutput {
 	case "AC":
-		form.Flag = "AC"
+		tc.Flag = "AC"
 	default:
-		form.Flag = "WA"
-		form.Score = 0
+		tc.Flag = "WA"
+		tc.Score = 0
 	}
 	return nil
 }

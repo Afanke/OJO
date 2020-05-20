@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/afanke/OJO/JudgeServer/dto"
+	"github.com/afanke/OJO/utils/log"
 	"github.com/kataras/iris/v12"
 	"runtime"
 )
@@ -41,22 +42,20 @@ func BindRoute(app *iris.Application) {
 			c.JSON(dto.Res{Error: "", Data: "success"})
 		})
 		app.Post("/Python3", func(c iris.Context) {
-			var forms []dto.OperationForm
-			err := c.ReadJSON(&forms)
-			// fmt.Println(1, forms)
+			var form dto.JudgeForm
+			err := c.ReadJSON(&form)
 			if err != nil {
-				for i, j := 0, len(forms); i < j; i++ {
-					forms[i].Flag = "ISE"
+				for i, j := 0, len(form.TestCase); i < j; i++ {
+					form.TestCase[i].Flag = "ISE"
 				}
+				form.Flag = "ISE"
 				fmt.Println(err)
-				c.JSON(&forms)
+				c.JSON(&form)
 				return
 			}
-			for i, j := 0, len(forms); i < j; i++ {
-				py3.Operate(&forms[i])
-			}
-			// fmt.Println(2, forms)
-			c.JSON(&forms)
+			log.Debug("%+v", form)
+			py3.Mark(&form)
+			c.JSON(&form)
 		})
 	}
 }

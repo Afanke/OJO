@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"reflect"
-	"time"
 )
 
 func DeepFields(ifaceType reflect.Type) []reflect.StructField {
@@ -63,19 +61,24 @@ func StructCopy(DstStructPtr interface{}, SrcStructPtr interface{}) {
 	return
 }
 
-type s struct {
+type ms struct {
 	s string
 }
 
+type tes struct {
+	tes2 []tes2
+}
+
+type tes2 struct {
+	s string
+}
+
+func s(s2 *ms) {
+	s2.s = "hello"
+}
+
 func main() {
-	ss := make(chan *s, 1000000)
-	start := time.Now()
-	for i := 0; i < 1000000; i++ {
-		ss <- &s{s: "hello"}
-	}
-	for i := 0; i < 1000000; i++ {
-		fmt.Println(<-ss)
-	}
-	end := time.Now()
-	fmt.Println(end.UnixNano() - start.UnixNano())
+	t := tes{tes2: []tes2{{s: "123"}, {s: "1234"}}}
+	t1 := t.tes2[1]
+	t1.s = "1234"
 }

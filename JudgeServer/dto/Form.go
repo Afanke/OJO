@@ -1,26 +1,37 @@
 package dto
 
-type OperationForm struct {
-	UseSPJ         bool
-	MaxCpuTime     int // 2 seconds
-	ActualCpuTime  int
-	MaxRealTime    int // 4 seconds
-	ActualRealTime int
-	MaxMemory      int // 2097152 bytes
-	RealMemory     int
-	Score          int
-	PcId           int // Problem case Id
-	SPJCode        string
-	SPJPath        string
-	Language       string
-	FilePath       string
-	CmdLine        string // use to start program or see version
-	Code           string
+type JudgeForm struct {
+	UseSPJ      bool
+	MaxCpuTime  int // 2 seconds
+	MaxRealTime int // 4 seconds
+	MaxMemory   int // 2097152 bytes
+	TotalScore  int
+	Id          int64
+	SPJCode     string
+	Code        string
+	Flag        string
+	TestCase    []TestCase
+}
+
+type TestCase struct {
+	Flag           string
 	Input          string
 	ExpectOutput   string
 	RealOutput     string
 	ErrorOutput    string
-	Flag           string
+	SPJOutput      string
+	SPJErrorOutput string
+	ActualCpuTime  int
+	ActualRealTime int
+	RealMemory     int
+	Score          int
+	Id             int64 // Problem case Id
+}
+
+type TempStorage struct {
+	FilePath string
+	SPJPath  string
+	CmdLine  string
 }
 
 type Res struct {
