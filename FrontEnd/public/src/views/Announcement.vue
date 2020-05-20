@@ -9,13 +9,13 @@
               size="small" @click="reset">&nbsp;Reset</el-button>
           </el-row>
           <el-row>
-            <el-table :show-header="false" stripe size="small" :data="data" style="width:100%;border-radius:10px"
+            <el-table :show-header="false"  :data="data" style="width:100%;border-radius:10px"
               v-loading="loading">
                <el-table-column align="center" prop="" min-width="10" label="Score">
               </el-table-column>
               <el-table-column align="left" label="Id" min-width="180">
                 <template slot-scope="scope">
-                  <el-link type="primary"  @click="getDetail(scope.row.id)" >{{ scope.row.title }}
+                  <el-link style="font-size:18px" @click="getDetail(scope.row.id)" >{{ scope.row.title }}
                   </el-link>
                 </template>
               </el-table-column>
@@ -26,7 +26,7 @@
             </el-table>
           </el-row>
         </div>
-        <el-row style="width:80%;margin:20px auto 0px">
+        <el-row style="width:95%;margin-top:20px">
           <el-pagination style="float:right;" background="" layout="prev, pager, next"
             :page-size="10" @current-change="handlePageChange" :current-page="page" :total="count">
           </el-pagination>

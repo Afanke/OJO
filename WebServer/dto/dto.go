@@ -586,3 +586,32 @@ type DayCount struct {
 	Day   string `json:"day" db:"day"`
 	Count int    `json:"count" db:"count"`
 }
+
+type JudgeForm struct {
+	UseSPJ      bool
+	MaxCpuTime  int // 2 seconds
+	MaxRealTime int // 4 seconds
+	MaxMemory   int // 2097152 bytes
+	TotalScore  int
+	Id          int64
+	Language    string
+	SPJCode     string
+	Code        string
+	Flag        string
+	TestCase    []TestCase
+}
+
+type TestCase struct {
+	Flag           string
+	Input          string
+	ExpectOutput   string
+	RealOutput     string
+	ErrorOutput    string
+	SPJOutput      string
+	SPJErrorOutput string
+	ActualCpuTime  int
+	ActualRealTime int
+	RealMemory     int
+	Score          int
+	Id             int64 // Problem case Id
+}

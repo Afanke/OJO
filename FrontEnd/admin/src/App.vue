@@ -48,7 +48,7 @@
     },
     data() {
       return {
-        username: "afanke",
+        username: "",
         isFullScreen: false,
         isAdmin: false,
         show:false,
@@ -70,7 +70,7 @@
         try {
           const {
             data: res0
-          } = await this.$http.post('/admin/user/getInfo', {});
+          } = await this.$http.post('/admin/user/getDetail', {});
           if (res0.error) {
             // this.$message.error(res0.error)
             this.isAdmin = false

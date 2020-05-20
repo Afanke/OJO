@@ -298,22 +298,19 @@
         try {
           const {
             data: res
-          } = await this.$http.post("/user/getInfo");
+          } = await this.$http.post("/user/getDetail", {
+            id: this.userId
+          });
           if (res.error) {
+            return
+          }
+          if(res.type<2){
             return
           }
           this.isLogined = true;
           this.username = res.data.username;
           this.userId = res.data.id
-          const {
-            data: res1
-          } = await this.$http.post("/user/getDetail", {
-            id: this.userId
-          });
-          if (res1.error) {
-            return
-          }
-          this.squareUrl = this.$http.defaults.baseURL + res1.data.iconPath
+          this.squareUrl = this.$http.defaults.baseURL + res.data.iconPath
         } catch (err) {
           console.log(err);
           alert(err);
@@ -368,6 +365,7 @@
             this.loginDrawer = false;
             this.username = res.data.username;
             this.isLogined = true;
+            this.getDetail()
             this.$message.success("Welcome " + this.username + " !");
           } catch (err) {
             console.log(err);

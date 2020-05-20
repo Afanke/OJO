@@ -200,6 +200,7 @@ func BindRoute(app *iris.Application) {
 			admin.Post("/problem/tryEdit", pb.TryEdit)
 			admin.Post("/problem/getDetail", pb.GetDetail)
 			admin.Post("/problem/updateProblem", pb.UpdateProblem)
+			admin.Post("/problem/localTest", pb.LocalTest)
 		}
 		var pct ctrl.Practice
 		{

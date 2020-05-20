@@ -188,7 +188,6 @@
         showCropper: false,
         img: '',
         detail: {
-
         },
         option: {
           img: '', // 裁剪图片的地址

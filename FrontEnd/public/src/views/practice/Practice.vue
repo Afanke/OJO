@@ -32,7 +32,7 @@
                 
               </el-row>
               <el-row>
-                <el-table :highlight-current-row="true" size="mini" :data="problemList"
+                <el-table :highlight-current-row="true" size="small" :data="problemList"
                   style="width: 100%;margin-top:-20px;border-radius:6px" v-loading="practiseListLoading">
                   <el-table-column prop="ref" label="#" min-width="80">
                   </el-table-column>
@@ -89,7 +89,7 @@
           <el-col :span="18">
             <el-row style="">
               <div class="block">
-                <el-pagination style="float:right;" background layout="prev, pager, next" :page-size="5"
+                <el-pagination style="float:right;" background layout="prev, pager, next" :page-size="20"
                   @current-change="handlePageChange" :current-page="page" :total="count">
                 </el-pagination>
               </div>

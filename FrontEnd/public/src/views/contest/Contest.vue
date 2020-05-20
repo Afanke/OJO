@@ -3,7 +3,7 @@
     <transition name="slide-fade">
       <div class="center-box" v-if="show">
         <el-row style="height:62px">
-          <span style="float:left;font-size:23px;margin-left:30px;margin-top:15px">Contests</span>
+          <span style="float:left;font-size:20px;margin-left:30px;margin-top:15px">Contests</span>
           <el-button style="float:right;margin-top:15px;margin-right:20px;" class="el-icon-refresh" type="primary"
             size="small" @click="reset">&nbsp;Reset</el-button>
           <el-input style="float:right;width:200px;margin-top:15px;margin-right:20px" placeholder="keywords"
@@ -55,7 +55,7 @@
             </el-row>
           </el-row>
         </div>
-        <el-pagination style="float:right;margin-top:20px;" background layout="prev, pager, next" :page-size="5"
+        <el-pagination style="float:right;margin-top:20px;" background layout="prev, pager, next" :page-size="10"
           @current-change="handlePageChange" :current-page="page" :total="count">
         </el-pagination>
       </div>
