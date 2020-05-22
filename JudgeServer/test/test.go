@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"reflect"
 )
@@ -78,7 +79,5 @@ func s(s2 *ms) {
 }
 
 func main() {
-	t := tes{tes2: []tes2{{s: "123"}, {s: "1234"}}}
-	t1 := t.tes2[1]
-	t1.s = "1234"
+	fmt.Println(2400 / 1000)
 }

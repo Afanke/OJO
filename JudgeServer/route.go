@@ -49,7 +49,7 @@ func BindRoute(app *iris.Application) {
 					form.TestCase[i].Flag = "ISE"
 				}
 				form.Flag = "ISE"
-				fmt.Println(err)
+				log.Error("%v", err)
 				c.JSON(&form)
 				return
 			}

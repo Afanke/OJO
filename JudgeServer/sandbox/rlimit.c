@@ -5,10 +5,10 @@
 
 #include "rlimit.h"
 
-int init_rlimit(int max_cpu_time, int max_rss){
+int init_rlimit(int max_cpu_time, int max_mem){
     struct rlimit R_CPU = {max_cpu_time, max_cpu_time+2};
-    struct rlimit R_RSS = {max_rss, max_rss+20000};
-//    struct rlimit R_AS = {max_rss*2, max_rss*3};
+    struct rlimit R_RSS = {max_mem*1024, max_mem*1024+20000};
+    struct rlimit R_AS = {max_mem*1024*5, max_mem*1024*5};
     struct rlimit R_FSIZE = {0, 0};
     struct rlimit R_LOCKS = {0, 0};
     struct rlimit R_MEMLOCK = {0, 0};
@@ -22,11 +22,11 @@ int init_rlimit(int max_cpu_time, int max_rss){
         perror("failed in RLIMIT_CPU");
         return RLIMIT_CPU_ERROR;
     }
-//    if (setrlimit(RLIMIT_AS, &R_AS))
-//    {
-//        perror("failed in RLIMIT_AS");
-//        return RLIMIT_RSS_ERROR;
-//    }
+    if (setrlimit(RLIMIT_AS, &R_AS))
+    {
+        perror("failed in RLIMIT_AS");
+        return RLIMIT_RSS_ERROR;
+    }
     if (setrlimit(RLIMIT_RSS, &R_RSS))
     {
         perror("failed in RLIMIT_RSS");

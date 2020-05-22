@@ -30,9 +30,9 @@ int main(int argc, char *argv[])
     char* arg  = argv[2];
     char* path = argv[3];
     char* stdin_path = argv[4]; 
-    max_real_time = atoi(argv[5]);
-    int max_cpu_time = atoi(argv[6]);
-    int max_rss = atoi(argv[7]);
+    int max_cpu_time = (atoi(argv[5])/1000)+1;
+    max_real_time = atoi(argv[6]);
+    int max_mem = atoi(argv[7]);
     //创建无名管道
     int pip1[2];
     int pip2[2];
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
         ftime(&tb_start);
         write(pip3[1], &tb_start, sizeof(tb_start));
         init_seccomp();
-        init_rlimit(max_cpu_time, max_rss);
+        init_rlimit(max_cpu_time, max_mem);
         execlp(file, arg, path, (char *) 0);
 //        return 0;
     } else

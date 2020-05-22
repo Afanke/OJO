@@ -29,9 +29,9 @@ func (py PythonOperator) operate(form *dto.JudgeForm, i int) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Error("%v", err)
-			i := 0
+			n := 0
 			for {
-				pc, fileName, line, ok := runtime.Caller(i)
+				pc, fileName, line, ok := runtime.Caller(n)
 				if !ok {
 					form.TestCase[i].Flag = "ISE"
 					form.TestCase[i].Score = 0
@@ -40,7 +40,7 @@ func (py PythonOperator) operate(form *dto.JudgeForm, i int) {
 				funcName := runtime.FuncForPC(pc).Name()
 				fileName = path.Base(fileName)
 				fmt.Println(fileName, funcName, line)
-				i++
+				n++
 			}
 		}
 		py.afterRun(useSPJ, ts)
@@ -48,18 +48,21 @@ func (py PythonOperator) operate(form *dto.JudgeForm, i int) {
 	err := py.beforeRun(form, i, ts)
 	if err != nil {
 		form.TestCase[i].Flag = "ISE"
+		form.TestCase[i].Score = 0
 		log.Error("%v", err)
 		return
 	}
 	err = py.run(form, i, ts)
 	if err != nil {
 		form.TestCase[i].Flag = "ISE"
+		form.TestCase[i].Score = 0
 		log.Error("%v", err)
 		return
 	}
 	err = py.judge(form, i)
 	if err != nil {
 		form.TestCase[i].Flag = "ISE"
+		form.TestCase[i].Score = 0
 		log.Error("%v", err)
 		return
 	}
@@ -68,12 +71,14 @@ func (py PythonOperator) operate(form *dto.JudgeForm, i int) {
 		err = py.beforeSPJ(form, i, ts)
 		if err != nil {
 			form.TestCase[i].Flag = "ISE"
+			form.TestCase[i].Score = 0
 			log.Error("%v", err)
 			return
 		}
 		err = py.spj(form, i, ts)
 		if err != nil {
 			form.TestCase[i].Flag = "ISE"
+			form.TestCase[i].Score = 0
 			log.Error("%v", err)
 			return
 		}
@@ -133,7 +138,7 @@ func (py PythonOperator) beforeRun(form *dto.JudgeForm, i int, ts *dto.TempStora
 	}
 	p := "Python3_" + strconv.Itoa(rand.Int())
 	ts.FilePath = p
-	ts.CmdLine = "python3 python3 " + p + ".py " + p + "_input.txt " + strconv.Itoa(form.MaxRealTime) + " " + strconv.Itoa(form.MaxCpuTime) + " " + strconv.Itoa(form.MaxMemory)
+	ts.CmdLine = "python3 python3 " + p + ".py " + p + "_input.txt " + strconv.Itoa(form.MaxCpuTime) + " " + (strconv.Itoa(form.MaxRealTime)) + " " + strconv.Itoa(form.MaxMemory)
 	file, err := os.Create(p + ".py")
 	if err != nil {
 		log.Error("%v", err)
@@ -169,10 +174,11 @@ func (py PythonOperator) run(form *dto.JudgeForm, i int, ts *dto.TempStorage) er
 		log.Error("%v", err)
 		return err
 	}
-	// _, err = stdinPipe.Write([]byte("su judge\n"))
-	// if err != nil {
-	// 	panic(err)
-	// }
+	_, err = stdinPipe.Write([]byte("su judge\n"))
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
 	_, err = stdinPipe.Write([]byte("./SandBoxRunner " + ts.CmdLine + "\n"))
 	if err != nil {
 		log.Error("%v", err)
@@ -205,11 +211,14 @@ func (py PythonOperator) run(form *dto.JudgeForm, i int, ts *dto.TempStorage) er
 		tc.ActualRealTime = 0
 		tc.ActualCpuTime = 0
 		tc.RealMemory = 0
+		tc.Score = 0
 	}
 	tc.ErrorOutput = esr
 	tc.RealOutput = res
 	if len(tc.RealOutput) >= 64000 {
+		log.Debug("output length:%v", len(res))
 		tc.Flag = "OLE"
+		tc.Score = 0
 	}
 	return nil
 }
@@ -247,20 +256,42 @@ func (py PythonOperator) judge(form *dto.JudgeForm, i int) error {
 		switch sig {
 		case "24":
 			tc.Flag = "TLE"
-			if tc.ActualCpuTime < form.MaxCpuTime*1000 {
+			log.Debug("sig 24 tle")
+			if tc.ActualCpuTime < form.MaxCpuTime {
 				tc.ActualCpuTime = form.MaxCpuTime
 			}
 		case "14":
+			log.Debug("sig 14 tle")
 			tc.Flag = "TLE"
 		case "11":
+			log.Debug("sig 11 mle")
 			tc.Flag = "MLE"
 			tc.RealMemory = form.MaxMemory
+		case "31":
+			log.Debug("sig 31 mle")
+			tc.Flag = "MLE"
+			// tc.RealMemory = form.MaxMemory
 		default:
 			tc.Flag = "RE"
 		}
 		return nil
 	}
 	tc.ExpectOutput = strings.ReplaceAll(tc.ExpectOutput, "\r\n", "\n")
+	if tc.ActualCpuTime > form.MaxCpuTime {
+		tc.Flag = "TLE"
+		tc.Score = 0
+		return nil
+	}
+	if tc.ActualRealTime > form.MaxRealTime {
+		tc.Flag = "TLE"
+		tc.Score = 0
+		return nil
+	}
+	if tc.RealMemory > form.MaxMemory {
+		tc.Flag = "MLE"
+		tc.Score = 0
+		return nil
+	}
 	if tc.ErrorOutput != "" {
 		tc.Score = 0
 		if strings.Contains(tc.ErrorOutput, "Traceback (") {

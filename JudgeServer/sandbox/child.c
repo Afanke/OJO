@@ -4,10 +4,12 @@
 
 
 #include "child.h"
+
 /*
  *  signal 14 : out of max_real_time
  *  signal 24 : out of max_cpu_time
  *  signal 11 : out of max_rss
+ *  signal 31 : out of max_as
  */
 
 void handle_child_sig(int sig){
@@ -16,7 +18,6 @@ void handle_child_sig(int sig){
         struct rusage res;
         int status=0;
         wait4(pid,&status,0,&res);
-//        printf("status %d\n",status);
         if (WIFEXITED(status)) {
             fprintf(stderr,"^e%d", WEXITSTATUS(status));
         }
@@ -44,7 +45,7 @@ void wait_for_child(){
         ftime(&end);
         if (kill(pid, 0) == 0 ) {
 //            printf("end-start= %ld\n", (end.time*1000+end.millitm) - (start.time*1000+start.millitm));
-            if ((end.time*1000+end.millitm) - (start.time*1000+start.millitm)>=max_real_time*1000) {
+            if ((end.time*1000+end.millitm) - (start.time*1000+start.millitm)>=max_real_time) {
                 kill(pid, 14);
 //                    break;
             }

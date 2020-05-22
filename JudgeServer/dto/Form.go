@@ -2,9 +2,9 @@ package dto
 
 type JudgeForm struct {
 	UseSPJ      bool
-	MaxCpuTime  int // 2 seconds
-	MaxRealTime int // 4 seconds
-	MaxMemory   int // 2097152 bytes
+	MaxCpuTime  int // 2000 ms
+	MaxRealTime int // 4000 ms
+	MaxMemory   int // 2048*2048kb
 	TotalScore  int
 	Id          int64
 	SPJCode     string
