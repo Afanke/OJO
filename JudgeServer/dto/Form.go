@@ -7,6 +7,7 @@ type JudgeForm struct {
 	MaxMemory   int // 2048*2048kb
 	TotalScore  int
 	Id          int64
+	Language    string
 	SPJCode     string
 	Code        string
 	Flag        string

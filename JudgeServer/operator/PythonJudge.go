@@ -219,6 +219,25 @@ func (py PythonOperator) run(form *dto.JudgeForm, i int, ts *dto.TempStorage) er
 		log.Debug("output length:%v", len(res))
 		tc.Flag = "OLE"
 		tc.Score = 0
+		res, err := strconv.Atoi(esr[strings.IndexByte(esr, 'c')+1 : strings.IndexByte(esr, 'r')])
+		if err != nil {
+			log.Error("%v", err)
+			return err
+		}
+		tc.ActualCpuTime = res
+		res, err = strconv.Atoi(esr[strings.IndexByte(esr, 'r')+1 : strings.IndexByte(esr, '$')])
+		if err != nil {
+			log.Error("%v", err)
+			return err
+		}
+		tc.ActualRealTime = res
+		res, err = strconv.Atoi(esr[strings.IndexByte(esr, 'm')+1 : strings.IndexByte(esr, 'c')])
+		if err != nil {
+			log.Error("%v", err)
+			return err
+		}
+		tc.RealMemory = res
+		tc.ErrorOutput = esr[strings.IndexByte(esr, '$')+1:]
 	}
 	return nil
 }

@@ -141,6 +141,9 @@ type Id2 struct {
 	Cid int64 `json:"cid"`
 	Pid int64 `json:"pid"`
 }
+type Id3 struct {
+	Id int64 `json:"id"`
+}
 type PracticeSubStat struct {
 	Id          int64  `json:"id" db:"id"`
 	Uid         int64  `json:"uid" db:"uid"`
@@ -417,6 +420,7 @@ type PracticeSubmission struct {
 	Code       string `json:"code" db:"code"`
 }
 type ProblemBrief struct {
+	Shared         bool       `json:"shared" db:"shared"`
 	Visible        bool       `json:"visible" db:"visible"`
 	Id             int64      `json:"id" db:"id"`
 	Cid            int64      `json:"cid" db:"cid"`
@@ -589,9 +593,9 @@ type DayCount struct {
 
 type JudgeForm struct {
 	UseSPJ      bool
-	MaxCpuTime  int // 2 seconds
-	MaxRealTime int // 4 seconds
-	MaxMemory   int // 2097152 bytes
+	MaxCpuTime  int // 2000 ms
+	MaxRealTime int // 4000 ms
+	MaxMemory   int // 2048*2048kb
 	TotalScore  int
 	Id          int64
 	Language    string

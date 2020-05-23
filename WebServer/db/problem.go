@@ -2,6 +2,7 @@ package db
 
 import (
 	_ "database/sql"
+	"errors"
 	"github.com/afanke/OJO/WebServer/dto"
 	"github.com/afanke/OJO/utils/log"
 	"github.com/ilibs/gosql/v2"
@@ -86,6 +87,41 @@ func (Problem) GetCount(form *dto.ProblemForm) (int, error) {
 	}
 	_ = rows.Next()
 	err = rows.Scan(&count)
+	return count, err
+}
+
+func (Problem) GetAllShared(form *dto.ProblemForm) ([]dto.ProblemBrief, error) {
+	if form.Page < 1 {
+		form.Page = 1
+	}
+	form.Page -= 1
+	form.Limit = ProblemPageSize
+	form.Offset = form.Page * ProblemPageSize
+	var data []dto.ProblemBrief
+	var s = `select id,ref,cid,title,difficulty,create_time,last_update_time,visible
+			from ojo.problem  where shared=1 or cid=? order by id desc limit ?,? `
+	err := gosql.Select(&data, s, form.Cid, form.Limit, form.Offset)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	err = pb.SelectCreatorName(len(data), func(i int) int64 {
+		return data[i].Cid
+	}, func(i int, res string) {
+		data[i].CreatorName = res
+	})
+	if err != nil {
+		log.Warn("%v", err)
+		return nil, err
+	}
+	return data, nil
+}
+
+func (Problem) GetSharedCount(cid int64) (int, error) {
+	var s = `select count(*)
+			from ojo.problem  where shared=1 or cid=?  `
+	var count int
+	err := gosql.Get(&count, s, cid)
 	return count, err
 }
 
@@ -473,6 +509,18 @@ func (Problem) SetVisibleFalse(id int64) error {
 	s := "update ojo.problem set visible=false where id=? limit 1"
 	_, err := gosql.Exec(s, id)
 	return err
+}
+
+func (Problem) IsShared(pid int64) error {
+	var res bool
+	err := gosql.Get(&res, "select shared from ojo.problem where id=?", pid)
+	if err != nil {
+		return err
+	}
+	if !res {
+		return errors.New("problem isn't shared")
+	}
+	return nil
 }
 
 func (Problem) GetCreatorId(pid int64) (int64, error) {

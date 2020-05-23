@@ -58,6 +58,22 @@ func (Contest) GetAll(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
+func (Contest) GetCtsProblem(c iris.Context) {
+	var id dto.Id3
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = cts.isPermitted(c, id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	data, err := ctsdb.GetCtsProblem(id.Id)
+	c.JSON(&dto.Res{Error: "", Data: data})
+}
+
 func (Contest) SetVisibleTrue(c iris.Context) {
 	var id dto.Id
 	err := c.ReadJSON(&id)

@@ -219,6 +219,27 @@ func (Contest) GetStartTime(cid int64) (time.Time, error) {
 	return data, err
 }
 
+func (Contest) GetCtsProblem(cid int64) ([]dto.ProblemBrief, error) {
+	var data []dto.ProblemBrief
+	s := `select p.id,p.ref,p.cid,p.title, p.difficulty,p.create_time,p.last_update_time,p.visible
+			from ojo.contest_problem cp,ojo.problem p  where cp.pid=p.id and cp.cid=?`
+	err := gosql.Select(&data, s, cid)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	err = pb.SelectCreatorName(len(data), func(i int) int64 {
+		return data[i].Cid
+	}, func(i int, res string) {
+		data[i].CreatorName = res
+	})
+	if err != nil {
+		log.Warn("%v", err)
+		return nil, err
+	}
+	return data, nil
+}
+
 func (Contest) GetAllProblem(cid int64) ([]dto.CtsPbBrief, error) {
 	var sql = `select p.id,p.title,p.ref from contest_problem cp,problem p where cp.pid=p.id and cp.cid=?`
 	var data []dto.CtsPbBrief

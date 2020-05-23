@@ -121,6 +121,41 @@ func (Problem) GetAll(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
+func (Problem) GetAllShared(c iris.Context) {
+	var form dto.ProblemForm
+	err := c.ReadJSON(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	userId, err := isAdmin(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	form.Cid = userId
+	data, err := pbdb.GetAll(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: data})
+}
+
+func (Problem) GetSharedCount(c iris.Context) {
+	userId, err := isAdmin(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	data, err := pbdb.GetSharedCount(userId)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: data})
+}
+
 func (Problem) GetDetail(c iris.Context) {
 	var id dto.Id
 	err := c.ReadJSON(&id)
@@ -235,11 +270,13 @@ func (Problem) isCreator(c iris.Context, id int64) error {
 // to see whether he is super admin or the creator of the problem
 func (Problem) isPermitted(c iris.Context, id int64) error {
 	_, err := isSuperAdmin(c)
-	if err != nil {
-		err := pb.isCreator(c, id)
-		if err != nil {
-			return err
-		}
+	if err == nil {
+		return nil
 	}
-	return nil
+	err = pb.isCreator(c, id)
+	if err == nil {
+		return nil
+	}
+	err = pbdb.IsShared(id)
+	return err
 }
