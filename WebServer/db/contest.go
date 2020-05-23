@@ -211,7 +211,7 @@ func (Contest) GetStartTime(cid int64) (time.Time, error) {
 		log.Warn("error:%v\n", err)
 		return time.Time{}, err
 	}
-	data, err := time.Parse("2006-01-02 15:04:05", res)
+	data, err := time.ParseInLocation("2006-01-02 15:04:05", res, time.Local)
 	if err != nil {
 		log.Warn("error:%v\n", err)
 		return time.Time{}, err
@@ -779,6 +779,134 @@ func (Contest) InsertContest(c *dto.Contest) error {
 	if err != nil {
 		log.Warn("%v", err)
 		err2 := db.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	return err
+}
+
+func (Contest) InsertCtsPb(cid, pid int64) error {
+	s1 := `insert into ojo.contest_problem(cid, pid) 
+                VALUES (?,?)`
+	s2 := `insert into ojo.contest_statistic(cid, pid)
+ 				VALUES (?,?)`
+	tx, err := gosql.Begin()
+	if err != nil {
+		log.Warn("%v", err)
+		return err
+	}
+	_, err = tx.Exec(s1, cid, pid)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	_, err = tx.Exec(s2, cid, pid)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	return err
+}
+
+func (Contest) DeleteContest(cid int64) error {
+	s1 := `delete from contest where id=? limit 1`
+	s2 := `delete from contest_ip_limit where cid=?`
+	s3 := `delete from contest_problem where cid=?`
+	tx, err := gosql.Begin()
+	if err != nil {
+		log.Warn("%v", err)
+		return err
+	}
+	_, err = tx.Exec(s1, cid)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	_, err = tx.Exec(s2, cid)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	_, err = tx.Exec(s3, cid)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	return err
+}
+
+func (Contest) DeleteCtsPb(cid, pid int64) error {
+	s1 := `delete from ojo.contest_problem
+			where cid=? and pid=? limit 1`
+	s2 := `delete from ojo.contest_statistic
+			where cid=? and pid=? limit 1`
+	tx, err := gosql.Begin()
+	if err != nil {
+		log.Warn("%v", err)
+		return err
+	}
+	_, err = tx.Exec(s1, cid, pid)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	_, err = tx.Exec(s2, cid, pid)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
 		if err2 != nil {
 			log.Warn("%v", err2)
 		}

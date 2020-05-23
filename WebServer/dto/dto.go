@@ -144,6 +144,10 @@ type Id2 struct {
 type Id3 struct {
 	Id int64 `json:"id"`
 }
+type Id4 struct {
+	Cid int64 `json:"cid"`
+	Pid int64 `json:"pid"`
+}
 type PracticeSubStat struct {
 	Id          int64  `json:"id" db:"id"`
 	Uid         int64  `json:"uid" db:"uid"`
@@ -249,6 +253,7 @@ type ContestProblem struct {
 	Tags        []TagBrief        `json:"tag"`
 	Statistic   *ContestStatistic `json:"statistic"`
 }
+
 type ContestCaseResult struct {
 	CpuTime     int    `json:"cpuTime" db:"cpu_time"`
 	Csmid       int64  `json:"csmid" db:"csmid"`

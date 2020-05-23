@@ -14,7 +14,7 @@ type Announcement struct {
 var annodb db.Announcement
 var anno Announcement
 
-func (Announcement) AddAnnouncement(c iris.Context) {
+func (Announcement) Add(c iris.Context) {
 	var a dto.Announcement
 	err := c.ReadJSON(&a)
 	if err != nil {
@@ -35,7 +35,7 @@ func (Announcement) AddAnnouncement(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: "save successfully"})
 }
 
-func (Announcement) UpdateAnnouncement(c iris.Context) {
+func (Announcement) Update(c iris.Context) {
 	var a dto.Announcement
 	err := c.ReadJSON(&a)
 	if err != nil {
@@ -53,6 +53,26 @@ func (Announcement) UpdateAnnouncement(c iris.Context) {
 		return
 	}
 	c.JSON(&dto.Res{Error: "", Data: "save successfully"})
+}
+
+func (Announcement) Delete(c iris.Context) {
+	var id dto.Id
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = anno.isPermitted(c, id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = annodb.DeleteAnnouncement(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: "delete successfully"})
 }
 
 func (Announcement) GetAll(c iris.Context) {

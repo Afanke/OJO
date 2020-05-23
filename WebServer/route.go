@@ -203,6 +203,7 @@ func BindRoute(app *iris.Application) {
 			admin.Post("/problem/localTest", pb.LocalTest)
 			admin.Post("/problem/getAllShared", pb.GetAllShared)
 			admin.Post("/problem/getSharedCount", pb.GetSharedCount)
+			admin.Post("/problem/deleteProblem", pb.DeleteProblem)
 		}
 		var pct ctrl.Practice
 		{
@@ -248,6 +249,9 @@ func BindRoute(app *iris.Application) {
 			admin.Post("/contest/getMonthCount", cts.GetMonthCount)
 			admin.Post("/contest/getRecentCount", cts.GetRecentCount)
 			admin.Post("/contest/getCtsProblem", cts.GetCtsProblem)
+			admin.Post("/contest/addProblem", cts.AddProblem)
+			admin.Post("/contest/deleteProblem", cts.DeleteProblem)
+			admin.Post("/contest/deleteContest", cts.DeleteContest)
 		}
 		var sys ctrl.System
 		{
@@ -261,9 +265,10 @@ func BindRoute(app *iris.Application) {
 			admin.Post("/announcement/getCount", anno.GetCount)
 			admin.Post("/announcement/setVisibleTrue", anno.SetVisibleTrue)
 			admin.Post("/announcement/setVisibleFalse", anno.SetVisibleFalse)
-			admin.Post("/announcement/addAnnouncement", anno.AddAnnouncement)
+			admin.Post("/announcement/add", anno.Add)
 			admin.Post("/announcement/getDetail", anno.GetDetail)
-			admin.Post("/announcement/updateAnnouncement", anno.UpdateAnnouncement)
+			admin.Post("/announcement/update", anno.Update)
+			admin.Post("/announcement/delete", anno.Delete)
 		}
 		{
 			admin.Get("/jsp/getAllInfo", func(c context.Context) {

@@ -969,6 +969,131 @@ func (Contest) AddContest(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: "add contest successfully"})
 }
 
+func (Contest) AddProblem(c iris.Context) {
+	var id dto.Id4
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = cts.isPermitted(c, id.Cid)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = pb.isPermitted(c, id.Pid)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	detail, err := ctsdb.GetDetail(id.Cid)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	endTime, err := time.Parse("2006-01-02 15:04:05", detail.EndTime)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	before := endTime.Before(time.Now())
+	if before {
+		c.JSON(&dto.Res{Error: "the contest is ended", Data: nil})
+		return
+	}
+	err = ctsdb.InsertCtsPb(id.Cid, id.Pid)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: "add problem successfully"})
+}
+
+func (Contest) DeleteProblem(c iris.Context) {
+	var id dto.Id4
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = cts.isPermitted(c, id.Cid)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = pb.isPermitted(c, id.Pid)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	detail, err := ctsdb.GetDetail(id.Cid)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	startTime, err := time.Parse("2006-01-02 15:04:05", detail.StartTime)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	before := startTime.Before(time.Now())
+	if before {
+		c.JSON(&dto.Res{Error: "can't delete problem once the contest begun", Data: nil})
+		return
+	}
+	err = ctsdb.DeleteCtsPb(id.Cid, id.Pid)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: "delete problem successfully"})
+}
+
+func (Contest) DeleteContest(c iris.Context) {
+	var id dto.Id
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = cts.isPermitted(c, id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	detail, err := ctsdb.GetDetail(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	startTime, err := time.ParseInLocation("2006-01-02 15:04:05", detail.StartTime, time.Local)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	endTime, err := time.ParseInLocation("2006-01-02 15:04:05", detail.EndTime, time.Local)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	now := time.Now()
+	before := startTime.Before(now)
+	if before {
+		after := endTime.After(time.Now())
+		log.Debug("after:%v", after)
+		if after {
+			c.JSON(&dto.Res{Error: "can't delete contest underway", Data: nil})
+			return
+		}
+	}
+	err = ctsdb.DeleteContest(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: "delete contest successfully"})
+}
+
 func (Contest) TryEdit(c iris.Context) {
 	var id dto.Id
 	err := c.ReadJSON(&id)

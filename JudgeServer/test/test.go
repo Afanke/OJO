@@ -4,6 +4,7 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"reflect"
+	"time"
 )
 
 func DeepFields(ifaceType reflect.Type) []reflect.StructField {
@@ -79,5 +80,7 @@ func s(s2 *ms) {
 }
 
 func main() {
-	fmt.Println(2400 / 1000)
+	t1, _ := time.Parse("2006-01-02 15:04:05", "2020-05-23 21:28:14")
+	t2, _ := time.Parse("2006-01-02 15:04:05", "2020-05-23 21:28:15")
+	fmt.Println(t1.Before(t2))
 }

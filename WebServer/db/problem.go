@@ -451,6 +451,79 @@ func (Problem) UpdateProblem(p *dto.Problem) error {
 	return nil
 }
 
+func (Problem) DeleteProblem(pid int64) error {
+	var s = `delete from ojo.problem where id=? limit 1`
+	tx, err := gosql.Begin()
+	if err != nil {
+		log.Warn("%v", err)
+		return err
+	}
+	_, err = tx.Exec(s, pid)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	err = pb.DeleteProblemCase(tx, pid)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	err = pb.DeleteProblemLanguage(tx, pid)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	err = pb.DeleteProblemSample(tx, pid)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	err = pb.DeleteProblemTag(tx, pid)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	return nil
+}
+
+func (Problem) IsDepended(pid int64) (int, error) {
+	var count int
+	err := gosql.Get(&count, "select count(*) from ojo.contest_problem where pid=?", pid)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 func (Problem) DeleteProblemCase(tx *gosql.DB, pid int64) error {
 	var s = "delete from ojo.problem_case where pid=?"
 	_, err := tx.Exec(s, pid)

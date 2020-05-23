@@ -6,10 +6,10 @@ import (
 	"errors"
 	"github.com/afanke/OJO/WebServer/dto"
 	jsp "github.com/afanke/OJO/WebServer/judge"
-	"github.com/afanke/OJO/utils/session"
 	"github.com/kataras/iris/v12"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -98,6 +98,35 @@ func (Problem) UpdateProblem(c iris.Context) {
 		return
 	}
 	c.JSON(&dto.Res{Error: "", Data: "save successfully"})
+}
+
+func (Problem) DeleteProblem(c iris.Context) {
+	var id dto.Id
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = pb.isCreator(c, id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	count, err := pbdb.IsDepended(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	if count != 0 {
+		c.JSON(&dto.Res{Error: errors.New("can't delete problem: the problem is depended by " + strconv.Itoa(count) + " contests").Error(), Data: nil})
+		return
+	}
+	err = pbdb.DeleteProblem(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: "delete successfully"})
 }
 
 func (Problem) GetAll(c iris.Context) {
@@ -253,27 +282,22 @@ func (Problem) TryEdit(c iris.Context) {
 }
 
 func (Problem) isCreator(c iris.Context, id int64) error {
-	i, err := session.GetInt64(c, "userId")
-	if err != nil {
-		return err
+	adminId, err := isSuperAdmin(c)
+	if err == nil {
+		return nil
 	}
 	creatorId, err := pbdb.GetCreatorId(id)
 	if err != nil {
 		return err
 	}
-	if i != creatorId {
+	if adminId != creatorId {
 		return errors.New("not allowed")
 	}
 	return nil
 }
 
-// to see whether he is super admin or the creator of the problem
 func (Problem) isPermitted(c iris.Context, id int64) error {
-	_, err := isSuperAdmin(c)
-	if err == nil {
-		return nil
-	}
-	err = pb.isCreator(c, id)
+	err := pb.isCreator(c, id)
 	if err == nil {
 		return nil
 	}
