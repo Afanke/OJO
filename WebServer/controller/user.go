@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -225,7 +226,7 @@ func (User) Captcha(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	s.Set("captcha", code)
+	s.Set("captcha", strings.ToLower(code))
 	// 备注：code 可以根据情况存储到session，并在使用时取出验证
 	fmt.Println(code)
 	_ = png.Encode(c.ResponseWriter(), img)
@@ -238,7 +239,7 @@ func (User) Logout(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	s.Remove("user")
+	s.Remove("userId")
 	c.JSON(&dto.Res{Error: "", Data: "success to log out"})
 }
 

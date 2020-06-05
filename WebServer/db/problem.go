@@ -235,14 +235,14 @@ func (Problem) InsertProblem(p *dto.Problem) error {
                         difficulty,
                         real_time_limit,
                         source,
-                        visible) VALUES(?,?,?,?,?,?,?,now(),now(),?,?,?,?,?,?) `
+                        visible,use_spj) VALUES(?,?,?,?,?,?,?,now(),now(),?,?,?,?,?,?,?) `
 	tx, err := gosql.Begin()
 	if err != nil {
 		log.Warn("%v", err)
 		return err
 	}
 	res, err := tx.Exec(s, p.Cid, p.Ref, p.Title, p.Description, p.InputDescription,
-		p.OutputDescription, p.Hint, p.CpuTimeLimit, p.MemoryLimit, p.Difficulty, p.RealTimeLimit, p.Source, p.Visible)
+		p.OutputDescription, p.Hint, p.CpuTimeLimit, p.MemoryLimit, p.Difficulty, p.RealTimeLimit, p.Source, p.Visible, p.UseSPJ)
 	if err != nil {
 		log.Warn("%v", err)
 		err2 := tx.Rollback()
@@ -304,6 +304,32 @@ func (Problem) InsertProblem(p *dto.Problem) error {
 				log.Warn("%v", err2)
 			}
 			return err
+		}
+	}
+	for i, j := 0, len(p.Template); i < j; i++ {
+		p.Template[i].Pid = id
+		err := pb.InsertProblemTemplate(tx, &p.Template[i])
+		if err != nil {
+			log.Warn("%v", err)
+			err2 := tx.Rollback()
+			if err2 != nil {
+				log.Warn("%v", err2)
+			}
+			return err
+		}
+	}
+	if p.UseSPJ {
+		for i, j := 0, len(p.SPJ); i < j; i++ {
+			p.SPJ[i].Pid = id
+			err := pb.InsertProblemSPJ(tx, &p.SPJ[i])
+			if err != nil {
+				log.Warn("%v", err)
+				err2 := tx.Rollback()
+				if err2 != nil {
+					log.Warn("%v", err2)
+				}
+				return err
+			}
 		}
 	}
 	err = pt.InsertStatistic(tx, id)
@@ -569,6 +595,18 @@ func (Problem) InsertProblemSample(tx *gosql.DB, ps *dto.ProblemSample) error {
 func (Problem) InsertProblemTag(tx *gosql.DB, pid, tid int64) error {
 	var s = "insert into ojo.problem_tag(tid, pid) VALUES (?,?)"
 	_, err := tx.Exec(s, tid, pid)
+	return err
+}
+
+func (Problem) InsertProblemSPJ(tx *gosql.DB, spj *dto.SPJ) error {
+	var s = "insert into ojo.problem_spj(pid,lid,code) VALUES (?,?,?)"
+	_, err := tx.Exec(s, spj.Pid, spj.Lid, spj.Code)
+	return err
+}
+
+func (Problem) InsertProblemTemplate(tx *gosql.DB, tp *dto.Template) error {
+	var s = "insert into ojo.problem_template(pid,lid,prepend,content,append) VALUES (?,?,?,?,?)"
+	_, err := tx.Exec(s, tp.Pid, tp.Lid, tp.Prepend, tp.Content, tp.Append)
 	return err
 }
 

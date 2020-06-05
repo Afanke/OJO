@@ -454,11 +454,31 @@ type Problem struct {
 	RealTimeLimit     int             `json:"realTimeLimit" db:"real_time_limit"`
 	Source            string          `json:"source" db:"source"`
 	Visible           bool            `json:"visible" db:"visible"`
+	UseSPJ            bool            `json:"useSPJ" db:"use_spj"`
+	SPJ               []SPJ           `json:"spj" db:"spj"`
+	Template          []Template      `json:"template" db:"template"`
 	ProblemCase       []ProblemCase   `json:"problemCase" db:"problem_case"`
 	Language          []Language      `json:"language" db:"language"`
 	Sample            []ProblemSample `json:"sample" db:"sample"`
 	Tag               []TagBrief      `json:"tag"`
 }
+
+type SPJ struct {
+	Id   int64  `json:"id" db:"id"`
+	Pid  int64  `json:"pid" db:"pid"`
+	Lid  int64  `json:"lid" db:"lid"`
+	Code string `json:"code" db:"code"`
+}
+
+type Template struct {
+	Id      int64  `json:"id" db:"id"`
+	Pid     int64  `json:"pid" db:"pid"`
+	Lid     int64  `json:"lid" db:"lid"`
+	Prepend string `json:"prepend" db:"prepend"`
+	Content string `json:"content" db:"content"`
+	Append  string `json:"append" db:"append"`
+}
+
 type ProblemCase struct {
 	Id     int64  `json:"id" db:"id"`
 	Pid    int64  `json:"pid" db:"pid"`

@@ -138,9 +138,9 @@ func (captcha *Captcha) doImage(dest *image.RGBA) (string, *image.RGBA) {
 	defer gc.FillStroke()
 
 	captcha.setFont(gc)
-	captcha.doPoint(gc)
-	captcha.doLine(gc)
-	captcha.doSinLine(gc)
+	captcha.doPoint(gc, 10)
+	captcha.doLine(gc, 2)
+	// captcha.doSinLine(gc)
 
 	var codeStr string
 	if captcha.mode == 1 {
@@ -192,9 +192,9 @@ func (captcha *Captcha) doFormula(gc *draw2dimg.GraphicContext, formulaArr []str
 }
 
 // 增加干扰线
-func (captcha *Captcha) doLine(gc *draw2dimg.GraphicContext) {
+func (captcha *Captcha) doLine(gc *draw2dimg.GraphicContext, num int) {
 	// 设置干扰线
-	for n := 0; n < 5; n++ {
+	for n := 0; n < num; n++ {
 		// gc.SetLineWidth(float64(captcha.RangeRand(1, 2)))
 		gc.SetLineWidth(1)
 
@@ -214,8 +214,8 @@ func (captcha *Captcha) doLine(gc *draw2dimg.GraphicContext) {
 }
 
 // 增加干扰点
-func (captcha *Captcha) doPoint(gc *draw2dimg.GraphicContext) {
-	for n := 0; n < 50; n++ {
+func (captcha *Captcha) doPoint(gc *draw2dimg.GraphicContext, num int) {
+	for n := 0; n < num; n++ {
 		gc.SetLineWidth(float64(captcha.RangeRand(1, 3)))
 
 		// 随机色
