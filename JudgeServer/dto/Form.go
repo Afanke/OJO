@@ -7,6 +7,8 @@ type JudgeForm struct {
 	MaxMemory   int // 2048*2048kb
 	TotalScore  int
 	Id          int64
+	Lid         int64
+	SPJLid      int64
 	Language    string
 	SPJCode     string
 	Code        string
@@ -30,9 +32,11 @@ type TestCase struct {
 }
 
 type TempStorage struct {
-	FilePath string
-	SPJPath  string
-	CmdLine  string
+	UseSPJ     bool
+	CPFilePath string
+	FilePath   string
+	SPJPath    string
+	CmdLine    string
 }
 
 type Res struct {

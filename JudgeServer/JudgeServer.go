@@ -1,11 +1,8 @@
 package main
 
 import (
-	"github.com/afanke/OJO/JudgeServer/operator"
 	"github.com/kataras/iris/v12"
 )
-
-var py3 operator.PythonOperator
 
 func main() {
 	app := iris.New()

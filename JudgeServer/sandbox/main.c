@@ -14,25 +14,29 @@
 #include "child.h"
 
 pid_t pid;
-bool flag = true;
-int max_real_time;
+bool flag=true;
 struct timeb tb_end;
 
 int main(int argc, char *argv[])
 {
     //接受参数
-    if (argc < 8)
+    if (argc < 6)
     {
-        perror("failed to load, lack of parameter");
+        fprintf(stderr,"failed to load, lack of parameter");
         exit(0);
     }
-    char* file = argv[1];
-    char* arg  = argv[2];
-    char* path = argv[3];
-    char* stdin_path = argv[4]; 
-    int max_cpu_time = (atoi(argv[5])/1000)+1;
-    max_real_time = atoi(argv[6]);
-    int max_mem = atoi(argv[7]);
+
+    int max_cpu_time = (atoi(argv[1])/1000)+1;
+    int max_real_time = atoi(argv[2]);
+    int max_mem = atoi(argv[3]);
+    char* stdin_path = argv[4];
+
+    char** args = (char**)malloc(sizeof(char*)*(argc-5)+1);
+    for (int i=0;i<(argc-5);i++){
+        args[i]=argv[i+5];
+    }
+    args[(argc-5)]=(char*)0;
+
     //创建无名管道
     int pip1[2];
     int pip2[2];
@@ -52,15 +56,21 @@ int main(int argc, char *argv[])
     }
     if (pid == 0)
     {
-        freopen(stdin_path,"r",stdin);
+        if(strcmp(stdin_path,"0") != 0){
+            freopen(stdin_path,"r",stdin);
+        }
         dup2(pip1[1], 1); //dup stdout to pip1
         dup2(pip2[1], 2); //dup stderr to pip2
         struct timeb tb_start;
         ftime(&tb_start);
         write(pip3[1], &tb_start, sizeof(tb_start));
         init_seccomp();
-        init_rlimit(max_cpu_time, max_mem);
-        execlp(file, arg, path, (char *) 0);
+        int res=0;
+        if((res=init_rlimit(max_cpu_time, max_mem))!=0){
+            fprintf(stderr,"failed to load rlimit, error:%d",res);
+            exit(0);
+        };
+        execvp(args[0],args);
 //        return 0;
     } else
     {
@@ -68,7 +78,7 @@ int main(int argc, char *argv[])
         char err_buff[1024 * 64] = {0};
         struct timeb tb_start;
         signal(SIGCHLD, handle_child_sig);
-        wait_for_child();
+        wait_for_child(max_real_time);
         close(pip1[1]);
         close(pip2[1]);
         close(pip3[1]);
@@ -78,6 +88,5 @@ int main(int argc, char *argv[])
         fprintf(stderr,"r%ld$", (tb_end.time*1000+tb_end.millitm) - (tb_start.time*1000+tb_start.millitm));
         printf("%s", out_buff);
         fprintf(stderr,"%s", err_buff);
-
     }
 }

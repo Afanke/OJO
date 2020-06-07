@@ -1,3 +1,6 @@
+all: CPSBOX RTSBOX
 
-all:
-	gcc main.c rlimit.c seccmp.c child.c -lseccomp -o SandBoxRunner
+CPSBOX:
+	gcc main.c rlimit.c seccmp.c child.c -lseccomp -o CPSBOX -D CPSBOX
+RTSBOX:
+	gcc main.c rlimit.c seccmp.c child.c -lseccomp -o RTSBOX

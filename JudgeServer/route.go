@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/afanke/OJO/JudgeServer/dto"
+	"github.com/afanke/OJO/JudgeServer/judge"
 	"github.com/afanke/OJO/utils/log"
 	"github.com/kataras/iris/v12"
 	"runtime"
@@ -35,13 +36,39 @@ func PanicMidWare(ctx iris.Context) {
 	ctx.Next()
 }
 
+func GetRtJug(lid int64) judge.RtJug {
+	switch lid {
+	case 1:
+		return judge.C{}
+	case 4:
+		return judge.Python{}
+	default:
+		return judge.C{}
+	}
+}
+
+func GetSpJug(lid int64) judge.SpJug {
+	switch lid {
+	case 1:
+		return judge.C{}
+	case 4:
+		return judge.Python{}
+	default:
+		return judge.C{}
+	}
+}
+
+func GetJug(lid1, lid2 int64) judge.Base {
+	return judge.NewJudge(GetRtJug(lid1), GetSpJug(lid2))
+}
+
 func BindRoute(app *iris.Application) {
 	app.Use(PanicMidWare)
 	{
 		app.Get("/touch", func(c iris.Context) {
 			c.JSON(dto.Res{Error: "", Data: "success"})
 		})
-		app.Post("/Python3", func(c iris.Context) {
+		app.Post("/judge", func(c iris.Context) {
 			var form dto.JudgeForm
 			err := c.ReadJSON(&form)
 			if err != nil {
@@ -54,7 +81,8 @@ func BindRoute(app *iris.Application) {
 				return
 			}
 			log.Debug("%+v", form)
-			py3.Mark(&form)
+			jug := GetJug(form.Lid, form.SPJLid)
+			jug.Mark(&form)
 			c.JSON(&form)
 		})
 	}

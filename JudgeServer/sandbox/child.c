@@ -9,11 +9,11 @@
  *  signal 14 : out of max_real_time
  *  signal 24 : out of max_cpu_time
  *  signal 11 : out of max_rss
- *  signal 31 : out of max_as
+ *  signal 31 : out of max_as(or system error)
  */
 
 void handle_child_sig(int sig){
-    if (sig == SIGCHLD) {
+//    if (sig == SIGCHLD) {
         ftime(&tb_end);
         struct rusage res;
         int status=0;
@@ -29,25 +29,22 @@ void handle_child_sig(int sig){
         long usec = res.ru_stime.tv_usec + res.ru_utime.tv_usec;
         fprintf(stderr,"c%ld", sec*1000+usec/1000);
         flag = false;
-    } else if (sig == SIGXCPU) {
-        printf("sigcpu");
-    } else {
-        printf("%d",sig);
-    }
+//    } else if (sig == SIGXCPU) {
+//        printf("sigcpu");
+//    } else {
+//        printf("%d",sig);
+//    }
 }
 
-void wait_for_child(){
-
+void wait_for_child(int max_real_time){
     struct timeb start,end;
     ftime(&start);
     while (flag) {
         usleep(50000);
         ftime(&end);
         if (kill(pid, 0) == 0 ) {
-//            printf("end-start= %ld\n", (end.time*1000+end.millitm) - (start.time*1000+start.millitm));
             if ((end.time*1000+end.millitm) - (start.time*1000+start.millitm)>=max_real_time) {
                 kill(pid, 14);
-//                    break;
             }
             continue;
         } else {
