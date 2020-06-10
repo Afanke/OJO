@@ -7,6 +7,7 @@ import (
 	"github.com/afanke/OJO/JudgeServer/dto"
 	"github.com/afanke/OJO/utils/log"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"os/exec"
 	"path"
@@ -22,27 +23,29 @@ type Base struct {
 }
 
 const (
-	INPUT_SUFFIX           = "_input.txt"
-	EXPECTED_OUTPUT_SUFFIX = "_expectedOutput.txt"
-	INPUT_SUFFIX           = "_input.txt"
+	InputSuffix          = "_input.txt"
+	ExpectedOutputSuffix = "_expectedOutput.txt"
+	RealOutputSuffix     = "_realOutput.txt"
+	CPSBox               = "./CPSBox"
+	RTSBox               = "./RTSBox"
 )
 
 type RtJug interface {
 	needCompile() bool
-	getSuffix() string
-	getCmpCmd(form *dto.JudgeForm, ts *dto.TempStorage) string
-	getRunCmd(form *dto.JudgeForm, ts *dto.TempStorage) string
-	writeCode(form *dto.JudgeForm, ts *dto.TempStorage) error
-	writeInput(form *dto.JudgeForm, i int, ts *dto.TempStorage) error
+	getLangName() string
+	getSourceSuffix() string
+	getTargetSuffix() string
+	getCmpCmd(source, target string) string
+	getRunCmd(target string) string
 }
 
 type SpJug interface {
 	needCompile() bool
-	getSuffix() string
-	getSPJCmpCmd(form *dto.JudgeForm, ts *dto.TempStorage) string
-	getSPJRunCmd(form *dto.JudgeForm, ts *dto.TempStorage) string
-	writeSPJCode(form *dto.JudgeForm, ts *dto.TempStorage) error
-	writeSPJInput(form *dto.JudgeForm, i int, ts *dto.TempStorage) error
+	getSourceSuffix() string
+	getTargetSuffix() string
+	getLangName() string
+	getSPJCmpCmd(source, target string) string
+	getSPJRunCmd(target, input, expOutput, realOutput string) string
 }
 
 func NewJudge(rt RtJug, sp SpJug) Base {
@@ -77,7 +80,7 @@ func (b Base) Judge(form *dto.JudgeForm) {
 	}()
 	ts := &dto.TempStorage{}
 	form.Flag = "JUG"
-	err := b.rt.writeCode(form, ts)
+	err := b.writeCode(form, ts)
 	defer b.cleanCodeFile(ts)
 	if err != nil {
 		form.Flag = "ISE"
@@ -96,7 +99,7 @@ func (b Base) Judge(form *dto.JudgeForm) {
 		}
 	}
 	if form.UseSPJ {
-		err := b.sp.writeSPJCode(form, ts)
+		err := b.writeSPJCode(form, ts)
 		defer b.cleanSPJFile(ts)
 		if err != nil {
 			form.Flag = "ISE"
@@ -161,7 +164,7 @@ func (Base) summary(form *dto.JudgeForm) {
 }
 
 func (b Base) judgeTestCase(form *dto.JudgeForm, i int, ts *dto.TempStorage) {
-	err := b.rt.writeInput(form, i, ts)
+	err := b.writeInput(&form.TestCase[i], ts)
 	defer b.cleanInputFile(ts)
 	if err != nil {
 		form.TestCase[i].Flag = "ISE"
@@ -187,7 +190,7 @@ func (b Base) judgeTestCase(form *dto.JudgeForm, i int, ts *dto.TempStorage) {
 	if !ts.UseSPJ {
 		return
 	}
-	err = b.sp.writeSPJInput(form, i, ts)
+	err = b.writeSPJInput(&form.TestCase[i], ts)
 	if err != nil {
 		form.TestCase[i].Flag = "ISE"
 		form.TestCase[i].Score = 0
@@ -221,7 +224,12 @@ func (b Base) compile(form *dto.JudgeForm, ts *dto.TempStorage) error {
 	// 	form.Flag = "ISE"
 	// 	return errors.New("Internal Server Error: " + err.Error() + "\n")
 	// }
-	_, err = stdinPipe.Write([]byte("./CPSBOX " + b.rt.getCmpCmd(form, ts) + "\n"))
+	_, err = stdinPipe.Write([]byte(CPSBox +
+		b.getLmtStr(form, "") +
+		b.rt.getCmpCmd(
+			ts.FilePath+b.rt.getSourceSuffix(),
+			ts.FilePath+b.rt.getTargetSuffix(),
+		) + "\n"))
 	if err != nil {
 		log.Error("%v", err)
 		form.Flag = "ISE"
@@ -345,7 +353,15 @@ func (b Base) run(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
 	// 	log.Error("%v", err)
 	// 	return err
 	// }
-	_, err = stdinPipe.Write([]byte("./RTSBOX " + b.rt.getRunCmd(form, ts) + "\n"))
+	temp := ""
+	if b.rt.needCompile() {
+		temp = ts.FilePath + b.rt.getTargetSuffix()
+	} else {
+		temp = ts.FilePath + b.rt.getSourceSuffix()
+	}
+	_, err = stdinPipe.Write([]byte(RTSBox +
+		b.getLmtStr(form, ts.FilePath+InputSuffix) +
+		b.rt.getRunCmd(temp) + "\n"))
 	if err != nil {
 		log.Error("%v", err)
 		return err
@@ -471,7 +487,7 @@ func (Base) concludeFlag(form *dto.JudgeForm, i int) error {
 	if form.UseSPJ {
 		return nil
 	}
-	if tc.ExpectOutput == tc.RealOutput {
+	if tc.ExpectedOutput == tc.RealOutput {
 		tc.Flag = "AC"
 		return nil
 	}
@@ -499,7 +515,10 @@ func (b Base) compileSPJ(form *dto.JudgeForm, ts *dto.TempStorage) error {
 	// 	form.Flag = "ISE"
 	// 	return errors.New("Internal Server Error: " + err.Error() + "\n")
 	// }
-	_, err = stdinPipe.Write([]byte(b.sp.getSPJCmpCmd(form, ts) + "\n"))
+	_, err = stdinPipe.Write([]byte(
+		b.sp.getSPJCmpCmd(
+			ts.SPJPath+b.sp.getSourceSuffix(),
+			ts.SPJPath+b.sp.getTargetSuffix()) + "\n"))
 	if err != nil {
 		log.Error("%v", err)
 		form.Flag = "ISE"
@@ -563,7 +582,19 @@ func (b Base) spj(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
 		log.Error("%v", err)
 		return err
 	}
-	_, err = stdinPipe.Write([]byte(b.sp.getSPJRunCmd(form, ts)))
+	sp := ts.SPJPath
+	temp := ""
+	if b.sp.needCompile() {
+		temp = sp + b.sp.getTargetSuffix()
+	} else {
+		temp = sp + b.sp.getSourceSuffix()
+	}
+	_, err = stdinPipe.Write([]byte(b.sp.getSPJRunCmd(
+		temp,
+		sp+InputSuffix,
+		sp+ExpectedOutputSuffix,
+		sp+RealOutputSuffix,
+	) + "\n"))
 	if err != nil {
 		log.Error("%v", err)
 		return err
@@ -601,28 +632,116 @@ func (b Base) spj(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
 }
 
 func (b Base) cleanInputFile(ts *dto.TempStorage) {
-	_ = os.Remove(ts.FilePath + "_input.txt")
+	_ = os.Remove(ts.FilePath + InputSuffix)
 	if ts.UseSPJ && ts.SPJPath != "" {
-		_ = os.Remove(ts.SPJPath + "_input.txt")
-		_ = os.Remove(ts.SPJPath + "_expectOutput.txt")
-		_ = os.Remove(ts.SPJPath + "_realOutput.txt")
+		_ = os.Remove(ts.SPJPath + InputSuffix)
+		_ = os.Remove(ts.SPJPath + ExpectedOutputSuffix)
+		_ = os.Remove(ts.SPJPath + RealOutputSuffix)
 	}
 }
 
 func (b Base) cleanCodeFile(ts *dto.TempStorage) {
 	if b.rt.needCompile() {
-		_ = os.Remove(ts.FilePath)
+		_ = os.Remove(ts.FilePath + b.rt.getTargetSuffix())
 	}
-	_ = os.Remove(ts.FilePath + b.rt.getSuffix())
+	_ = os.Remove(ts.FilePath + b.rt.getSourceSuffix())
 }
 
 func (b Base) cleanSPJFile(ts *dto.TempStorage) {
 	if b.sp.needCompile() {
-		_ = os.Remove(ts.SPJPath)
+		_ = os.Remove(ts.SPJPath + b.sp.getTargetSuffix())
 	}
-	_ = os.Remove(ts.SPJPath + b.sp.getSuffix())
+	_ = os.Remove(ts.SPJPath + b.sp.getSourceSuffix())
 }
 
-func getLmtStr(form *dto.JudgeForm) string {
-	return strconv.Itoa(form.MaxCpuTime) + " " + (strconv.Itoa(form.MaxRealTime)) + " " + strconv.Itoa(form.MaxMemory)
+func (b Base) getLmtStr(form *dto.JudgeForm, inputPath string) string {
+	return " " + strconv.Itoa(form.MaxCpuTime) + " " + (strconv.Itoa(form.MaxRealTime)) + " " + strconv.Itoa(form.MaxMemory) + " " + inputPath + " "
+}
+
+func (b Base) writeSPJCode(form *dto.JudgeForm, ts *dto.TempStorage) error {
+	p := b.sp.getLangName() + strconv.Itoa(rand.Int())
+	ts.SPJPath = p
+	file, err := os.Create(p + b.sp.getSourceSuffix())
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
+	defer file.Close()
+	_, err = file.WriteString(form.SPJCode)
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
+	return nil
+}
+
+func (b Base) writeSPJInput(tc *dto.TestCase, ts *dto.TempStorage) error {
+	p := ts.SPJPath
+	file1, err := os.Create(p + InputSuffix)
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
+	defer file1.Close()
+	_, err = file1.WriteString(tc.Input)
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
+	file2, err := os.Create(p + ExpectedOutputSuffix)
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
+	defer file2.Close()
+	_, err = file2.WriteString(tc.ExpectedOutput)
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
+	file3, err := os.Create(p + RealOutputSuffix)
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
+	defer file3.Close()
+	_, err = file3.WriteString(tc.RealOutput)
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
+	return nil
+}
+
+func (b Base) writeCode(form *dto.JudgeForm, ts *dto.TempStorage) error {
+	p := b.rt.getLangName() + strconv.Itoa(rand.Int())
+	ts.FilePath = p
+	file, err := os.Create(p + b.rt.getSourceSuffix())
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
+	defer file.Close()
+	_, err = file.WriteString(form.Code)
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
+	return nil
+}
+
+func (b Base) writeInput(tc *dto.TestCase, ts *dto.TempStorage) error {
+	inputPath := ts.FilePath + InputSuffix
+	file, err := os.Create(inputPath)
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
+	defer file.Close()
+	_, err = file.WriteString(tc.Input)
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
+	return nil
 }

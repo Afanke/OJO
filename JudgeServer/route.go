@@ -41,7 +41,7 @@ func GetRtJug(lid int64) judge.RtJug {
 	case 1:
 		return judge.C{}
 	case 4:
-		return judge.Python{}
+		return judge.Python3{}
 	default:
 		return judge.C{}
 	}
@@ -52,7 +52,7 @@ func GetSpJug(lid int64) judge.SpJug {
 	case 1:
 		return judge.C{}
 	case 4:
-		return judge.Python{}
+		return judge.Python3{}
 	default:
 		return judge.C{}
 	}
@@ -82,7 +82,7 @@ func BindRoute(app *iris.Application) {
 			}
 			log.Debug("%+v", form)
 			jug := GetJug(form.Lid, form.SPJLid)
-			jug.Mark(&form)
+			jug.Judge(&form)
 			c.JSON(&form)
 		})
 	}

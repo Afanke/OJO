@@ -32,14 +32,14 @@ printf("%d",a+b);
 		Flag: "",
 		TestCase: []dto.TestCase{
 			{
-				Input:        "1 2",
-				ExpectOutput: "3",
-				Score:        10,
+				Input:          "1 2",
+				ExpectedOutput: "3",
+				Score:          10,
 			},
 			{
-				Input:        "4 5",
-				ExpectOutput: "9",
-				Score:        10,
+				Input:          "4 5",
+				ExpectedOutput: "9",
+				Score:          10,
 			},
 		},
 	}

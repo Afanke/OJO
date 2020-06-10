@@ -19,7 +19,7 @@ type JudgeForm struct {
 type TestCase struct {
 	Flag           string
 	Input          string
-	ExpectOutput   string
+	ExpectedOutput string
 	RealOutput     string
 	ErrorOutput    string
 	SPJOutput      string
