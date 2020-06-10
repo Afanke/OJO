@@ -9,10 +9,10 @@ type JudgeForm struct {
 	Id          int64
 	Lid         int64
 	SPJLid      int64
-	Language    string
 	SPJCode     string
 	Code        string
 	Flag        string
+	ErrorMsg    string
 	TestCase    []TestCase
 }
 
@@ -32,11 +32,9 @@ type TestCase struct {
 }
 
 type TempStorage struct {
-	UseSPJ     bool
-	CPFilePath string
-	FilePath   string
-	SPJPath    string
-	CmdLine    string
+	UseSPJ   bool
+	FilePath string
+	SPJPath  string
 }
 
 type Res struct {

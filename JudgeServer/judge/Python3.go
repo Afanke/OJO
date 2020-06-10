@@ -8,58 +8,20 @@ import (
 	"strconv"
 )
 
-type Python struct{}
+type Python3 struct{}
 
-func (py Python) beforeCompile(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
-	// do nothing
-	return nil
+func (py Python3) getSPJCmpCmd(form *dto.JudgeForm, ts *dto.TempStorage) string {
+	return ""
 }
 
-func (py Python) needCompile() bool {
-	return false
+func (py Python3) getSPJRunCmd(form *dto.JudgeForm, ts *dto.TempStorage) string {
+	p := ts.SPJPath
+	return "python3 " + p + ".py" + " " + p + "_input.txt" + " " + p + "_expectOutput.txt" + " " + p + "_realOutput.txt"
 }
 
-func (py Python) getSuffix() string {
-	return ".py"
-}
-
-func (py Python) beforeRun(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
-	p := "Python3_" + strconv.Itoa(rand.Int())
-	ts.FilePath = p
-	lmtStr := strconv.Itoa(form.MaxCpuTime) + " " + (strconv.Itoa(form.MaxRealTime)) + " " + strconv.Itoa(form.MaxMemory)
-	inputPath := p + "_input.txt"
-	filePath := p + ".py"
-	ts.CmdLine = lmtStr + " " + inputPath + " python3 " + filePath
-	file, err := os.Create(filePath)
-	if err != nil {
-		log.Error("%v", err)
-		return err
-	}
-	defer file.Close()
-	_, err = file.WriteString(form.Code)
-	if err != nil {
-		log.Error("%v", err)
-		return err
-	}
-	file2, err := os.Create(inputPath)
-	if err != nil {
-		log.Error("%v", err)
-		return err
-	}
-	defer file2.Close()
-	_, err = file2.WriteString(form.TestCase[i].Input)
-	if err != nil {
-		log.Error("%v", err)
-		return err
-	}
-	return nil
-}
-
-func (py Python) beforeSPJ(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
-	tc := &form.TestCase[i]
+func (py Python3) writeSPJCode(form *dto.JudgeForm, ts *dto.TempStorage) error {
 	p := "Python3_" + strconv.Itoa(rand.Int())
 	ts.SPJPath = p
-	ts.CmdLine = "python3 " + p + ".py" + " " + p + "_input.txt" + " " + p + "_expectOutput.txt" + " " + p + "_realOutput.txt"
 	file, err := os.Create(p + ".py")
 	if err != nil {
 		log.Error("%v", err)
@@ -71,6 +33,11 @@ func (py Python) beforeSPJ(form *dto.JudgeForm, i int, ts *dto.TempStorage) erro
 		log.Error("%v", err)
 		return err
 	}
+	return nil
+}
+
+func (py Python3) writeSPJInput(tc *dto.TestCase, ts *dto.TempStorage) error {
+	p := ts.SPJPath
 	file2, err := os.Create(p + "_input.txt")
 	if err != nil {
 		log.Error("%v", err)
@@ -105,4 +72,57 @@ func (py Python) beforeSPJ(form *dto.JudgeForm, i int, ts *dto.TempStorage) erro
 		return err
 	}
 	return nil
+}
+
+func (py Python3) getCmpCmd(form *dto.JudgeForm, ts *dto.TempStorage) string {
+	return ""
+}
+
+func (py Python3) getRunCmd(form *dto.JudgeForm, ts *dto.TempStorage) string {
+	lmtStr := strconv.Itoa(form.MaxCpuTime) + " " + (strconv.Itoa(form.MaxRealTime)) + " " + strconv.Itoa(form.MaxMemory)
+	inputPath := ts.FilePath + "_input.txt"
+	filePath := ts.FilePath + ".py"
+	return lmtStr + " " + inputPath + " python3 " + filePath
+}
+
+func (py Python3) writeCode(form *dto.JudgeForm, ts *dto.TempStorage) error {
+	p := "Python3_" + strconv.Itoa(rand.Int())
+	ts.FilePath = p
+	filePath := p + ".py"
+	file, err := os.Create(filePath)
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
+	defer file.Close()
+	_, err = file.WriteString(form.Code)
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
+	return nil
+}
+
+func (py Python3) writeInput(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
+	inputPath := ts.FilePath + "_input.txt"
+	file, err := os.Create(inputPath)
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
+	defer file.Close()
+	_, err = file.WriteString(form.TestCase[i].Input)
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
+	return nil
+}
+
+func (py Python3) needCompile() bool {
+	return false
+}
+
+func (py Python3) getSuffix() string {
+	return ".py"
 }
