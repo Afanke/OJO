@@ -2,6 +2,14 @@ package judge
 
 type Python3 struct{}
 
+func (p Python3) needEditCode() bool {
+	return false
+}
+
+func (p Python3) EditCode(code string) string {
+	return code
+}
+
 func (p Python3) getSourceSuffix() string {
 	return ".py"
 }

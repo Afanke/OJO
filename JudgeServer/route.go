@@ -40,8 +40,14 @@ func GetRtJug(lid int64) judge.RtJug {
 	switch lid {
 	case 1:
 		return judge.C{}
+	case 2:
+		return judge.Cpp{}
+	case 3:
+		return judge.Java{}
 	case 4:
 		return judge.Python3{}
+	case 5:
+		return judge.Go{}
 	default:
 		return judge.C{}
 	}
@@ -51,8 +57,14 @@ func GetSpJug(lid int64) judge.SpJug {
 	switch lid {
 	case 1:
 		return judge.C{}
+	case 2:
+		return judge.Cpp{}
+	case 3:
+		return judge.Java{}
 	case 4:
 		return judge.Python3{}
+	case 5:
+		return judge.Go{}
 	default:
 		return judge.C{}
 	}

@@ -2,6 +2,14 @@ package judge
 
 type C struct{}
 
+func (c C) needEditCode() bool {
+	return false
+}
+
+func (c C) EditCode(code string) string {
+	return code
+}
+
 func (c C) getCmpCmd(source, target string) string {
 	return "gcc " + source + " -o " + target
 }

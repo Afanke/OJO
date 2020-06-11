@@ -32,6 +32,8 @@ const (
 
 type RtJug interface {
 	needCompile() bool
+	needEditCode() bool
+	EditCode(code string) string
 	getLangName() string
 	getSourceSuffix() string
 	getTargetSuffix() string
@@ -41,6 +43,8 @@ type RtJug interface {
 
 type SpJug interface {
 	needCompile() bool
+	needEditCode() bool
+	EditCode(code string) string
 	getSourceSuffix() string
 	getTargetSuffix() string
 	getLangName() string
@@ -81,7 +85,7 @@ func (b Base) Judge(form *dto.JudgeForm) {
 	ts := &dto.TempStorage{}
 	form.Flag = "JUG"
 	err := b.writeCode(form, ts)
-	defer b.cleanCodeFile(ts)
+	// defer b.cleanCodeFile(ts)
 	if err != nil {
 		form.Flag = "ISE"
 		form.ErrorMsg = "Internal Server Error: " + err.Error() + "\n"
@@ -89,7 +93,9 @@ func (b Base) Judge(form *dto.JudgeForm) {
 		log.Error("%v", err)
 		return
 	}
+	log.Debug("needCompile:%v", b.rt.needCompile())
 	if b.rt.needCompile() {
+		log.Debug("compile")
 		err = b.compile(form, ts)
 		if err != nil {
 			form.ErrorMsg = err.Error()
@@ -165,7 +171,7 @@ func (Base) summary(form *dto.JudgeForm) {
 
 func (b Base) judgeTestCase(form *dto.JudgeForm, i int, ts *dto.TempStorage) {
 	err := b.writeInput(&form.TestCase[i], ts)
-	defer b.cleanInputFile(ts)
+	// defer b.cleanInputFile(ts)
 	if err != nil {
 		form.TestCase[i].Flag = "ISE"
 		form.TestCase[i].Score = 0
@@ -224,12 +230,14 @@ func (b Base) compile(form *dto.JudgeForm, ts *dto.TempStorage) error {
 	// 	form.Flag = "ISE"
 	// 	return errors.New("Internal Server Error: " + err.Error() + "\n")
 	// }
-	_, err = stdinPipe.Write([]byte(CPSBox +
-		b.getLmtStr(form, "") +
+	cmdline := CPSBox +
+		b.getLmtStr(form, "0") +
 		b.rt.getCmpCmd(
 			ts.FilePath+b.rt.getSourceSuffix(),
 			ts.FilePath+b.rt.getTargetSuffix(),
-		) + "\n"))
+		) + "\n"
+	log.Debug("%v", cmdline)
+	_, err = stdinPipe.Write([]byte(cmdline))
 	if err != nil {
 		log.Error("%v", err)
 		form.Flag = "ISE"
@@ -359,9 +367,11 @@ func (b Base) run(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
 	} else {
 		temp = ts.FilePath + b.rt.getSourceSuffix()
 	}
-	_, err = stdinPipe.Write([]byte(RTSBox +
+	cmdline := RTSBox +
 		b.getLmtStr(form, ts.FilePath+InputSuffix) +
-		b.rt.getRunCmd(temp) + "\n"))
+		b.rt.getRunCmd(temp) + "\n"
+	log.Debug(cmdline)
+	_, err = stdinPipe.Write([]byte(cmdline))
 	if err != nil {
 		log.Error("%v", err)
 		return err
@@ -390,7 +400,7 @@ func (b Base) run(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
 	if !strings.HasPrefix(esr, "^") {
 		tc.Flag = "ISE"
 		tc.RealOutput = res
-		tc.ErrorOutput = "ISE"
+		tc.ErrorOutput = esr
 		tc.ActualRealTime = 0
 		tc.ActualCpuTime = 0
 		tc.RealMemory = 0
@@ -667,6 +677,9 @@ func (b Base) writeSPJCode(form *dto.JudgeForm, ts *dto.TempStorage) error {
 		return err
 	}
 	defer file.Close()
+	if b.sp.needEditCode() {
+		form.SPJCode = b.sp.EditCode(form.SPJCode)
+	}
 	_, err = file.WriteString(form.SPJCode)
 	if err != nil {
 		log.Error("%v", err)
@@ -722,6 +735,9 @@ func (b Base) writeCode(form *dto.JudgeForm, ts *dto.TempStorage) error {
 		return err
 	}
 	defer file.Close()
+	if b.rt.needEditCode() {
+		form.Code = b.rt.EditCode(form.Code)
+	}
 	_, err = file.WriteString(form.Code)
 	if err != nil {
 		log.Error("%v", err)

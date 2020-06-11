@@ -1,6 +1,6 @@
-all: CPSBOX RTSBOX
+all: CPS RTS
 
-CPSBOX:
+CPS:
 	gcc main.c rlimit.c seccmp.c child.c -lseccomp -o CPSBOX -D CPSBOX
-RTSBOX:
+RTS:
 	gcc main.c rlimit.c seccmp.c child.c -lseccomp -o RTSBOX
