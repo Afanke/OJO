@@ -1,6 +1,11 @@
 package judge
 
-import "strings"
+import (
+	"errors"
+	"github.com/afanke/OJO/utils/log"
+	"regexp"
+	"strings"
+)
 
 type Java struct{}
 
@@ -8,8 +13,20 @@ func (j Java) needEditCode() bool {
 	return true
 }
 
-func (j Java) EditCode(code string) string {
-	return code
+func (j Java) EditCode(code, name string) (string, error) {
+	reg := regexp.MustCompile(`class ([0-9A-Za-z_$]+?)[ \n]*?[{]`)
+	if reg == nil {
+		log.Error("failed to regexp")
+		return "", errors.New("Java regexp error, please contact administrator\n")
+	}
+	s := reg.FindAllString(code, 1)
+	if len(s) == 0 {
+		log.Error("failed to regexp")
+		return "", errors.New("Illegal java class name\n")
+	}
+	code = strings.Replace(code, s[0], "class "+name+" {", 1)
+	log.Debug("java code:\n%v", code)
+	return code, nil
 }
 
 func (j Java) getCmpCmd(source, target string) string {

@@ -6,8 +6,8 @@ func (p Python3) needEditCode() bool {
 	return false
 }
 
-func (p Python3) EditCode(code string) string {
-	return code
+func (p Python3) EditCode(code, name string) (string, error) {
+	return code, nil
 }
 
 func (p Python3) getSourceSuffix() string {

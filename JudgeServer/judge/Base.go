@@ -33,7 +33,7 @@ const (
 type RtJug interface {
 	needCompile() bool
 	needEditCode() bool
-	EditCode(code string) string
+	EditCode(code, name string) (string, error)
 	getLangName() string
 	getSourceSuffix() string
 	getTargetSuffix() string
@@ -44,7 +44,7 @@ type RtJug interface {
 type SpJug interface {
 	needCompile() bool
 	needEditCode() bool
-	EditCode(code string) string
+	EditCode(code, name string) (string, error)
 	getSourceSuffix() string
 	getTargetSuffix() string
 	getLangName() string
@@ -85,8 +85,11 @@ func (b Base) Judge(form *dto.JudgeForm) {
 	ts := &dto.TempStorage{}
 	form.Flag = "JUG"
 	err := b.writeCode(form, ts)
-	// defer b.cleanCodeFile(ts)
+	defer b.cleanCodeFile(ts)
 	if err != nil {
+		if form.Flag != "JUG" {
+			return
+		}
 		form.Flag = "ISE"
 		form.ErrorMsg = "Internal Server Error: " + err.Error() + "\n"
 		form.TestCase = nil
@@ -108,6 +111,9 @@ func (b Base) Judge(form *dto.JudgeForm) {
 		err := b.writeSPJCode(form, ts)
 		defer b.cleanSPJFile(ts)
 		if err != nil {
+			if form.Flag != "JUG" {
+				return
+			}
 			form.Flag = "ISE"
 			form.ErrorMsg = "Internal Server Error: " + err.Error() + "\n"
 			form.TestCase = nil
@@ -678,7 +684,13 @@ func (b Base) writeSPJCode(form *dto.JudgeForm, ts *dto.TempStorage) error {
 	}
 	defer file.Close()
 	if b.sp.needEditCode() {
-		form.SPJCode = b.sp.EditCode(form.SPJCode)
+		form.SPJCode, err = b.sp.EditCode(form.SPJCode, ts.SPJPath)
+		if err != nil {
+			form.Flag = "CE"
+			form.TestCase = nil
+			form.ErrorMsg = err.Error()
+			return err
+		}
 	}
 	_, err = file.WriteString(form.SPJCode)
 	if err != nil {
@@ -736,7 +748,13 @@ func (b Base) writeCode(form *dto.JudgeForm, ts *dto.TempStorage) error {
 	}
 	defer file.Close()
 	if b.rt.needEditCode() {
-		form.Code = b.rt.EditCode(form.Code)
+		form.Code, err = b.rt.EditCode(form.Code, ts.FilePath)
+		if err != nil {
+			form.Flag = "CE"
+			form.TestCase = nil
+			form.ErrorMsg = err.Error()
+			return err
+		}
 	}
 	_, err = file.WriteString(form.Code)
 	if err != nil {

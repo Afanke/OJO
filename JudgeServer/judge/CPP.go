@@ -6,8 +6,8 @@ func (c Cpp) needEditCode() bool {
 	return false
 }
 
-func (c Cpp) EditCode(code string) string {
-	return code
+func (c Cpp) EditCode(code, name string) (string, error) {
+	return code, nil
 }
 
 func (c Cpp) getCmpCmd(source, target string) string {

@@ -18,8 +18,8 @@ func (g Go) needEditCode() bool {
 	return false
 }
 
-func (g Go) EditCode(code string) string {
-	return code
+func (g Go) EditCode(code, name string) (string, error) {
+	return code, nil
 }
 
 func (g Go) getSourceSuffix() string {
