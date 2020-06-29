@@ -26,8 +26,8 @@ const (
 	InputSuffix          = "_input.txt"
 	ExpectedOutputSuffix = "_expectedOutput.txt"
 	RealOutputSuffix     = "_realOutput.txt"
-	CPSBox               = "./CPSBox"
-	RTSBox               = "./RTSBox"
+	CPSBox               = "./CPSBOX"
+	RTSBox               = "./RTSBOX"
 )
 
 type RtJug interface {
@@ -237,7 +237,7 @@ func (b Base) compile(form *dto.JudgeForm, ts *dto.TempStorage) error {
 	// 	return errors.New("Internal Server Error: " + err.Error() + "\n")
 	// }
 	cmdline := CPSBox +
-		b.getLmtStr(form, "0") +
+		b.getCpLmtStr(form, "0") +
 		b.rt.getCmpCmd(
 			ts.FilePath+b.rt.getSourceSuffix(),
 			ts.FilePath+b.rt.getTargetSuffix(),
@@ -374,7 +374,7 @@ func (b Base) run(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
 		temp = ts.FilePath + b.rt.getSourceSuffix()
 	}
 	cmdline := RTSBox +
-		b.getLmtStr(form, ts.FilePath+InputSuffix) +
+		b.getRtLmtStr(form, ts.FilePath+InputSuffix) +
 		b.rt.getRunCmd(temp) + "\n"
 	log.Debug(cmdline)
 	_, err = stdinPipe.Write([]byte(cmdline))
@@ -670,8 +670,12 @@ func (b Base) cleanSPJFile(ts *dto.TempStorage) {
 	_ = os.Remove(ts.SPJPath + b.sp.getSourceSuffix())
 }
 
-func (b Base) getLmtStr(form *dto.JudgeForm, inputPath string) string {
+func (b Base) getRtLmtStr(form *dto.JudgeForm, inputPath string) string {
 	return " " + strconv.Itoa(form.MaxCpuTime) + " " + (strconv.Itoa(form.MaxRealTime)) + " " + strconv.Itoa(form.MaxMemory) + " " + inputPath + " "
+}
+
+func (b Base) getCpLmtStr(form *dto.JudgeForm, inputPath string) string {
+	return " " + strconv.Itoa(form.MaxCpuTime*2) + " " + (strconv.Itoa(form.MaxRealTime * 2)) + " " + strconv.Itoa(form.MaxMemory*2) + " " + inputPath + " "
 }
 
 func (b Base) writeSPJCode(form *dto.JudgeForm, ts *dto.TempStorage) error {

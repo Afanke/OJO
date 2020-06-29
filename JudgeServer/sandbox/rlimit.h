@@ -25,6 +25,7 @@ int init_rlimit(int max_cpu_time, int max_rss);
 #define RLIMIT_CORE_ERROR -7
 #define RLIMIT_NOFILE_ERROR -8
 #define RLIMIT_FSIZE_ERROR -9
+#define RLIMIT_NPROC_ERROR -10
 
 #endif //RLIMIT_ENNOR
 

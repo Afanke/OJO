@@ -23,6 +23,7 @@ int init_rlimit(int max_cpu_time, int max_mem)
     struct rlimit R_MSGQUEUE = {0, 0};
     struct rlimit R_SIGPENDING = {0, 0};
     struct rlimit R_CORE = {0, 0};
+    struct rlimit R_NPROC = {350, 350};
 
     if (setrlimit(RLIMIT_CPU, &R_CPU))
     {
@@ -75,6 +76,11 @@ int init_rlimit(int max_cpu_time, int max_mem)
     {
         perror("failed in RLIMIT_NOFILE");
         return RLIMIT_NOFILE_ERROR;
+    }
+    if (setrlimit(RLIMIT_NPROC, &R_NPROC))
+    {
+        perror("failed in RLIMIT_NPROC");
+        return RLIMIT_NPROC_ERROR;
     }
     return 0;
 }

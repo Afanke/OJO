@@ -3,7 +3,7 @@ package judge
 type Go struct{}
 
 func (g Go) getCmpCmd(source, target string) string {
-	return "go build " + source + " -o " + target
+	return "go build " + " -o " + target + " " + source
 }
 
 func (g Go) getRunCmd(target string) string {

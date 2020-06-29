@@ -46,7 +46,7 @@ func (j Java) getSourceSuffix() string {
 }
 
 func (j Java) getTargetSuffix() string {
-	return ".java"
+	return ".class"
 }
 
 func (j Java) getLangName() string {
