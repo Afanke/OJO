@@ -36,25 +36,48 @@ const (
 			fmt.Printf("%d",a+b)
 			}
 `
+	GoSPJCode = `
+			package main
+			import(
+				"io/ioutil"
+				"os"
+				"fmt"
+			)
+			
+			func main(){
+				// b1, _ := ioutil.ReadFile(os.Args[1]) 
+				b2, _ := ioutil.ReadFile(os.Args[2]) 
+				b3, _ := ioutil.ReadFile(os.Args[3]) 
+				// s1:=string(b1)  // input
+				s2:=string(b2)  // expected output
+				s3:=string(b3)  // user output
+				if s2==s3{
+					fmt.Printf("AC")
+					return
+				}
+				fmt.Printf("WA")
+			}
+`
 )
 
 func main() {
+
 	form := dto.JudgeForm{
-		UseSPJ:      false,
-		MaxCpuTime:  10000,
-		MaxRealTime: 10000,
+		UseSPJ:      true,
+		MaxCpuTime:  1000,
+		MaxRealTime: 1000,
 		MaxMemory:   1000000,
 		TotalScore:  0,
 		Id:          0,
 		Lid:         5,
 		SPJLid:      5,
 		Code:        GoCode,
-		SPJCode:     ``,
+		SPJCode:     GoSPJCode,
 		Flag:        "",
 		TestCase: []dto.TestCase{
 			{
 				Input:          "1 2",
-				ExpectedOutput: "3",
+				ExpectedOutput: "3 ",
 				Score:          10,
 			},
 			{

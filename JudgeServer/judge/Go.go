@@ -35,7 +35,7 @@ func (g Go) getLangName() string {
 }
 
 func (g Go) getSPJCmpCmd(source, target string) string {
-	return "go build " + source + " -o " + target
+	return "go build " + " -o " + target + " " + source
 }
 
 func (g Go) getSPJRunCmd(target, input, expOutput, realOutput string) string {
