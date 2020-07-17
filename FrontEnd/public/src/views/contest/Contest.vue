@@ -1,8 +1,9 @@
 <template>
   <div>
     <transition name="slide-fade">
-      <div class="center-box" v-if="show">
-        <el-row style="height:62px">
+      <div v-if="show">
+        <div class="center-box">
+                <el-row style="height:62px">
           <span style="float:left;font-size:20px;margin-left:30px;margin-top:15px">Contests</span>
           <el-button style="float:right;margin-top:15px;margin-right:20px;" class="el-icon-refresh" type="primary"
             size="small" @click="reset">&nbsp;Reset</el-button>
@@ -55,9 +56,13 @@
             </el-row>
           </el-row>
         </div>
-        <el-pagination style="float:right;margin-top:20px;" background layout="prev, pager, next" :page-size="10"
-          @current-change="handlePageChange" :current-page="page" :total="count">
-        </el-pagination>
+        </div>
+    
+        <el-row>
+          <el-pagination style="float:right;margin-top:20px;margin-right:3%" background layout="prev, pager, next" :page-size="10"
+            @current-change="handlePageChange" :current-page="page" :total="count">
+          </el-pagination>
+        </el-row>
       </div>
     </transition>
   </div>

@@ -60,7 +60,7 @@
           </el-table-column>
           <el-table-column label="ID" prop="id" align="center" min-width="30">
           </el-table-column>
-          <el-table-column label="Title" prop="title" min-width="90">
+          <el-table-column label="Title" prop="title" min-width="90" align="center">
           </el-table-column>
           <el-table-column label="Creator" prop="creatorName" align="center" min-width="50">
           </el-table-column>
@@ -80,24 +80,25 @@
               <el-button size="mini" type="danger" v-if="scope.row.status === 'Ended'" plain="">Ended</el-button>
             </template>
           </el-table-column>
-          <el-table-column label="Visible" width="80" align="center">
+          <el-table-column label="Visible" min-width="80" align="center">
             <template slot-scope="scope">
-              <!-- <el-switch v-model="scope.row.visible" active-color="#13ce66" inactive-color="#ff4949">
-              </el-switch> -->
               <div @click="switchVisible(scope.row)">
                 <el-switch v-model="scope.row.visible" active-color="#409eff" inactive-color="#dcdfe6">
                 </el-switch>
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="Option" width="120" align="center">
+          <el-table-column label="Option" min-width="120" align="center">
             <template slot-scope="scope">
               <el-row>
                 <el-tooltip content="Edit" placement="top">
                   <el-button size="mini" class="el-icon-edit-outline" @click="editContest(scope.row.id)"></el-button>
                 </el-tooltip>
+                <el-tooltip content="Problem List" placement="top">
+                  <el-button size="mini" class="el-icon-notebook-2" @click="editProblem(scope.row.id)"></el-button>
+                </el-tooltip>
                 <el-tooltip content="Delete" placement="top">
-                  <el-button size="mini" class="el-icon-delete" style="color:red" @click="deleteContest(scope.row)">
+                  <el-button size="mini" class="el-icon-delete" style="color:red" @click="deleteContest(scope.row.id)">
                   </el-button>
                 </el-tooltip>
               </el-row>
@@ -202,8 +203,45 @@
           alert(err)
         }
       },
-      deleteContest() {
-
+      async deleteContest(id) {
+        try {
+          const {
+            data: res
+          } = await this.$http.post('/admin/contest/deleteContest', {
+            id: id
+          });
+          if (res.error) {
+            this.$message.error(res.error)
+            return
+          }
+          this.$message.success(res.data)
+          this.queryList()
+        } catch (err) {
+          console.log(err);
+          alert(err)
+        }
+      },
+      async editProblem(id) {
+        try {
+          const {
+            data: res
+          } = await this.$http.post('/admin/contest/tryEdit', {
+            id: id
+          });
+          if (res.error) {
+            this.$message.error(res.error)
+            return
+          }
+          this.$router.push({
+            path: "/contest/problem",
+            query: {
+              id: id
+            }
+          })
+        } catch (err) {
+          console.log(err);
+          alert(err)
+        }
       },
       paramsInit() {
         if (this.$route.query.page) {
@@ -254,7 +292,7 @@
         if (this.$route.query.status) {
           obj.status = Number(this.$route.query.status);
         }
-           if (this.$route.query.mine) {
+        if (this.$route.query.mine) {
           if (typeof (this.$route.query.mine) === typeof (true)) {
             obj.mine = this.$route.query.mine
           } else {
@@ -364,6 +402,9 @@
           } else if (2592000000 < timeDiff && timeDiff < 31104000000) {
             this.tableData[i].timeDiff =
               this.toDecimal(timeDiff / 2592000000) + ' months';
+          } else {
+               this.tableData[i].timeDiff =
+              this.toDecimal(timeDiff / 31104000000) + ' years';
           }
           if (now.getTime() < startTime.getTime()) {
             this.tableData[i].status = 'Not Started';

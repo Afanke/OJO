@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <el-container v-if="isAdmin && show">
-      <el-header style="padding:0;background-color:rgb(102, 177, 255);color:#fff" height="50px">
+      <el-header style="padding:0;background-color:rgb(102, 177, 255);color:#fff;" height="50px">
         <div style="float:left;margin-left:20px;line-height:50px;font-size:25px">
           Hello OJO
         </div>

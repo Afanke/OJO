@@ -9,7 +9,13 @@
         <div class="main">
           <router-view> </router-view>
         </div>
-        <div class="footer"></div>
+        <transition name="fade">
+          <div class="footer" v-if="showFooter">
+            <div v-html="footer"></div>
+            <div style="color:#C0C4CC">Power By OJO</div>
+          </div>
+        </transition>
+
       </el-scrollbar>
     </div>
   </div>
@@ -18,11 +24,7 @@
   import NProgress from 'nprogress';
   import 'nprogress/nprogress.css';
   import AppHeader from '@/views/Header.vue';
-
-
   import ScorllBar from "element-ui/lib/scrollbar"
-
-
   NProgress.start();
   // 给页面设置请求加载进度条效果
   window.onload = function () {
@@ -36,9 +38,36 @@
     },
     data() {
       return {
+        footer: "",
+        name: "",
+        showFooter: true
       };
     },
-  
+    async beforeCreate() {
+      try {
+        const {
+          data: res
+        } = await this.$http.get("/sys/getWebConfig");
+        if (res.error) {
+          this.$message.error(res.error)
+          return
+        }
+        this.name = res.data.name
+        this.footer = res.data.footer
+      } catch (err) {
+        console.log(err);
+        alert(err);
+      }
+      this.$bus.emit("OJName", this.name)
+    },
+    watch: {
+      $route() {
+        this.showFooter = false
+        setTimeout(() => {
+          this.showFooter = true
+        }, 280)
+      }
+    },
   };
 </script>
 <style scope>
@@ -84,8 +113,8 @@
   z-index:10; */
   /* } */
   .main {
-    margin-top:20px;
-    min-width:1000px;
+    margin-top: 20px;
+    min-width: 1000px;
     /* float:right;
     width:auto;
     right:20px;
@@ -97,8 +126,21 @@
   .footer {
     width: 100%;
     height: 40px;
-    /* background-color: red; */
-    float:left;
+    margin: 0 auto;
+    text-align: center;
+    font-size: small;
+    /* transition: all ease 0.5s; */
+  }
+
+  .fade-enter-active {
+    transition: opacity .3s;
+  }
+  .fade-enter,
+  .fade-leave-to
+
+  /* .fade-leave-active below version 2.1.8 */
+    {
+    opacity: 0;
   }
 
   .el-scrollbar__wrap {

@@ -46,8 +46,6 @@
           </el-table-column>
           <el-table-column label="Enabled" width="80" v-if="realShowEnabled" align="center" min-width="40">
             <template slot-scope="scope">
-              <!-- <el-switch v-model="scope.row.visible" active-color="#13ce66" inactive-color="#ff4949">
-              </el-switch> -->
               <div @click="switchEnabled(scope.row)">
                 <el-switch v-model="scope.row.enabled" active-color="#409eff" inactive-color="#dcdfe6">
                 </el-switch>
@@ -60,10 +58,10 @@
                 <el-tooltip content="Edit" placement="top">
                   <el-button size="mini" class="el-icon-edit-outline" @click="editUser(scope.row)"></el-button>
                 </el-tooltip>
-                <el-tooltip content="Delete" placement="top">
+                <!-- <el-tooltip content="Delete" placement="top">
                   <el-button size="mini" class="el-icon-delete" style="color:red" @click="deleteUser(scope.row)">
                   </el-button>
-                </el-tooltip>
+                </el-tooltip> -->
               </el-row>
             </template>
           </el-table-column>

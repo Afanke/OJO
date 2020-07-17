@@ -1,7 +1,7 @@
 <template>
   <transition name="slide-fade">
     <div class="center-box" v-if="show">
-      <div v-if="show" v-loading="loading">
+      <div v-loading="loading">
         <div class="content">
           <el-row style="height:60px">
             <span style="float:left;font-size:20px;margin-left:20px;margin-top:15px">ACM Rank</span>
@@ -25,9 +25,11 @@
             </el-table-column>
           </el-table>
         </div>
-        <el-pagination style="float:right;margin-top:20px" background layout="prev, pager, next" :page-size="10"
+        <el-row>
+            <el-pagination style="float:right;margin-top:20px" background layout="prev, pager, next" :page-size="10"
           @current-change="handlePageChange" :current-page="page" :total="count">
         </el-pagination>
+        </el-row>
       </div>
     </div>
   </transition>

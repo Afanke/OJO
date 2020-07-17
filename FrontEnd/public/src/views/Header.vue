@@ -3,8 +3,7 @@
     <el-row class="tac">
       <el-menu ref="MenuRef" :default-active="activeIndex" class="el-menu-demo" mode="horizontal" text-color="#545c64"
         active-text-color="#409EFF" @select="handleSelect">
-        <!-- <el-menu-item index="0" id="ojName">OJO</el-menu-item> -->
-        <el-menu-item id="ojName">OJO</el-menu-item>
+        <el-menu-item id="ojName">{{OJName}}</el-menu-item>
         <el-menu-item index="1" class="emi emiw">
           <p class="el-icon-office-building"></p>
           Home
@@ -21,10 +20,6 @@
           <p class="el-icon-data-line"></p>
           Status
         </el-menu-item>
-        <!-- <el-menu-item index="5" class="emi emiw">
-          <p class="el-icon-s-data"></p>
-          Rank
-        </el-menu-item> -->
         <el-submenu index="5">
           <template slot="title">
             <p class="el-icon-s-data"></p>
@@ -37,8 +32,6 @@
           <p class="el-icon-info"></p>
           About
         </el-menu-item>
-
-
         <el-menu-item v-if="!isLogined" style="float:right">
           <el-button round @click="registerDrawer = true">Register</el-button>
         </el-menu-item>
@@ -167,6 +160,7 @@
         }
       };
       return {
+        OJName:"",
         squareUrl: "https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png",
         fit: "contain",
         captchaUrl: this.$url + "/user/captcha",
@@ -289,11 +283,15 @@
     created() {
       this.$bus.on("changeHeader", this.changeHeader);
       this.$bus.on("changeUserIcon", this.getDetail)
+      this.$bus.on("OJName", this.changeOJName)
     },
     mounted() {
       this.getDetail()
     },
     methods: {
+      changeOJName(name){
+        this.OJName=name
+      },
       async getDetail() {
         try {
           const {
@@ -416,7 +414,6 @@
           const {
             data: res
           } = await this.$http.post("/user/logout", this.registerForm);
-          // console.log(res)
           if (res.error) {
             this.$message.error(res.error);
             return;
@@ -470,7 +467,7 @@
   }
 
   #ojName {
-    font-size: 30px;
+    font-size: 20px;
   }
 
   .emi:hover {

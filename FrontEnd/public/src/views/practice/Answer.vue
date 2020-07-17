@@ -405,7 +405,9 @@
           id: Number(this.$route.query.id)
         });
         if (res.error) {
-          this.$message.error(res.error);
+          if(res.error==="sql: no rows in result set")
+          this.$message.error("the problem has benn hidden or deleted");
+          this.$router.push("/practice")
           return;
         }
         this.statistic = res.data.statistic;
@@ -413,7 +415,6 @@
         this.currentLanguage = this.practiceDetail.language[0].name;
         this.refreshStatistic();
         this.show = true;
-
         const {
           data: res1
         } = await this.$http.post(
@@ -455,7 +456,6 @@
         return false;
       },
       copyText(i) {
-
         let res = this.copyToClipBoard('sampleInput' + i)
           if (res) {
             this.$message({
@@ -467,7 +467,6 @@
           }
       },
       pre(val) {
-
         return ("" + val + "<br>").replace(/\r?\n/g, '↵&#10;')
       },
       refreshStatistic() {

@@ -7,7 +7,6 @@
       <ve-line style="width:100%" :settings="chartSettings" :legend-visible="true" :extend="chartExtend">
       </ve-line>
     </div>
-
     <div style="width:100%">
       <el-table :data="tableData" style="width: 100%" v-loading="rankLoading" :cell-style="cellStyle" size="mini"  >
         <el-table-column type="index" label="#" min-width="10" align="center" :index="indexMethod">

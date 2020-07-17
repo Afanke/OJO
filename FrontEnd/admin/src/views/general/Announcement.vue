@@ -22,7 +22,7 @@
         <el-table :data="tableData" style="width: 100%" v-loading="loading" size="small">
           <el-table-column label="ID" prop="id" align="center" min-width="30">
           </el-table-column>
-          <el-table-column label="Title" prop="title" min-width="90">
+          <el-table-column label="Title" prop="title" align="center" min-width="90">
           </el-table-column>
           <el-table-column label="Creator" prop="creatorName" align="center" min-width="30">
           </el-table-column>
@@ -47,7 +47,7 @@
                   <el-button size="mini" class="el-icon-edit-outline" @click="edit(scope.row.id)"></el-button>
                 </el-tooltip>
                 <el-tooltip content="Delete" placement="top">
-                  <el-button size="mini" class="el-icon-delete" style="color:red" @click="del(scope.row)">
+                  <el-button size="mini" class="el-icon-delete" style="color:red" @click="delAnno(scope.row.id)">
                   </el-button>
                 </el-tooltip>
               </el-row>
@@ -213,7 +213,7 @@
         try {
           const {
             data: res
-          } = await this.$http.post('/admin/announcement/updateAnnouncement', {
+          } = await this.$http.post('/admin/announcement/update', {
             id: this.Edit.id,
             title: this.Edit.title,
             content: this.Edit.content,
@@ -241,7 +241,7 @@
         try {
           const {
             data: res
-          } = await this.$http.post('/admin/announcement/addAnnouncement', {
+          } = await this.$http.post('/admin/announcement/add', {
             title: this.title,
             content: this.content,
             visible: this.visible
@@ -261,8 +261,26 @@
           alert(err)
         }
       },
-      deleteAnnouncement() {
-
+      async delAnno(id) {
+          try {
+          const {
+            data: res
+          } = await this.$http.post('/admin/announcement/delete', {
+            id:id
+          });
+          if (res.error) {
+            this.$message.error(res.error)
+            return
+          }
+          this.$message({
+            message: res.data,
+            type: 'success'
+          });
+          this.queryList()
+        } catch (err) {
+          console.log(err);
+          alert(err)
+        }
       },
       paramsInit() {
         if (this.$route.query.page) {

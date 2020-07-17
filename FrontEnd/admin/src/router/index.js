@@ -9,6 +9,7 @@ const Problem = () => import('@/views/problem/Problem.vue');
 const Contest = () => import('@/views/contest/Contest.vue');
 const ContestCreate = () => import('@/views/contest/Create.vue');
 const ContestEdit = () => import('@/views/contest/Edit.vue');
+const ContestProblemList = () => import('@/views/contest/ProblemList.vue');
 const Carton = () => import('@/views/problem/Carton.vue');
 const User = () => import('@/views/general/User.vue');
 const JudgeServer = () => import('@/views/general/JudgeServer.vue');
@@ -33,6 +34,7 @@ const routes = [
   { path: '/contest', component: Contest },
   { path: '/contest/create', component: ContestCreate },
   { path: '/contest/edit', component: ContestEdit },
+  { path: '/contest/problem', component: ContestProblemList },
   { path: '/carton', component: Carton },
   { path: '/general/user', component: User },
   { path: '/general/judgeServer', component: JudgeServer },
@@ -40,7 +42,7 @@ const routes = [
   { path: '/general/announcement', component: Announcement },
   { path: '/dashboard', component: DashBoard },
   { path: '/', redirect:"/dashboard" }
-  // { path: '/', component:Login }
+  // { path: '/', component:ContestProblemList }
 ];
 
 const router = new VueRouter({

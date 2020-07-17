@@ -79,7 +79,7 @@
                   <el-button size="mini" class="el-icon-edit-outline" @click="editProblem(scope.row.id)"></el-button>
                 </el-tooltip>
                 <el-tooltip content="Delete" placement="top">
-                  <el-button size="mini" class="el-icon-delete" style="color:red" @click="deleteProblem(scope.row)">
+                  <el-button size="mini" class="el-icon-delete" style="color:red" @click="deleteProblem(scope.row.id)">
                   </el-button>
                 </el-tooltip>
               </el-row>
@@ -114,41 +114,7 @@
         count: 0,
         page: 1,
         mine: false,
-        tableData: [{
-            id: '12987122',
-            name: '好滋好味鸡蛋仔',
-            category: '江浙小吃、小吃零食',
-            desc: '荷兰优质淡奶，奶香浓而不腻',
-            address: '上海市普陀区真北路',
-            shop: '王小虎夫妻店',
-            shopId: '10333'
-          },
-          {
-            id: '12987123',
-            name: '好滋好味鸡蛋仔',
-            category: '江浙小吃、小吃零食',
-            desc: '荷兰优质淡奶，奶香浓而不腻',
-            address: '上海市普陀区真北路',
-            shop: '王小虎夫妻店',
-            shopId: '10333'
-          }, {
-            id: '12987125',
-            name: '好滋好味鸡蛋仔',
-            category: '江浙小吃、小吃零食',
-            desc: '荷兰优质淡奶，奶香浓而不腻',
-            address: '上海市普陀区真北路',
-            shop: '王小虎夫妻店',
-            shopId: '10333'
-          }, {
-            id: '12987126',
-            name: '好滋好味鸡蛋仔',
-            category: '江浙小吃、小吃零食',
-            desc: '荷兰优质淡奶，奶香浓而不腻',
-            address: '上海市普陀区真北路',
-            shop: '王小虎夫妻店',
-            shopId: '10333'
-          }
-        ],
+        tableData: [],
         difficultyOptions: [{
             value: null,
             label: 'All'
@@ -214,8 +180,23 @@
           alert(err)
         }
       },
-      deleteProblem() {
-
+      async deleteProblem(id) {
+        try {
+          const {
+            data: res
+          } = await this.$http.post('/admin/problem/deleteProblem', {
+            id: id
+          });
+          if (res.error) {
+            this.$message.error(res.error)
+            return
+          }
+          this.$message.success(res.data)
+          this.queryList()
+        } catch (err) {
+          console.log(err);
+          alert(err)
+        }
       },
       paramsInit() {
         if (this.$route.query.page) {
@@ -234,7 +215,7 @@
           this.keywords = '';
         }
         if (this.$route.query.mine) {
-          if (typeof (this.$route.query.mine) === typeof(true)) {
+          if (typeof (this.$route.query.mine) === typeof (true)) {
             this.mine = this.$route.query.mine
           } else {
             if (this.$route.query.mine === "true") {
