@@ -54,9 +54,9 @@ func (j Java) getLangName() string {
 }
 
 func (j Java) getSPJCmpCmd(source, target string) string {
-	return ""
+	return "javac " + source
 }
 
 func (j Java) getSPJRunCmd(target, input, expOutput, realOutput string) string {
-	return "java " + target + " " + input + " " + expOutput + " " + realOutput
+	return "java " + strings.Replace(target, ".class", "", 1) + " " + input + " " + expOutput + " " + realOutput
 }

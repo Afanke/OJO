@@ -6,6 +6,8 @@ type JudgeForm struct {
 	MaxRealTime int // 4000 ms
 	MaxMemory   int // 2048*2048kb
 	TotalScore  int
+	CompMp      int
+	SPJMp       int
 	Id          int64
 	Lid         int64
 	SPJLid      int64

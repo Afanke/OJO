@@ -237,12 +237,12 @@ func (b Base) compile(form *dto.JudgeForm, ts *dto.TempStorage) error {
 	// 	return errors.New("Internal Server Error: " + err.Error() + "\n")
 	// }
 	cmdline := CPSBox +
-		b.getLmtStr(form, "0", 2) +
+		getLmtStr(form, "0", form.CompMp) +
 		b.rt.getCmpCmd(
 			ts.FilePath+b.rt.getSourceSuffix(),
 			ts.FilePath+b.rt.getTargetSuffix(),
 		) + "\n"
-	log.Debug("%v", cmdline)
+	log.Debug("compile cmdline: %v", cmdline)
 	_, err = stdinPipe.Write([]byte(cmdline))
 	if err != nil {
 		log.Error("%v", err)
@@ -274,7 +274,7 @@ func (b Base) compile(form *dto.JudgeForm, ts *dto.TempStorage) error {
 	if !strings.HasPrefix(esr, "^") {
 		form.Flag = "ISE"
 		log.Error("no prefix ^")
-		msg := "Internal Server Error: Can't get runtime message\n"
+		msg := "Internal Server Error: Can't get runtime message\n" + esr
 		return errors.New(msg)
 	}
 	r, err := strconv.Atoi(esr[strings.IndexByte(esr, 'c')+1 : strings.IndexByte(esr, 'r')])
@@ -304,7 +304,7 @@ func (b Base) compile(form *dto.JudgeForm, ts *dto.TempStorage) error {
 		log.Error("output length:%v", len(res))
 		form.Flag = "CE"
 		msg := "Compile Error : Out of output limit" + "\n" +
-			"Output Length:" + strconv.Itoa(lr) + "\n"
+			"Output Length:" + strconv.Itoa(lr) + " bytes\n"
 		return errors.New(msg)
 	}
 	if esr[1:2] == "s" {
@@ -316,13 +316,14 @@ func (b Base) compile(form *dto.JudgeForm, ts *dto.TempStorage) error {
 			fallthrough
 		case "24":
 			log.Debug("sig 24 tle")
-			msg = "Compile Error: Out of time limit\n" +
-				"CPU Time:" + strconv.Itoa(actualCpuTime) + "\n" +
-				"Real Time:" + strconv.Itoa(actualRealTime) + "\n"
+			msg = getCETimeOutMsg(actualCpuTime,
+				actualRealTime,
+				form.MaxCpuTime*form.CompMp,
+				form.MaxRealTime*form.CompMp)
 		case "11":
 			log.Debug("sig 11 mle")
 			msg = "Compile Error: Out of memory limit\n" +
-				"Memory Used:" + strconv.Itoa(realMemory) + "\n"
+				"Memory Used:" + strconv.Itoa(realMemory) + " KB\n"
 		default:
 			log.Debug("sig " + sig + " mle")
 			msg = "Compile Error: Interrupted by system signal when compiling program\n" +
@@ -331,11 +332,12 @@ func (b Base) compile(form *dto.JudgeForm, ts *dto.TempStorage) error {
 		return errors.New(msg)
 	}
 	// tc.ExpectOutput = strings.ReplaceAll(tc.ExpectOutput, "\r\n", "\n")
-	if actualCpuTime > form.MaxCpuTime || actualRealTime > form.MaxRealTime {
+	if actualCpuTime > form.MaxCpuTime*form.CompMp || actualRealTime > form.MaxRealTime*form.CompMp {
 		form.Flag = "CE"
-		msg := "Compile Error: Out of time limit\n" +
-			"CPU Time:" + strconv.Itoa(actualCpuTime) + "\n" +
-			"Real Time:" + strconv.Itoa(actualRealTime) + "\n"
+		msg := getCETimeOutMsg(actualCpuTime,
+			actualRealTime,
+			form.MaxCpuTime*form.CompMp,
+			form.MaxRealTime*form.CompMp)
 		return errors.New(msg)
 	}
 	if realMemory > form.MaxMemory {
@@ -374,9 +376,9 @@ func (b Base) run(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
 		temp = ts.FilePath + b.rt.getSourceSuffix()
 	}
 	cmdline := RTSBox +
-		b.getLmtStr(form, ts.FilePath+InputSuffix, 1) +
+		getLmtStr(form, ts.FilePath+InputSuffix, 1) +
 		b.rt.getRunCmd(temp) + "\n"
-	log.Debug(cmdline)
+	log.Debug("run cmdline: %v", cmdline)
 	_, err = stdinPipe.Write([]byte(cmdline))
 	if err != nil {
 		log.Error("%v", err)
@@ -406,7 +408,7 @@ func (b Base) run(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
 	if !strings.HasPrefix(esr, "^") {
 		tc.Flag = "ISE"
 		tc.RealOutput = res
-		tc.ErrorOutput = esr
+		tc.ErrorOutput = "Internal Server Error: Can't get runtime message\n" + esr
 		tc.ActualRealTime = 0
 		tc.ActualCpuTime = 0
 		tc.RealMemory = 0
@@ -520,11 +522,12 @@ func (b Base) compileSPJ(form *dto.JudgeForm, ts *dto.TempStorage) error {
 	// 	return errors.New("Internal Server Error: " + err.Error() + "\n")
 	// }
 	cmdline := CPSBox +
-		b.getLmtStr(form, "0", 2) +
+		getLmtStr(form, "0", form.SPJMp*form.CompMp) +
 		b.sp.getSPJCmpCmd(
 			ts.SPJPath+b.sp.getSourceSuffix(),
 			ts.SPJPath+b.sp.getTargetSuffix(),
 		) + "\n"
+	log.Debug("spj compile cmdline: %v", cmdline)
 	_, err = stdinPipe.Write([]byte(cmdline))
 	if err != nil {
 		log.Error("%v", err)
@@ -548,9 +551,11 @@ func (b Base) compileSPJ(form *dto.JudgeForm, ts *dto.TempStorage) error {
 	res := string(stdout)
 	esr := string(stderr)
 	err = cmd.Wait()
+	log.Debug("spj comp res:%v", res)
+	log.Debug("spj comp esr:%v", esr)
 	if !strings.HasPrefix(esr, "^") {
 		log.Error("no prefix ^")
-		msg := "Internal Server Error: Can't get compile message\n"
+		msg := "Internal Server Error: Can't get compile message\n" + esr
 		return errors.New(msg)
 	}
 	r, err := strconv.Atoi(esr[strings.IndexByte(esr, 'c')+1 : strings.IndexByte(esr, 'r')])
@@ -589,9 +594,10 @@ func (b Base) compileSPJ(form *dto.JudgeForm, ts *dto.TempStorage) error {
 			fallthrough
 		case "24":
 			log.Debug("sig 24 tle")
-			msg = "Compile Error: Out of time limit\n" +
-				"CPU Time:" + strconv.Itoa(actualCpuTime) + "\n" +
-				"Real Time:" + strconv.Itoa(actualRealTime) + "\n"
+			msg = getCETimeOutMsg(actualCpuTime,
+				actualRealTime,
+				form.MaxCpuTime*form.CompMp*form.SPJMp,
+				form.MaxRealTime*form.CompMp*form.SPJMp)
 		case "11":
 			log.Debug("sig 11 mle")
 			msg = "Compile Error: Out of memory limit\n" +
@@ -603,11 +609,14 @@ func (b Base) compileSPJ(form *dto.JudgeForm, ts *dto.TempStorage) error {
 		}
 		return errors.New(msg)
 	}
-	if actualCpuTime > form.MaxCpuTime || actualRealTime > form.MaxRealTime {
+	mp := form.CompMp * form.SPJMp
+	if actualCpuTime > form.MaxCpuTime*mp || actualRealTime > form.MaxRealTime*mp {
 		form.Flag = "CE"
-		msg := "Compile Error: Out of time limit\n" +
-			"CPU Time:" + strconv.Itoa(actualCpuTime) + "\n" +
-			"Real Time:" + strconv.Itoa(actualRealTime) + "\n"
+		msg := getCETimeOutMsg(
+			actualCpuTime,
+			actualRealTime,
+			form.MaxCpuTime*form.CompMp*form.SPJMp,
+			form.MaxRealTime*form.CompMp*form.SPJMp)
 		return errors.New(msg)
 	}
 	if realMemory > form.MaxMemory {
@@ -655,11 +664,12 @@ func (b Base) spj(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
 		temp = sp + b.sp.getSourceSuffix()
 	}
 	cmdline := CPSBox +
-		b.getLmtStr(form, "0", 5) +
+		getLmtStr(form, "0", form.SPJMp) +
 		b.sp.getSPJRunCmd(temp,
 			sp+InputSuffix,
 			sp+ExpectedOutputSuffix,
 			sp+RealOutputSuffix) + "\n"
+	log.Debug("spj cmdline: %v", cmdline)
 	_, err = stdinPipe.Write([]byte(cmdline))
 	if err != nil {
 		log.Error("%v", err)
@@ -687,11 +697,11 @@ func (b Base) spj(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
 	}
 	res := string(stdout)
 	esr := string(stderr)
-	log.Debug("%v", esr)
+	log.Debug("spj esr:%v", esr)
 	err = cmd.Wait()
 	if !strings.HasPrefix(esr, "^") {
 		log.Error("no prefix ^")
-		msg := "Internal Server Error: Can't get compile message\n"
+		msg := "Internal Server Error: Can't get special judge runtime message\n" + esr
 		return errors.New(msg)
 	}
 	r, err := strconv.Atoi(esr[strings.IndexByte(esr, 'c')+1 : strings.IndexByte(esr, 'r')])
@@ -743,10 +753,12 @@ func (b Base) spj(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
 		}
 		return errors.New(msg)
 	}
-	if actualCpuTime > form.MaxCpuTime || actualRealTime > form.MaxRealTime {
+	if actualCpuTime > form.MaxCpuTime*form.SPJMp || actualRealTime > form.MaxRealTime*form.SPJMp {
 		msg := "Error: Out of time limit\n" +
-			"CPU Time:" + strconv.Itoa(actualCpuTime) + "\n" +
-			"Real Time:" + strconv.Itoa(actualRealTime) + "\n"
+			"CPU  Time: " + strconv.Itoa(actualCpuTime) + " ms\n" +
+			"Real Time: " + strconv.Itoa(actualRealTime) + " ms\n" +
+			"CPU  Time Limit: " + strconv.Itoa(form.MaxCpuTime*form.SPJMp) + " ms\n" +
+			"Real Time Limit: " + strconv.Itoa(form.MaxRealTime*form.SPJMp) + " ms\n"
 		return errors.New(msg)
 	}
 	if realMemory > form.MaxMemory {
@@ -786,8 +798,16 @@ func (b Base) cleanSPJFile(ts *dto.TempStorage) {
 	_ = os.Remove(ts.SPJPath + b.sp.getSourceSuffix())
 }
 
-func (b Base) getLmtStr(form *dto.JudgeForm, inputPath string, mp int) string {
+func getLmtStr(form *dto.JudgeForm, inputPath string, mp int) string {
 	return " " + strconv.Itoa(form.MaxCpuTime*mp) + " " + (strconv.Itoa(form.MaxRealTime * mp)) + " " + strconv.Itoa(form.MaxMemory*mp) + " " + inputPath + " "
+}
+
+func getCETimeOutMsg(cpuTime, realTime, maxCpuTime, maxRealtime int) string {
+	return "Compile Error: Out of time limit\n" +
+		"CPU  Time: " + strconv.Itoa(cpuTime) + " ms\n" +
+		"Real Time: " + strconv.Itoa(realTime) + " ms\n" +
+		"CPU  Time Limit: " + strconv.Itoa(maxCpuTime) + " ms\n" +
+		"Real Time Limit: " + strconv.Itoa(maxRealtime) + " ms\n"
 }
 
 func (b Base) writeSPJCode(form *dto.JudgeForm, ts *dto.TempStorage) error {

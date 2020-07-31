@@ -74,6 +74,27 @@ func GetJug(lid1, lid2 int64) judge.Base {
 	return judge.NewJudge(GetRtJug(lid1), GetSpJug(lid2))
 }
 
+func checkForm(form *dto.JudgeForm) {
+	if form.MaxRealTime < 0 {
+		form.MaxRealTime = 0
+	}
+	if form.MaxCpuTime < 0 {
+		form.MaxCpuTime = 0
+	}
+	if form.MaxMemory < 0 {
+		form.MaxMemory = 0
+	}
+	if form.SPJMp <= 0 {
+		form.MaxRealTime = 1
+	}
+	if form.CompMp <= 0 {
+		form.MaxRealTime = 1
+	}
+	form.TotalScore = 0
+	form.Flag = "JUG"
+	form.ErrorMsg = ""
+}
+
 func BindRoute(app *iris.Application) {
 	app.Use(PanicMidWare)
 	{
@@ -92,7 +113,8 @@ func BindRoute(app *iris.Application) {
 				c.JSON(&form)
 				return
 			}
-			log.Debug("%+v", form)
+			log.Debug("%+v", &form)
+			checkForm(&form)
 			jug := GetJug(form.Lid, form.SPJLid)
 			jug.Judge(&form)
 			c.JSON(&form)
