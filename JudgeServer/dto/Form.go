@@ -1,36 +1,36 @@
 package dto
 
 type JudgeForm struct {
-	UseSPJ      bool
-	MaxCpuTime  int // 2000 ms
-	MaxRealTime int // 4000 ms
-	MaxMemory   int // 2048*2048kb
-	TotalScore  int
-	CompMp      int
-	SPJMp       int
-	Id          int64
-	Lid         int64
-	SPJLid      int64
-	SPJCode     string
-	Code        string
-	Flag        string
-	ErrorMsg    string
-	TestCase    []TestCase
+	UseSPJ      bool       `json:"useSPJ"`
+	MaxCpuTime  int        `json:"maxCpuTime"`  // 2000 ms
+	MaxRealTime int        `json:"maxRealTime"` // 4000 ms
+	MaxMemory   int        `json:"maxMemory"`   // 2048*2048kb
+	TotalScore  int        `json:"totalScore"`
+	CompMp      int        `json:"compMp"` // time multiple of compile
+	SPJMp       int        `json:"SPJMp"`  // time multiple of special judge
+	Id          int64      `json:"id"`
+	Lid         int64      `json:"lid"`
+	SPJLid      int64      `json:"SPJLid"`
+	SPJCode     string     `json:"SPJCode"`
+	Code        string     `json:"code"`
+	Flag        string     `json:"flag"`
+	ErrorMsg    string     `json:"errorMsg"`
+	TestCase    []TestCase `json:"testCase"`
 }
 
 type TestCase struct {
-	Flag           string
-	Input          string
-	ExpectedOutput string
-	RealOutput     string
-	ErrorOutput    string
-	SPJOutput      string
-	SPJErrorOutput string
-	ActualCpuTime  int
-	ActualRealTime int
-	RealMemory     int
-	Score          int
-	Id             int64 // Problem case Id
+	Flag           string `json:"flag"`
+	Input          string `json:"input"`
+	ExpectedOutput string `json:"expectedOutput"`
+	RealOutput     string `json:"realOutput"`
+	ErrorOutput    string `json:"errorOutput"`
+	SPJOutput      string `json:"SPJOutput"`
+	SPJErrorOutput string `json:"SPJErrorOutput"`
+	ActualCpuTime  int    `json:"actualCpuTime"`
+	ActualRealTime int    `json:"actualRealTime"`
+	RealMemory     int    `json:"realMemory"`
+	Score          int    `json:"score"`
+	Id             int64  `json:"id"` // Problem case Id
 }
 
 type TempStorage struct {

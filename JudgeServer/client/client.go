@@ -199,19 +199,25 @@ finally:
 func main() {
 
 	form := dto.JudgeForm{
-		UseSPJ:      true,
+		UseSPJ:      false,
 		MaxCpuTime:  3000,
 		MaxRealTime: 3000,
 		MaxMemory:   1000000,
 		TotalScore:  0,
 		Id:          0,
-		Lid:         2,
+		Lid:         5,
 		SPJLid:      2,
 		SPJMp:       2,
 		CompMp:      2,
-		Code:        CPPCode,
-		SPJCode:     CPPSPJCode,
-		Flag:        "",
+		Code: `import(
+    "asd"
+)
+fun main()
+{
+]
+`,
+		SPJCode: CPPSPJCode,
+		Flag:    "",
 		TestCase: []dto.TestCase{
 			{
 				Input:          "1 2",
@@ -225,8 +231,8 @@ func main() {
 			},
 		},
 	}
-	send("http://192.168.111.139:2333/judge", &form)
-	//send("http://49.234.91.99:2333/judge",&form)
+	//send("http://192.168.111.139:2333/judge", &form)
+	send("http://49.234.91.99:2333/judge", &form)
 }
 
 func send(addr string, form *dto.JudgeForm) {

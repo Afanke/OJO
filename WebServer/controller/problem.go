@@ -36,14 +36,14 @@ func (Problem) LocalTest(c iris.Context) {
 		return
 	}
 	client := &http.Client{
-		Timeout: time.Duration(form.MaxRealTime) * time.Second * 5,
+		Timeout: time.Duration(form.MaxRealTime*form.SPJMp*form.CompMp) * time.Second * 5,
 	}
 	buff, err := json.Marshal(&form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	res, err := client.Post("http://"+addr+"/"+form.Language, "application/json", bytes.NewBuffer(buff))
+	res, err := client.Post("http://"+addr+"/judge", "application/json", bytes.NewBuffer(buff))
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
