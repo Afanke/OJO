@@ -480,6 +480,43 @@
                     Python: false,
                     Go: false,
                 },
+                limit:{
+                    C:{
+                        maxCpuTime: 1000,
+                        maxRealTime: 1000,
+                        maxMemory: 30720,
+                        compMp:2,
+                        SPJMp:2
+                    },
+                    Cpp:{
+                        maxCpuTime: 1000,
+                        maxRealTime: 1000,
+                        maxMemory: 30720,
+                        compMp:2,
+                        SPJMp:2
+                    },
+                    Java:{
+                        maxCpuTime: 1000,
+                        maxRealTime: 1000,
+                        maxMemory: 30720,
+                        compMp:2,
+                        SPJMp:2
+                    },
+                    Python:{
+                        maxCpuTime: 1000,
+                        maxRealTime: 1000,
+                        maxMemory: 30720,
+                        compMp:2,
+                        SPJMp:2
+                    },
+                    GO:{
+                        maxCpuTime: 1000,
+                        maxRealTime: 1000,
+                        maxMemory: 30720,
+                        compMp:2,
+                        SPJMp:2
+                    },
+                },
                 useTmpl: {
                     C: false,
                     Cpp: false,
@@ -558,9 +595,9 @@ int main(int argc, char *argv[]){
 class SPJTest{
 
     public static void main(String args[]){
-        var s1 = readToString(args[0]); // Test Case Input
-        var s2 = readToString(args[1]); // Test Case Expected Output
-        var s3 = readToString(args[2]); // User Output
+        String s1 = readToString(args[0]); // Test Case Input
+        String s2 = readToString(args[1]); // Test Case Expected Output
+        String s3 = readToString(args[2]); // User Output
         if (s2.equals(s3)) {
         System.out.printf("AC"); // If the answer is right, just do this
         } else {

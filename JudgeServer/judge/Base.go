@@ -83,7 +83,7 @@ func (b Base) Judge(form *dto.JudgeForm) {
 	ts := &dto.TempStorage{}
 	form.Flag = "JUG"
 	err := b.writeCode(form, ts)
-	defer b.cleanCodeFile(ts)
+	//defer b.cleanCodeFile(ts)
 	if err != nil {
 		if form.Flag != "JUG" {
 			return
@@ -322,8 +322,7 @@ func (b Base) compile(form *dto.JudgeForm, ts *dto.TempStorage) error {
 				form.MaxRealTime*form.CompMp)
 		case "11":
 			log.Debug("sig 11 mle")
-			msg = "Compile Error: Out of memory limit\n" +
-				"Memory Used:" + strconv.Itoa(realMemory) + " KB\n"
+			msg = getCEMemoryOutMsg(realMemory, form.MaxMemory*form.CompMp)
 		default:
 			log.Debug("sig " + sig + " mle")
 			msg = "Compile Error: Interrupted by system signal when compiling program\n" +
@@ -340,10 +339,9 @@ func (b Base) compile(form *dto.JudgeForm, ts *dto.TempStorage) error {
 			form.MaxRealTime*form.CompMp)
 		return errors.New(msg)
 	}
-	if realMemory > form.MaxMemory {
+	if realMemory > form.MaxMemory*form.CompMp {
 		form.Flag = "CE"
-		msg := "Compile Error: Out of memory limit\n" +
-			"Memory Used:" + strconv.Itoa(realMemory) + " KB\n"
+		msg := getCEMemoryOutMsg(realMemory, form.MaxMemory*form.CompMp)
 		return errors.New(msg)
 	}
 	if errorOutput != "" {
@@ -470,8 +468,7 @@ func (Base) concludeFlag(form *dto.JudgeForm, i int) error {
 			tc.RealMemory = form.MaxMemory
 		case "31":
 			log.Debug("sig 31 mle")
-			tc.Flag = "MLE"
-			// tc.RealMemory = form.MaxMemory
+			tc.Flag = "RE"
 		default:
 			tc.Flag = "RE"
 		}
@@ -521,8 +518,9 @@ func (b Base) compileSPJ(form *dto.JudgeForm, ts *dto.TempStorage) error {
 	//
 	// 	return errors.New("Internal Server Error: " + err.Error() + "\n")
 	// }
+	mp := form.CompMp * form.SPJMp
 	cmdline := CPSBox +
-		getLmtStr(form, "0", form.SPJMp*form.CompMp) +
+		getLmtStr(form, "0", mp) +
 		b.sp.getSPJCmpCmd(
 			ts.SPJPath+b.sp.getSourceSuffix(),
 			ts.SPJPath+b.sp.getTargetSuffix(),
@@ -600,8 +598,7 @@ func (b Base) compileSPJ(form *dto.JudgeForm, ts *dto.TempStorage) error {
 				form.MaxRealTime*form.CompMp*form.SPJMp)
 		case "11":
 			log.Debug("sig 11 mle")
-			msg = "Compile Error: Out of memory limit\n" +
-				"Memory Used:" + strconv.Itoa(realMemory) + " KB\n"
+			msg = getCEMemoryOutMsg(realMemory, form.MaxMemory*mp)
 		default:
 			log.Debug("sig " + sig + " other reason")
 			msg = "Compile Error: Interrupted by system signal when compiling program\n" +
@@ -609,7 +606,6 @@ func (b Base) compileSPJ(form *dto.JudgeForm, ts *dto.TempStorage) error {
 		}
 		return errors.New(msg)
 	}
-	mp := form.CompMp * form.SPJMp
 	if actualCpuTime > form.MaxCpuTime*mp || actualRealTime > form.MaxRealTime*mp {
 		form.Flag = "CE"
 		msg := getCETimeOutMsg(
@@ -619,10 +615,9 @@ func (b Base) compileSPJ(form *dto.JudgeForm, ts *dto.TempStorage) error {
 			form.MaxRealTime*form.CompMp*form.SPJMp)
 		return errors.New(msg)
 	}
-	if realMemory > form.MaxMemory {
+	if realMemory > form.MaxMemory*mp {
 		form.Flag = "CE"
-		msg := "Compile Error: Out of memory limit\n" +
-			"Memory Used:" + strconv.Itoa(realMemory) + " KB\n"
+		msg := getCEMemoryOutMsg(realMemory, form.MaxMemory*mp)
 		return errors.New(msg)
 	}
 	if errorOutput != "" {
@@ -744,8 +739,7 @@ func (b Base) spj(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
 				"Real Time:" + strconv.Itoa(actualRealTime) + "\n"
 		case "11":
 			log.Debug("sig 11 mle")
-			msg = "Error: Out of memory limit\n" +
-				"Memory Used:" + strconv.Itoa(realMemory) + " KB\n"
+			msg = getCEMemoryOutMsg(realMemory, form.MaxMemory*form.SPJMp)
 		default:
 			log.Debug("sig " + sig + " other reason")
 			msg = "Error: Interrupted by system signal\n" +
@@ -761,9 +755,8 @@ func (b Base) spj(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
 			"Real Time Limit: " + strconv.Itoa(form.MaxRealTime*form.SPJMp) + " ms\n"
 		return errors.New(msg)
 	}
-	if realMemory > form.MaxMemory {
-		msg := "Error: Out of memory limit\n" +
-			"Memory Used:" + strconv.Itoa(realMemory) + " KB\n"
+	if realMemory > form.MaxMemory*form.SPJMp {
+		msg := getCEMemoryOutMsg(realMemory, form.MaxMemory*form.SPJMp)
 		return errors.New(msg)
 	}
 	switch tc.SPJOutput {
@@ -808,6 +801,12 @@ func getCETimeOutMsg(cpuTime, realTime, maxCpuTime, maxRealtime int) string {
 		"Real Time: " + strconv.Itoa(realTime) + " ms\n" +
 		"CPU  Time Limit: " + strconv.Itoa(maxCpuTime) + " ms\n" +
 		"Real Time Limit: " + strconv.Itoa(maxRealtime) + " ms\n"
+}
+
+func getCEMemoryOutMsg(realMemory, maxMemory int) string {
+	return "Compile Error: Out of memory limit\n" +
+		"Memory Used: " + strconv.Itoa(realMemory) + " KB\n" +
+		"Memory Limit: " + strconv.Itoa(maxMemory) + " KB\n"
 }
 
 func (b Base) writeSPJCode(form *dto.JudgeForm, ts *dto.TempStorage) error {

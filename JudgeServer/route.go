@@ -45,7 +45,7 @@ func GetRtJug(lid int64) judge.RtJug {
 	case 3:
 		return judge.Java{}
 	case 4:
-		return judge.Python3{}
+		return judge.Python{}
 	case 5:
 		return judge.Go{}
 	default:
@@ -62,7 +62,7 @@ func GetSpJug(lid int64) judge.SpJug {
 	case 3:
 		return judge.Java{}
 	case 4:
-		return judge.Python3{}
+		return judge.Python{}
 	case 5:
 		return judge.Go{}
 	default:

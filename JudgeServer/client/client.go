@@ -199,25 +199,19 @@ finally:
 func main() {
 
 	form := dto.JudgeForm{
-		UseSPJ:      false,
+		UseSPJ:      true,
 		MaxCpuTime:  3000,
 		MaxRealTime: 3000,
 		MaxMemory:   1000000,
 		TotalScore:  0,
 		Id:          0,
-		Lid:         5,
-		SPJLid:      2,
+		Lid:         3,
+		SPJLid:      3,
 		SPJMp:       2,
-		CompMp:      2,
-		Code: `import(
-    "asd"
-)
-fun main()
-{
-]
-`,
-		SPJCode: CPPSPJCode,
-		Flag:    "",
+		CompMp:      5,
+		Code:        JavaCode,
+		SPJCode:     JavaSPJCode,
+		Flag:        "",
 		TestCase: []dto.TestCase{
 			{
 				Input:          "1 2",
