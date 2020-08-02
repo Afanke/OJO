@@ -35,35 +35,7 @@
                         <span>&nbsp;Output Description</span>
                         <editor style="margin-top:20px" v-model="outputDescription"></editor>
                     </el-row>
-                    <el-row :gutter="20" style="margin-top:40px">
-                        <el-col :span="8">
-                            <span style="color:red">*</span>
-                            <span>&nbsp;CPU Time Limit(ms)</span>
-                            <el-row class="small-element">
-                                <el-input-number v-model="cpuTimeLimit" controls-position="right" :min="100"
-                                                 :max="10000" :step="100">
-                                </el-input-number>
-                            </el-row>
-                        </el-col>
-                        <el-col :span="8">
-                            <span style="color:red">*</span>
-                            <span>&nbsp;Real Time Limit(ms)</span>
-                            <el-row class="small-element">
-                                <el-input-number v-model="realTimeLimit" controls-position="right" :min="100"
-                                                 :max="20000" :step="100">
-                                </el-input-number>
-                            </el-row>
-                        </el-col>
-                        <el-col :span="8">
-                            <span style="color:red">*</span>
-                            <span>&nbsp;Memory Limit(KB)</span>
-                            <el-row class="small-element">
-                                <el-input-number v-model="memoryLimit" controls-position="right" :min="2" :max="262144"
-                                                 :step="1024">
-                                </el-input-number>
-                            </el-row>
-                        </el-col>
-                    </el-row>
+
                     <el-row :gutter="20" style="margin-top:40px">
                         <el-col :span="2">
                             <span style="color:red">*</span>
@@ -85,7 +57,7 @@
                                 </el-select>
                             </el-row>
                         </el-col>
-                        <el-col :span="8" :offset="1">
+                        <el-col :span="7" :offset="1">
                             <span style="color:#ffffff">*</span>
                             <span>&nbsp;Tags</span>
                             <el-row class="small-element">
@@ -109,6 +81,62 @@
                                 <el-checkbox label="Go" v-model="useLang.Go"></el-checkbox>
                             </el-row>
                         </el-col>
+                    </el-row>
+                    <el-row v-for="(item,name,index) in limit" v-if="useLang[name]" :key="'limit'+index"
+                            style="margin-top:40px;border:1px solid rgb(233, 233, 235);border-radius:5px;white-space: nowrap;text-overflow :ellipsis">
+                        <el-row :gutter="10" style="margin-bottom:9px;border-bottom:1px solid rgb(233, 233, 235)">
+                            <p style="padding-left: 25px;font-weight:bold; "> Resource limit of {{name}}</p>
+                        </el-row>
+                        <el-row :gutter="30"
+                                style="font-size:15px;margin-bottom: 15px;margin-top:15px">
+                            <el-col :span="4" offset="2">
+                                <span style="color:red">*</span>
+                                <span>&nbsp;CPU Time Limit (ms)</span>
+                                <el-row class="small-element">
+                                    <el-input-number size="small" v-model="item.maxCpuTime" controls-position="right"
+                                                     :min="10"
+                                                     :max="30000" :step="100">
+                                    </el-input-number>
+                                </el-row>
+                            </el-col>
+                            <el-col :span="4">
+                                <span style="color:red">*</span>
+                                <span>&nbsp;Real Time Limit (ms)</span>
+                                <el-row class="small-element">
+                                    <el-input-number size="small" v-model="item.maxRealTime" controls-position="right"
+                                                     :min="10"
+                                                     :max="60000" :step="100">
+                                    </el-input-number>
+                                </el-row>
+                            </el-col>
+                            <el-col :span="4">
+                                <span style="color:red">*</span>
+                                <span>&nbsp;Memory Limit (KB)</span>
+                                <el-row class="small-element">
+                                    <el-input-number size="small" v-model="item.maxMemory" controls-position="right"
+                                                     :min="1024" :max="2097152" :step="1024">
+                                    </el-input-number>
+                                </el-row>
+                            </el-col>
+                            <el-col :span="4">
+                                <span style="color:red">*</span>
+                                <span>&nbsp;Compile Multiple</span>
+                                <el-row class="small-element">
+                                    <el-input-number size="small" v-model="item.compMp" controls-position="right"
+                                                     :min="1" :max="100" :step="1">
+                                    </el-input-number>
+                                </el-row>
+                            </el-col>
+                            <el-col :span="4">
+                                <span style="color:red">*</span>
+                                <span>&nbsp;Special Judge Multiple</span>
+                                <el-row class="small-element">
+                                    <el-input-number size="small" v-model="item.SPJMp" controls-position="right"
+                                                     :min="1" :max="100" :step="1">
+                                    </el-input-number>
+                                </el-row>
+                            </el-col>
+                        </el-row>
                     </el-row>
                     <el-row style="border:1px solid rgb(233, 233, 235);border-radius:5px;margin-top:30px"
                             v-for="(item,index3) in sample" :key="index3+'index3'">
@@ -370,7 +398,7 @@
         </transition>
         <el-dialog title="Test Case Result" :visible.sync="dialogVisible" class="dialog" width="600px">
             <div class="page-container" v-if="ltRes.errorMsg">
-                <p v-html="ltRes.errorMsg.replace('\n','<br>')"></p>
+                <p v-html="ltRes.errorMsg.replaceAll('\n','<br>')"></p>
             </div>
             <el-table :data="ltRes.testCase" style="margin-top:-25px">
                 <el-table-column type="expand">
@@ -392,22 +420,22 @@
                                 <span>{{ props.row.realMemory }}&nbsp;KB</span>
                             </el-form-item>
                             <el-form-item label="Input">
-                                <span>{{ props.row.input }}</span>
+                                <span v-html="props.row.input.replaceAll('\n','<br>')"></span>
                             </el-form-item>
-                            <el-form-item label="ExpectededOutput">
-                                <span>{{ props.row.expectedOutput }}</span>
+                            <el-form-item label="ExpectedOutput">
+                                <span v-html="props.row.expectedOutput.replaceAll('\n','<br>')"></span>
                             </el-form-item>
                             <el-form-item label="RealOutput">
-                                <span>{{ props.row.realOutput }}</span>
+                                <span v-html="props.row.realOutput.replaceAll('\n','<br>')"></span>
                             </el-form-item>
                             <el-form-item label="ErrorOutput">
-                                <span>{{ props.row.errorOutput }}</span>
+                                <span v-html="props.row.errorOutput.replaceAll('\n','<br>')"></span>
                             </el-form-item>
                             <el-form-item label="SPJOutput">
-                                <span>{{ props.row.SPJOutput }}</span>
+                                <span v-html="props.row.SPJOutput.replaceAll('\n','<br>')"></span>
                             </el-form-item>
                             <el-form-item label="SPJErrorOutput">
-                                <span>{{ props.row.SPJErrorOutput }}</span>
+                                <span v-html="props.row.SPJErrorOutput.replaceAll('\n','<br>')" ></span>
                             </el-form-item>
                         </el-form>
                     </template>
@@ -480,41 +508,41 @@
                     Python: false,
                     Go: false,
                 },
-                limit:{
-                    C:{
+                limit: {
+                    C: {
                         maxCpuTime: 1000,
                         maxRealTime: 1000,
                         maxMemory: 30720,
-                        compMp:2,
-                        SPJMp:2
+                        compMp: 2,
+                        SPJMp: 2
                     },
-                    Cpp:{
+                    Cpp: {
                         maxCpuTime: 1000,
                         maxRealTime: 1000,
                         maxMemory: 30720,
-                        compMp:2,
-                        SPJMp:2
+                        compMp: 2,
+                        SPJMp: 2
                     },
-                    Java:{
+                    Java: {
                         maxCpuTime: 1000,
                         maxRealTime: 1000,
-                        maxMemory: 30720,
-                        compMp:2,
-                        SPJMp:2
+                        maxMemory: 61440,
+                        compMp: 2,
+                        SPJMp: 2
                     },
-                    Python:{
+                    Python: {
                         maxCpuTime: 1000,
                         maxRealTime: 1000,
                         maxMemory: 30720,
-                        compMp:2,
-                        SPJMp:2
+                        compMp: 2,
+                        SPJMp: 2
                     },
-                    GO:{
+                    Go: {
                         maxCpuTime: 1000,
                         maxRealTime: 1000,
                         maxMemory: 30720,
-                        compMp:2,
-                        SPJMp:2
+                        compMp: 2,
+                        SPJMp: 2
                     },
                 },
                 useTmpl: {
@@ -792,13 +820,10 @@ func main(){
                 outputDescription: '',
                 hint: '',
                 source: '',
-                memoryLimit: 12288,
-                realTimeLimit: 2000,
                 ltRes: {
                     flag: "",
-                    errorMsg:"",
+                    errorMsg: "",
                 },
-                cpuTimeLimit: 1000,
                 visible: false,
                 difficulty: 'Normal',
                 COptions: {
@@ -995,17 +1020,17 @@ func main(){
                         sign = "#"
                         break
                     default:
-                        this.$message.error("Error 1: "+err)
+                        this.$message.error("Error 1: " + err)
                         return null
                 }
                 let s1 = tmpl.split(sign + ` PREPEND BEGIN\n`)
                 if (s1.length !== 2) {
-                    this.$message.error("Error 2: "+err)
+                    this.$message.error("Error 2: " + err)
                     return null
                 }
                 let s2 = s1[1].split("\n" + sign + ` PREPEND END\n`)
                 if (s2.length !== 2) {
-                    this.$message.error("Error 3: "+err)
+                    this.$message.error("Error 3: " + err)
                     return null
                 }
                 obj.prepend = s2[0]
@@ -1014,12 +1039,12 @@ func main(){
                 }
                 let s3 = s2[1].split(sign + ` TEMPLATE BEGIN\n`)
                 if (s3.length !== 2) {
-                    this.$message.error("Error 4: "+err)
+                    this.$message.error("Error 4: " + err)
                     return null
                 }
                 let s4 = s3[1].split("\n" + sign + ` TEMPLATE END\n`)
                 if (s4.length !== 2) {
-                    this.$message.error("Error 5: "+err)
+                    this.$message.error("Error 5: " + err)
                     return null
                 }
                 obj.content = s4[0]
@@ -1028,12 +1053,12 @@ func main(){
                 }
                 let s5 = s4[1].split(sign + ` APPEND BEGIN\n`)
                 if (s5.length !== 2) {
-                    this.$message.error("Error 6: "+err)
+                    this.$message.error("Error 6: " + err)
                     return null
                 }
                 let s6 = s5[1].split("\n" + sign + ` APPEND END`)
                 if (s6.length !== 2) {
-                    this.$message.error("Error 7: "+err)
+                    this.$message.error("Error 7: " + err)
                     return null
                 }
                 obj.append = s6[0]
@@ -1049,7 +1074,7 @@ func main(){
             async localTest() {
                 let code = this.ltCode
                 let lang = this.ltLang
-                if (lang===""){
+                if (lang === "") {
                     this.$message.error("please select a local test language")
                     return
                 }
@@ -1061,27 +1086,27 @@ func main(){
                     code = r.prepend + code + r.append
                 }
                 let obj = {
-                    maxMemory: this.memoryLimit,
-                    maxRealTime: this.realTimeLimit,
-                    maxCpuTime: this.cpuTimeLimit,
+                    maxMemory: this.limit[lang].maxMemory,
+                    maxRealTime: this.limit[lang].maxRealTime,
+                    maxCpuTime: this.limit[lang].maxCpuTime,
                     code: code,
                     lid: this.getLid(lang),
                     useSPJ: this.useSPJ,
                     SPJCode: this.SPJCode,
                     SPJLid: 1,
                     testCase: [],
-                    compMp:2,
-                    SPJMP:2
+                    compMp: this.limit[lang].compMp,
+                    SPJMp: this.limit[lang].SPJMp
                 }
-                if (this.useSPJ){
-                    obj.SPJLid=this.getLid(this.SPJLang)
+                if (this.useSPJ) {
+                    obj.SPJLid = this.getLid(this.SPJLang)
                 }
                 for (let i = 0; i < this.problemCase.length; i++) {
                     obj.testCase.push({
                         input: this.problemCase[i].input,
                         expectedOutput: this.problemCase[i].output,
                         score: this.problemCase[i].score,
-                        id:i
+                        id: i
                     })
                 }
                 try {
@@ -1162,7 +1187,7 @@ func main(){
                     case "Go":
                         return 5
                     default:
-                        this.$message.error("no such language "+lang)
+                        this.$message.error("no such language " + lang)
                         throw "no such language"
                 }
             },
@@ -1434,7 +1459,7 @@ func main(){
         border: 1px solid rgb(233, 233, 235);
     }
 
-    .page-container{
+    .page-container {
         padding: 8px 16px;
         background-color: #fff6f7;
         border-radius: 4px;

@@ -19,6 +19,10 @@ Vue.prototype.$http = axios
 Vue.prototype.$url=axios.defaults.baseURL
 Vue.config.productionTip = true
 
+String.prototype.replaceAll = function(s1,s2){
+  return this.replace(new RegExp(s1,"gm"),s2);
+}
+
 new Vue({
   router,
   render: h => h(App)

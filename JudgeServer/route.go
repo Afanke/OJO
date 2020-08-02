@@ -85,10 +85,10 @@ func checkForm(form *dto.JudgeForm) {
 		form.MaxMemory = 0
 	}
 	if form.SPJMp <= 0 {
-		form.MaxRealTime = 1
+		form.SPJMp = 1
 	}
 	if form.CompMp <= 0 {
-		form.MaxRealTime = 1
+		form.CompMp = 1
 	}
 	form.TotalScore = 0
 	form.Flag = "JUG"
