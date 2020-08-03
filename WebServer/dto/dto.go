@@ -448,14 +448,13 @@ type Problem struct {
 	Hint              string          `json:"hint" db:"hint"`
 	CreateTime        string          `json:"createTime" db:"create_time"`
 	LastUpdateTime    string          `json:"lastUpdateTime" db:"last_update_time"`
-	CpuTimeLimit      int             `json:"cpuTimeLimit" db:"cpu_time_limit"`
-	MemoryLimit       int             `json:"memoryLimit" db:"memory_limit"`
 	Difficulty        string          `json:"difficulty" db:"difficulty"`
-	RealTimeLimit     int             `json:"realTimeLimit" db:"real_time_limit"`
 	Source            string          `json:"source" db:"source"`
 	Visible           bool            `json:"visible" db:"visible"`
 	UseSPJ            bool            `json:"useSPJ" db:"use_spj"`
-	SPJ               []SPJ           `json:"spj" db:"spj"`
+	Shared            bool            `json:"shared" db:"shared"`
+	SPJ               SPJ             `json:"spj" db:"spj"`
+	Limit             []ProblemLimit  `json:"limit" db:"limit"`
 	Template          []Template      `json:"template" db:"template"`
 	ProblemCase       []ProblemCase   `json:"problemCase" db:"problem_case"`
 	Language          []Language      `json:"language" db:"language"`
@@ -477,6 +476,17 @@ type Template struct {
 	Prepend string `json:"prepend" db:"prepend"`
 	Content string `json:"content" db:"content"`
 	Append  string `json:"append" db:"append"`
+}
+
+type ProblemLimit struct {
+	Id          int `json:"id" db:"id"`
+	Pid         int `json:"pid" db:"pid"`
+	Lid         int `json:"lid" db:"lid"`
+	MaxCpuTime  int `json:"maxCpuTime" db:"max_cpu_time"`
+	MaxRealTime int `json:"maxRealTime" db:"max_real_time"`
+	MaxMemory   int `json:"maxMemory" db:"max_memory"`
+	CompMp      int `json:"compMp" db:"comp_mp"`
+	SPJMp       int `json:"SPJMp" db:"spj_mp"`
 }
 
 type ProblemCase struct {

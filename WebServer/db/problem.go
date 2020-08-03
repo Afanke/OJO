@@ -136,9 +136,9 @@ func (Problem) GetDetail(id int64) (*dto.Problem, error) {
 	err := gosql.Get(&detail, `select id, cid,
        ref, title, description, input_description,
        output_description, hint, create_time,
-       last_update_time, cpu_time_limit, memory_limit,
-       difficulty, real_time_limit, source,
-       visible from ojo.problem p where p.id=? limit 1`, id)
+       last_update_time, 
+       difficulty, source,
+       visible,shared,use_spj from ojo.problem p where p.id=? limit 1`, id)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err
@@ -163,11 +163,39 @@ func (Problem) GetDetail(id int64) (*dto.Problem, error) {
 		log.Warn("error:%v", err)
 		return nil, err
 	}
+	SPJ, err := pb.GetSPJ(id)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	template, err := pb.GetTemplate(id)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
 	detail.Tag = tags
 	detail.Language = languages
 	detail.Sample = samples
 	detail.ProblemCase = cases
+	detail.SPJ = SPJ
+	detail.Template = template
 	return &detail, err
+}
+
+func (Problem) GetSPJ(pbid int64) (dto.SPJ, error) {
+	var s = `select id,pid,lid,code from problem_spj 
+			where pid=?`
+	var SPJ dto.SPJ
+	err := gosql.Get(&SPJ, s, pbid)
+	return SPJ, err
+}
+
+func (Problem) GetTemplate(pbid int64) ([]dto.Template, error) {
+	var s = `select id, pid, lid, prepend, content, append from problem_template 
+			where pid=?`
+	var template []dto.Template
+	err := gosql.Select(&template, s, pbid)
+	return template, err
 }
 
 func (Problem) GetLanguage(pbid int64) ([]dto.Language, error) {
@@ -230,19 +258,16 @@ func (Problem) InsertProblem(p *dto.Problem) error {
                         output_description,
                         hint, create_time,
                         last_update_time,
-                        cpu_time_limit,
-                        memory_limit,
                         difficulty,
-                        real_time_limit,
                         source,
-                        visible,use_spj) VALUES(?,?,?,?,?,?,?,now(),now(),?,?,?,?,?,?,?) `
+                        visible,use_spj,shared) VALUES(?,?,?,?,?,?,?,now(),now(),?,?,?,?,?) `
 	tx, err := gosql.Begin()
 	if err != nil {
 		log.Warn("%v", err)
 		return err
 	}
 	res, err := tx.Exec(s, p.Cid, p.Ref, p.Title, p.Description, p.InputDescription,
-		p.OutputDescription, p.Hint, p.CpuTimeLimit, p.MemoryLimit, p.Difficulty, p.RealTimeLimit, p.Source, p.Visible, p.UseSPJ)
+		p.OutputDescription, p.Hint, p.Difficulty, p.Source, p.Visible, p.UseSPJ, p.Shared)
 	if err != nil {
 		log.Warn("%v", err)
 		err2 := tx.Rollback()
@@ -318,19 +343,30 @@ func (Problem) InsertProblem(p *dto.Problem) error {
 			return err
 		}
 	}
-	if p.UseSPJ {
-		for i, j := 0, len(p.SPJ); i < j; i++ {
-			p.SPJ[i].Pid = id
-			err := pb.InsertProblemSPJ(tx, &p.SPJ[i])
-			if err != nil {
-				log.Warn("%v", err)
-				err2 := tx.Rollback()
-				if err2 != nil {
-					log.Warn("%v", err2)
-				}
-				return err
+	for i, j := 0, len(p.Limit); i < j; i++ {
+		p.Template[i].Pid = id
+		err := pb.InsertProblemLimit(tx, &p.Limit[i])
+		if err != nil {
+			log.Warn("%v", err)
+			err2 := tx.Rollback()
+			if err2 != nil {
+				log.Warn("%v", err2)
 			}
+			return err
 		}
+	}
+	if p.UseSPJ {
+		p.SPJ.Pid = id
+		err := pb.InsertProblemSPJ(tx, &p.SPJ)
+		if err != nil {
+			log.Warn("%v", err)
+			err2 := tx.Rollback()
+			if err2 != nil {
+				log.Warn("%v", err2)
+			}
+			return err
+		}
+
 	}
 	err = pt.InsertStatistic(tx, id)
 	if err != nil {
@@ -362,10 +398,7 @@ func (Problem) UpdateProblem(p *dto.Problem) error {
                         output_description=?,
                         hint=?,
                         last_update_time=now(),
-                        cpu_time_limit=?,
-                        memory_limit=?,
                         difficulty=?,
-                        real_time_limit=?,
                         source=?,
                         visible=? where id=? `
 	tx, err := gosql.Begin()
@@ -374,7 +407,7 @@ func (Problem) UpdateProblem(p *dto.Problem) error {
 		return err
 	}
 	_, err = tx.Exec(s, p.Cid, p.Ref, p.Title, p.Description, p.InputDescription,
-		p.OutputDescription, p.Hint, p.CpuTimeLimit, p.MemoryLimit, p.Difficulty, p.RealTimeLimit, p.Source, p.Visible, p.Id)
+		p.OutputDescription, p.Hint, p.Difficulty, p.Source, p.Visible, p.Id)
 	if err != nil {
 		log.Warn("%v", err)
 		err2 := tx.Rollback()
@@ -607,6 +640,12 @@ func (Problem) InsertProblemSPJ(tx *gosql.DB, spj *dto.SPJ) error {
 func (Problem) InsertProblemTemplate(tx *gosql.DB, tp *dto.Template) error {
 	var s = "insert into ojo.problem_template(pid,lid,prepend,content,append) VALUES (?,?,?,?,?)"
 	_, err := tx.Exec(s, tp.Pid, tp.Lid, tp.Prepend, tp.Content, tp.Append)
+	return err
+}
+
+func (Problem) InsertProblemLimit(tx *gosql.DB, pl *dto.ProblemLimit) error {
+	var s = "insert into ojo.problem_limit(pid, lid, max_cpu_time, max_real_time, max_memory, comp_mp, spj_mp) VALUES (?,?,?,?,?,?,?)"
+	_, err := tx.Exec(s, pl.Pid, pl.Lid, pl.MaxCpuTime, pl.MaxRealTime, pl.MaxMemory, pl.CompMp, pl.SPJMp)
 	return err
 }
 

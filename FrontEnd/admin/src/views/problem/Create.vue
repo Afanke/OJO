@@ -37,7 +37,7 @@
                     </el-row>
 
                     <el-row :gutter="20" style="margin-top:40px">
-                        <el-col :span="2">
+                        <el-col :span="3">
                             <span style="color:red">*</span>
                             <span>&nbsp;Visible</span>
                             <el-row style="margin-top:25px;margin-left:10px">
@@ -45,7 +45,15 @@
                                 </el-switch>
                             </el-row>
                         </el-col>
-                        <el-col :span="5">
+                        <el-col :span="3">
+                            <span style="color:red">*</span>
+                            <span>&nbsp;Shared</span>
+                            <el-row style="margin-top:25px;margin-left:10px">
+                                <el-switch v-model="shared" active-color="#13ce66" inactive-color="#ff4949">
+                                </el-switch>
+                            </el-row>
+                        </el-col>
+                        <el-col :span="4">
                             <span style="color:red">*</span>
                             <span>&nbsp;Difficulty</span>
                             <el-row class="small-element">
@@ -57,7 +65,7 @@
                                 </el-select>
                             </el-row>
                         </el-col>
-                        <el-col :span="7" :offset="1">
+                        <el-col :span="4">
                             <span style="color:#ffffff">*</span>
                             <span>&nbsp;Tags</span>
                             <el-row class="small-element">
@@ -70,6 +78,8 @@
                                 </el-popover>
                             </el-row>
                         </el-col>
+                    </el-row>
+                    <el-row style="margin-top:20px">
                         <el-col :span="8">
                             <span style="color:red">*</span>
                             <span>&nbsp;Languages</span>
@@ -85,7 +95,7 @@
                     <el-row v-for="(item,name,index) in limit" v-if="useLang[name]" :key="'limit'+index"
                             style="margin-top:40px;border:1px solid rgb(233, 233, 235);border-radius:5px;white-space: nowrap;text-overflow :ellipsis">
                         <el-row :gutter="10" style="margin-bottom:9px;border-bottom:1px solid rgb(233, 233, 235)">
-                            <p style="padding-left: 25px;font-weight:bold; "> Resource limit of {{name}}</p>
+                            <p style="padding-left: 15px;font-weight:bold; "> Resource limit of {{name}}</p>
                         </el-row>
                         <el-row :gutter="30"
                                 style="font-size:15px;margin-bottom: 15px;margin-top:15px">
@@ -435,7 +445,7 @@
                                 <span v-html="props.row.SPJOutput.replaceAll('\n','<br>')"></span>
                             </el-form-item>
                             <el-form-item label="SPJErrorOutput">
-                                <span v-html="props.row.SPJErrorOutput.replaceAll('\n','<br>')" ></span>
+                                <span v-html="props.row.SPJErrorOutput.replaceAll('\n','<br>')"></span>
                             </el-form-item>
                         </el-form>
                     </template>
@@ -514,35 +524,40 @@
                         maxRealTime: 1000,
                         maxMemory: 30720,
                         compMp: 2,
-                        SPJMp: 2
+                        SPJMp: 2,
+                        lid:1,
                     },
                     Cpp: {
                         maxCpuTime: 1000,
                         maxRealTime: 1000,
                         maxMemory: 30720,
                         compMp: 2,
-                        SPJMp: 2
+                        SPJMp: 2,
+                        lid:2,
                     },
                     Java: {
                         maxCpuTime: 1000,
                         maxRealTime: 1000,
                         maxMemory: 61440,
                         compMp: 2,
-                        SPJMp: 2
+                        SPJMp: 2,
+                        lid:3,
                     },
                     Python: {
                         maxCpuTime: 1000,
                         maxRealTime: 1000,
                         maxMemory: 30720,
                         compMp: 2,
-                        SPJMp: 2
+                        SPJMp: 2,
+                        lid:4,
                     },
                     Go: {
                         maxCpuTime: 1000,
                         maxRealTime: 1000,
                         maxMemory: 30720,
                         compMp: 2,
-                        SPJMp: 2
+                        SPJMp: 2,
+                        lid:5,
                     },
                 },
                 useTmpl: {
@@ -825,6 +840,7 @@ func main(){
                     errorMsg: "",
                 },
                 visible: false,
+                shared:false,
                 difficulty: 'Normal',
                 COptions: {
                     // codemirror options
@@ -1007,7 +1023,8 @@ func main(){
                 let obj = {
                     prepend: "",
                     content: "",
-                    append: ""
+                    append: "",
+                    lid: 0,
                 }
                 switch (lang) {
                     case "C":
@@ -1023,6 +1040,7 @@ func main(){
                         this.$message.error("Error 1: " + err)
                         return null
                 }
+                obj.lid = this.getLid(lang)
                 let s1 = tmpl.split(sign + ` PREPEND BEGIN\n`)
                 if (s1.length !== 2) {
                     this.$message.error("Error 2: " + err)
@@ -1125,6 +1143,14 @@ func main(){
                 }
             },
             check() {
+                let hasLang = false
+                for (const k in this.useLang) if (this.useLang.hasOwnProperty(k)) {
+                    hasLang |= this.useLang[k]
+                }
+                if (!hasLang) {
+                    this.$message.error("language is required")
+                    return false
+                }
                 if (this.title === "") {
                     this.$message.error("title is required")
                     return false
@@ -1147,10 +1173,6 @@ func main(){
                 }
                 if (this.difficulty === "") {
                     this.$message.error("difficulty is required")
-                    return false
-                }
-                if (!(this.useC || this.useCpp || this.useJava || this.usePython)) {
-                    this.$message.error("language is required")
                     return false
                 }
                 for (let i = 0; i < this.sample.length; i++) {
@@ -1206,25 +1228,12 @@ func main(){
             },
             getRealLanguages() {
                 this.realLanguages = []
-                if (this.useC) {
-                    this.realLanguages.push({
-                        id: 1
-                    })
-                }
-                if (this.useCpp) {
-                    this.realLanguages.push({
-                        id: 2
-                    })
-                }
-                if (this.useJava) {
-                    this.realLanguages.push({
-                        id: 3
-                    })
-                }
-                if (this.usePython) {
-                    this.realLanguages.push({
-                        id: 4
-                    })
+                for (const k in this.useLang) if (this.useLang.hasOwnProperty(k)) {
+                    if (this.useLang[k]) {
+                        this.realLanguages.push({
+                            id: this.getLid(k)
+                        })
+                    }
                 }
             },
             async save() {
@@ -1242,22 +1251,22 @@ func main(){
                     hint: this.hint,
                     source: this.source,
                     tag: this.realTags,
-                    memoryLimit: this.memoryLimit,
-                    realTimeLimit: this.realTimeLimit,
-                    cpuTimeLimit: this.cpuTimeLimit,
                     visible: this.visible,
+                    shared:this.shared,
                     difficulty: this.difficulty,
                     language: this.realLanguages,
                     sample: this.sample,
                     problemCase: this.problemCase,
                     useSPJ: this.useSPJ,
                     template: [],
-                    spj: []
+                    spj: {},
+                    limit:[],
                 }
                 if (!this.handleTmpl(obj)) {
                     return
                 }
                 this.handleSPJ(obj)
+                this.handleLimit(obj)
                 console.log(obj)
                 try {
                     const {
@@ -1271,67 +1280,37 @@ func main(){
                         message: res.data,
                         type: 'success'
                     });
-                    this.$router.push("/problem")
+                    await this.$router.push("/problem")
                 } catch (err) {
                     console.log(err);
                     alert(err)
                 }
             },
             handleTmpl(obj) {
-                if (this.useCTmpl) {
-                    let r = this.processTmpl(this.CTmpl, "C")
-                    if (r === null) {
-                        return false
+                for (const k in this.useTmpl) if (this.useLang.hasOwnProperty(k)) {
+                    if (this.useTmpl[k]) {
+                        let r = this.processTmpl(this.tmpl[k], k)
+                        if (r === null) {
+                            return false
+                        }
+                        obj.template.push(r)
                     }
-                    obj.template.push(r)
-                }
-                if (this.useCppTmpl) {
-                    let r = this.processTmpl(this.CppTmpl, "Cpp")
-                    if (r === null) {
-                        return false
-                    }
-                    obj.template.push(r)
-                }
-                if (this.useJavaTmpl) {
-                    let r = this.processTmpl(this.JavaTmpl, "Java")
-                    if (r === null) {
-                        return false
-                    }
-                    obj.template.push(r)
-                }
-                if (this.usePythonTmpl) {
-                    let r = this.processTmpl(this.PythonTmpl, "Python")
-                    if (r === null) {
-                        return false
-                    }
-                    obj.template.push(r)
                 }
                 return true
             },
             handleSPJ(obj) {
-                if (this.useC) {
-                    obj.spj.push({
-                        lid: 1,
-                        code: this.CSPJ,
-                    })
+                if (this.useSPJ) {
+                    obj.spj={
+                        lid: this.getLid(this.SPJLang),
+                        code: this.SPJCode,
+                    }
                 }
-                if (this.useCpp) {
-                    obj.spj.push({
-                        lid: 2,
-                        code: this.CppSPJ,
-                    })
-                }
-                if (this.useJava) {
-                    obj.spj.push({
-                        lid: 3,
-                        code: this.JavaSPJ,
-                    })
-                }
-                if (this.usePython) {
-                    obj.spj.push({
-                        lid: 4,
-                        code: this.PythonSPJ,
-                    })
+            },
+            handleLimit(obj) {
+                for (const k in this.limit) if (this.limit.hasOwnProperty(k)) {
+                    if (this.useLang[k]) {
+                        obj.limit.push(this.limit[k])
+                    }
                 }
             },
             addProblemCase() {

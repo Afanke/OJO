@@ -848,11 +848,7 @@ func (Contest) prepareForms(subForm *dto.SubmitForm) ([]dto.OperationForm, error
 		log.Warn("error:%v", err)
 		return nil, err
 	}
-	problem, err := pbdb.GetProblem(subForm.Pid)
-	if err != nil {
-		log.Warn("error:%v", err)
-		return nil, err
-	}
+
 	forms := make([]dto.OperationForm, len(cases))
 	for i := 0; i < len(cases); i++ {
 		forms[i].Input = cases[i].Input
@@ -861,9 +857,6 @@ func (Contest) prepareForms(subForm *dto.SubmitForm) ([]dto.OperationForm, error
 		forms[i].PcId = cases[i].Id
 		forms[i].Language = subForm.Language
 		forms[i].Code = subForm.Code
-		forms[i].MaxCpuTime = problem.CpuTimeLimit
-		forms[i].MaxMemory = problem.MemoryLimit
-		forms[i].MaxRealTime = problem.RealTimeLimit
 	}
 	return forms, nil
 }
