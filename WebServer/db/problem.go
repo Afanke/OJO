@@ -53,6 +53,8 @@ func (Problem) GetAll(form *dto.ProblemForm) ([]dto.ProblemBrief, error) {
 			log.Warn("error:%v", err)
 			return nil, err
 		}
+		tag, err := tag.GetBriefByPid(res.Id)
+		res.Tags = tag
 		rest = append(rest, res)
 	}
 	err = pb.SelectCreatorName(len(rest), func(i int) int64 {
@@ -388,7 +390,6 @@ func (Problem) InsertProblem(p *dto.Problem) error {
 			}
 			return err
 		}
-
 	}
 	err = pt.InsertStatistic(tx, id)
 	if err != nil {
@@ -412,7 +413,7 @@ func (Problem) InsertProblem(p *dto.Problem) error {
 }
 
 func (Problem) UpdateProblem(p *dto.Problem) error {
-	var s = `update ojo.problem set cid=?,
+	var s = `update ojo.problem set
                         ref=?,
                         title=?,
                         description=?,
@@ -422,14 +423,18 @@ func (Problem) UpdateProblem(p *dto.Problem) error {
                         last_update_time=now(),
                         difficulty=?,
                         source=?,
-                        visible=? where id=? `
+                        visible=?,
+                       	shared=?,
+                       use_spj=?
+                       where id=? `
 	tx, err := gosql.Begin()
 	if err != nil {
 		log.Warn("%v", err)
 		return err
 	}
-	_, err = tx.Exec(s, p.Cid, p.Ref, p.Title, p.Description, p.InputDescription,
-		p.OutputDescription, p.Hint, p.Difficulty, p.Source, p.Visible, p.Id)
+	_, err = tx.Exec(s, p.Ref, p.Title, p.Description, p.InputDescription,
+		p.OutputDescription, p.Hint, p.Difficulty, p.Source, p.Visible,
+		p.Shared, p.UseSPJ, p.Id)
 	if err != nil {
 		log.Warn("%v", err)
 		err2 := tx.Rollback()
@@ -466,6 +471,33 @@ func (Problem) UpdateProblem(p *dto.Problem) error {
 		return err
 	}
 	err = pb.DeleteProblemTag(tx, p.Id)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	err = pb.DeleteProblemTemplate(tx, p.Id)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	err = pb.DeleteProblemLimit(tx, p.Id)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	err = pb.DeleteProblemSPJ(tx, p.Id)
 	if err != nil {
 		log.Warn("%v", err)
 		err2 := tx.Rollback()
@@ -511,6 +543,42 @@ func (Problem) UpdateProblem(p *dto.Problem) error {
 	}
 	for i, j := 0, len(p.Tag); i < j; i++ {
 		err := pb.InsertProblemTag(tx, p.Id, p.Tag[i].Id)
+		if err != nil {
+			log.Warn("%v", err)
+			err2 := tx.Rollback()
+			if err2 != nil {
+				log.Warn("%v", err2)
+			}
+			return err
+		}
+	}
+	for i, j := 0, len(p.Template); i < j; i++ {
+		p.Template[i].Pid = p.Id
+		err := pb.InsertProblemTemplate(tx, &p.Template[i])
+		if err != nil {
+			log.Warn("%v", err)
+			err2 := tx.Rollback()
+			if err2 != nil {
+				log.Warn("%v", err2)
+			}
+			return err
+		}
+	}
+	for i, j := 0, len(p.Limit); i < j; i++ {
+		p.Limit[i].Pid = p.Id
+		err := pb.InsertProblemLimit(tx, &p.Limit[i])
+		if err != nil {
+			log.Warn("%v", err)
+			err2 := tx.Rollback()
+			if err2 != nil {
+				log.Warn("%v", err2)
+			}
+			return err
+		}
+	}
+	if p.UseSPJ {
+		p.SPJ.Pid = p.Id
+		err := pb.InsertProblemSPJ(tx, &p.SPJ)
 		if err != nil {
 			log.Warn("%v", err)
 			err2 := tx.Rollback()
@@ -625,6 +693,24 @@ func (Problem) DeleteProblemSample(tx *gosql.DB, pid int64) error {
 
 func (Problem) DeleteProblemTag(tx *gosql.DB, pid int64) error {
 	var s = "delete from ojo.problem_tag where pid=?"
+	_, err := tx.Exec(s, pid)
+	return err
+}
+
+func (Problem) DeleteProblemSPJ(tx *gosql.DB, pid int64) error {
+	var s = "delete from ojo.problem_spj where pid=?"
+	_, err := tx.Exec(s, pid)
+	return err
+}
+
+func (Problem) DeleteProblemTemplate(tx *gosql.DB, pid int64) error {
+	var s = "delete from ojo.problem_template where pid=?"
+	_, err := tx.Exec(s, pid)
+	return err
+}
+
+func (Problem) DeleteProblemLimit(tx *gosql.DB, pid int64) error {
+	var s = "delete from ojo.problem_limit where pid=?"
 	_, err := tx.Exec(s, pid)
 	return err
 }

@@ -86,12 +86,11 @@ func (Problem) UpdateProblem(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	userId, err := isAdmin(c)
+	err = pb.isPermitted(c, p.Id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	p.Cid = userId
 	err = pbdb.UpdateProblem(&p)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})

@@ -3,7 +3,7 @@
         <transition name="slide-fade">
             <div class="center-box" v-if="show">
                 <el-page-header style="height:60px;line-height:60px;margin-left:20px" title="Back" @back="goBack"
-                                content="Create Problem">
+                                content="Edit Problem">
                 </el-page-header>
                 <el-row style="height:1px;float:top;border-top:1px solid rgb(233, 233, 235);">
                 </el-row>
@@ -510,6 +510,7 @@
     export default {
         data() {
             return {
+                id:0,
                 dialogVisible: false,
                 useLang: {
                     C: false,
@@ -1335,6 +1336,7 @@ func main(){
                 this.getRealTags()
                 this.getRealLanguages()
                 let obj = {
+                    id:this.id,
                     title: this.title,
                     ref: this.ref,
                     description: this.description,
@@ -1363,7 +1365,7 @@ func main(){
                 try {
                     const {
                         data: res
-                    } = await this.$http.post('/admin/problem/addProblem', obj);
+                    } = await this.$http.post('/admin/problem/updateProblem', obj);
                     if (res.error) {
                         this.$message.error(res.error)
                         return

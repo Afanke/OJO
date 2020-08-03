@@ -981,7 +981,6 @@ func main(){
         },
         mounted() {
             this.show = true
-            // this.getDetail()
             this.getAllTags()
         },
         methods: {
@@ -1016,7 +1015,7 @@ func main(){
                         this.SPJLang = this.getLang(res.data.spj.lid)
                     }
                     for (let i = 0; i < res.data.language.length; i++) {
-                        this.useLang[res.data.language[i].name] = true
+                        this.useLang[this.getLang(res.data.language[i].id)] = true
                     }
                     for (let i = 0; i < res.data.template.length; i++) {
                         let tm = res.data.template[i]
@@ -1033,6 +1032,11 @@ func main(){
                             sign + " APPEND BEGIN\n" +
                             tm.append +
                             sign + " APPEND END\n"
+                    }
+                    for (let i = 0; i < res.data.limit.length; i++) {
+                        let lm = res.data.limit[i]
+                        let lang = this.getLang(lm.lid)
+                        this.limit[lang]=lm
                     }
                     if (res.data.tag) {
                         for (let i = 0; i < res.data.tag.length; i++) {
@@ -1146,6 +1150,15 @@ func main(){
                 }
                 if (obj.append.charAt(obj.append.length - 1) !== "\n") {
                     obj.append += "\n"
+                }
+                if(obj.prepend[obj.prepend.length-1]!=="\n"){
+                    obj.prepend+="\n"
+                }
+                if(obj.content[obj.content.length-1]!=="\n"){
+                    obj.content+="\n"
+                }
+                if(obj.append[0]==="\n"){
+                    obj.content=obj.content.substr(1)
                 }
                 console.log(obj)
                 return obj
