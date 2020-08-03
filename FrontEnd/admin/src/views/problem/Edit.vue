@@ -99,7 +99,7 @@
                         </el-row>
                         <el-row :gutter="30"
                                 style="font-size:15px;margin-bottom: 15px;margin-top:15px">
-                            <el-col :span="4" offset="2">
+                            <el-col :span="4" :offset="2">
                                 <span style="color:red">*</span>
                                 <span>&nbsp;CPU Time Limit (ms)</span>
                                 <el-row class="small-element">
@@ -983,7 +983,6 @@ func main(){
             this.show = true
             this.getDetail()
             this.getAllTags()
-
         },
         methods: {
             async getDetail() {
@@ -1011,8 +1010,34 @@ func main(){
                     this.difficulty = res.data.difficulty
                     this.problemCase = res.data.problemCase
                     this.sample = res.data.sample
+                    if (res.data.useSPJ) {
+                        this.useSPJ=true
+                        this.SPJCode = res.data.spj.code
+                        this.SPJLang = this.getLang(res.data.spj.lid)
+                    }
                     for (let i = 0; i < res.data.language.length; i++) {
-                        this.languages.push("" + res.data.language[i].name)
+                        this.useLang[this.getLang(res.data.language[i].id)] = true
+                    }
+                    for (let i = 0; i < res.data.template.length; i++) {
+                        let tm = res.data.template[i]
+                        let lang = this.getLang(tm.lid)
+                        let sign = this.getTmplSign(lang)
+                        this.useTmpl[lang] = true
+                        this.tmpl[lang] =
+                            sign + " PREPEND BEGIN\n" +
+                            tm.prepend +
+                            sign + " PREPEND END\n\n" +
+                            sign + " TEMPLATE BEGIN\n" +
+                            tm.content +
+                            sign + " TEMPLATE END\n\n" +
+                            sign + " APPEND BEGIN\n" +
+                            tm.append +
+                            sign + " APPEND END\n"
+                    }
+                    for (let i = 0; i < res.data.limit.length; i++) {
+                        let lm = res.data.limit[i]
+                        let lang = this.getLang(lm.lid)
+                        this.limit[lang]=lm
                     }
                     if (res.data.tag) {
                         for (let i = 0; i < res.data.tag.length; i++) {
@@ -1058,28 +1083,28 @@ func main(){
                         break
                 }
             },
+            getTmplSign(lang) {
+                switch (lang) {
+                    case "C":
+                    case "Cpp":
+                    case "Java":
+                    case "Go":
+                        return "//"
+                    case "Python":
+                        return "#"
+                    default:
+                        this.$message.error("unsupported language")
+                        return null
+                }
+            },
             processTmpl(tmpl, lang) {
-                let sign = ""
+                let sign = this.getTmplSign(lang)
                 let err = lang + " template is not available, please reset it"
                 let obj = {
                     prepend: "",
                     content: "",
                     append: "",
                     lid: 0,
-                }
-                switch (lang) {
-                    case "C":
-                    case "Cpp":
-                    case "Java":
-                    case "Go":
-                        sign = "//"
-                        break
-                    case "Python":
-                        sign = "#"
-                        break
-                    default:
-                        this.$message.error("Error 1: " + err)
-                        return null
                 }
                 obj.lid = this.getLid(lang)
                 let s1 = tmpl.split(sign + ` PREPEND BEGIN\n`)
@@ -1126,6 +1151,15 @@ func main(){
                 }
                 if (obj.append.charAt(obj.append.length - 1) !== "\n") {
                     obj.append += "\n"
+                }
+                if(obj.prepend[obj.prepend.length-1]!=="\n"){
+                    obj.prepend+="\n"
+                }
+                if(obj.content[obj.content.length-1]!=="\n"){
+                    obj.content+="\n"
+                }
+                if(obj.append[0]==="\n"){
+                    obj.content=obj.content.substr(1)
                 }
                 console.log(obj)
                 return obj
@@ -1254,6 +1288,23 @@ func main(){
                         throw "no such language"
                 }
             },
+            getLang(lid) {
+                switch (lid) {
+                    case 1:
+                        return "C"
+                    case 2:
+                        return "Cpp"
+                    case 3:
+                        return "Java"
+                    case 4:
+                        return "Python"
+                    case 5:
+                        return "Go"
+                    default:
+                        this.$message.error("no such language id" + lid)
+                        throw "no such language id"
+                }
+            },
             getRealTags() {
                 this.realTags = []
                 for (let i = 0; i < this.tags.length; i++) {
@@ -1300,7 +1351,7 @@ func main(){
                     problemCase: this.problemCase,
                     useSPJ: this.useSPJ,
                     template: [],
-                    spj: [],
+                    spj: {},
                     limit: [],
                 }
                 if (!this.handleTmpl(obj)) {
@@ -1341,10 +1392,10 @@ func main(){
             },
             handleSPJ(obj) {
                 if (this.useSPJ) {
-                    obj.spj.push({
+                    obj.spj={
                         lid: this.getLid(this.SPJLang),
                         code: this.SPJCode,
-                    })
+                    }
                 }
             },
             handleLimit(obj) {

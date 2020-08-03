@@ -479,14 +479,14 @@ type Template struct {
 }
 
 type ProblemLimit struct {
-	Id          int `json:"id" db:"id"`
-	Pid         int `json:"pid" db:"pid"`
-	Lid         int `json:"lid" db:"lid"`
-	MaxCpuTime  int `json:"maxCpuTime" db:"max_cpu_time"`
-	MaxRealTime int `json:"maxRealTime" db:"max_real_time"`
-	MaxMemory   int `json:"maxMemory" db:"max_memory"`
-	CompMp      int `json:"compMp" db:"comp_mp"`
-	SPJMp       int `json:"SPJMp" db:"spj_mp"`
+	Id          int64 `json:"id" db:"id"`
+	Pid         int64 `json:"pid" db:"pid"`
+	Lid         int64 `json:"lid" db:"lid"`
+	MaxCpuTime  int   `json:"maxCpuTime" db:"max_cpu_time"`
+	MaxRealTime int   `json:"maxRealTime" db:"max_real_time"`
+	MaxMemory   int   `json:"maxMemory" db:"max_memory"`
+	CompMp      int   `json:"compMp" db:"comp_mp"`
+	SPJMp       int   `json:"SPJMp" db:"spj_mp"`
 }
 
 type ProblemCase struct {

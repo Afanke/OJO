@@ -99,7 +99,7 @@
                         </el-row>
                         <el-row :gutter="30"
                                 style="font-size:15px;margin-bottom: 15px;margin-top:15px">
-                            <el-col :span="4" offset="2">
+                            <el-col :span="4" :offset="2">
                                 <span style="color:red">*</span>
                                 <span>&nbsp;CPU Time Limit (ms)</span>
                                 <el-row class="small-element">
@@ -525,7 +525,7 @@
                         maxMemory: 30720,
                         compMp: 2,
                         SPJMp: 2,
-                        lid:1,
+                        lid: 1,
                     },
                     Cpp: {
                         maxCpuTime: 1000,
@@ -533,7 +533,7 @@
                         maxMemory: 30720,
                         compMp: 2,
                         SPJMp: 2,
-                        lid:2,
+                        lid: 2,
                     },
                     Java: {
                         maxCpuTime: 1000,
@@ -541,7 +541,7 @@
                         maxMemory: 61440,
                         compMp: 2,
                         SPJMp: 2,
-                        lid:3,
+                        lid: 3,
                     },
                     Python: {
                         maxCpuTime: 1000,
@@ -549,7 +549,7 @@
                         maxMemory: 30720,
                         compMp: 2,
                         SPJMp: 2,
-                        lid:4,
+                        lid: 4,
                     },
                     Go: {
                         maxCpuTime: 1000,
@@ -557,7 +557,7 @@
                         maxMemory: 30720,
                         compMp: 2,
                         SPJMp: 2,
-                        lid:5,
+                        lid: 5,
                     },
                 },
                 useTmpl: {
@@ -840,7 +840,7 @@ func main(){
                     errorMsg: "",
                 },
                 visible: false,
-                shared:false,
+                shared: false,
                 difficulty: 'Normal',
                 COptions: {
                     // codemirror options
@@ -981,9 +981,70 @@ func main(){
         },
         mounted() {
             this.show = true
+            // this.getDetail()
             this.getAllTags()
         },
         methods: {
+            async getDetail() {
+                try {
+                    const {
+                        data: res
+                    } = await this.$http.post('/admin/problem/getDetail', {
+                        id: Number(this.$route.query.id)
+                    });
+                    if (res.error) {
+                        this.$message.error(res.error)
+                        return
+                    }
+                    console.log(res)
+                    this.id = res.data.id
+                    this.title = res.data.title
+                    this.ref = res.data.ref
+                    this.description = res.data.description
+                    this.inputDescription = res.data.inputDescription
+                    this.outputDescription = res.data.outputDescription
+                    this.hint = res.data.hint
+                    this.source = res.data.source
+                    this.visible = res.data.visible
+                    this.shared = res.data.shared
+                    this.difficulty = res.data.difficulty
+                    this.problemCase = res.data.problemCase
+                    this.sample = res.data.sample
+                    if (res.data.useSPJ) {
+                        this.useSPJ=true
+                        this.SPJCode = res.data.spj.code
+                        this.SPJLang = this.getLang(res.data.spj.lid)
+                    }
+                    for (let i = 0; i < res.data.language.length; i++) {
+                        this.useLang[res.data.language[i].name] = true
+                    }
+                    for (let i = 0; i < res.data.template.length; i++) {
+                        let tm = res.data.template[i]
+                        let lang = this.getLang(tm.lid)
+                        let sign = this.getTmplSign(lang)
+                        this.useTmpl[lang] = true
+                        this.tmpl[lang] =
+                            sign + " PREPEND BEGIN\n" +
+                            tm.prepend +
+                            sign + " PREPEND END\n\n" +
+                            sign + " TEMPLATE BEGIN\n" +
+                            tm.content +
+                            sign + " TEMPLATE END\n\n" +
+                            sign + " APPEND BEGIN\n" +
+                            tm.append +
+                            sign + " APPEND END\n"
+                    }
+                    if (res.data.tag) {
+                        for (let i = 0; i < res.data.tag.length; i++) {
+                            this.tags.push("" + res.data.tag[i].name)
+                        }
+                    }
+
+                } catch (err) {
+                    console.log(err);
+                    alert(err)
+                }
+            },
             resetTmpl(lang) {
                 this.tmpl[lang] = this.tmplExample[lang]
             },
@@ -1017,28 +1078,28 @@ func main(){
                         break
                 }
             },
+            getTmplSign(lang) {
+                switch (lang) {
+                    case "C":
+                    case "Cpp":
+                    case "Java":
+                    case "Go":
+                        return "//"
+                    case "Python":
+                        return "#"
+                    default:
+                        this.$message.error("unsupported language")
+                        return null
+                }
+            },
             processTmpl(tmpl, lang) {
-                let sign = ""
+                let sign = this.getTmplSign(lang)
                 let err = lang + " template is not available, please reset it"
                 let obj = {
                     prepend: "",
                     content: "",
                     append: "",
                     lid: 0,
-                }
-                switch (lang) {
-                    case "C":
-                    case "Cpp":
-                    case "Java":
-                    case "Go":
-                        sign = "//"
-                        break
-                    case "Python":
-                        sign = "#"
-                        break
-                    default:
-                        this.$message.error("Error 1: " + err)
-                        return null
                 }
                 obj.lid = this.getLid(lang)
                 let s1 = tmpl.split(sign + ` PREPEND BEGIN\n`)
@@ -1213,6 +1274,23 @@ func main(){
                         throw "no such language"
                 }
             },
+            getLang(lid) {
+                switch (lid) {
+                    case 1:
+                        return "C"
+                    case 2:
+                        return "Cpp"
+                    case 3:
+                        return "Java"
+                    case 4:
+                        return "Python"
+                    case 5:
+                        return "Go"
+                    default:
+                        this.$message.error("no such language id" + lid)
+                        throw "no such language id"
+                }
+            },
             getRealTags() {
                 this.realTags = []
                 for (let i = 0; i < this.tags.length; i++) {
@@ -1252,7 +1330,7 @@ func main(){
                     source: this.source,
                     tag: this.realTags,
                     visible: this.visible,
-                    shared:this.shared,
+                    shared: this.shared,
                     difficulty: this.difficulty,
                     language: this.realLanguages,
                     sample: this.sample,
@@ -1260,7 +1338,7 @@ func main(){
                     useSPJ: this.useSPJ,
                     template: [],
                     spj: {},
-                    limit:[],
+                    limit: [],
                 }
                 if (!this.handleTmpl(obj)) {
                     return

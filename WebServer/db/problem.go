@@ -173,13 +173,35 @@ func (Problem) GetDetail(id int64) (*dto.Problem, error) {
 		log.Warn("error:%v", err)
 		return nil, err
 	}
+	limit, err := pb.GetLimit(id)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
 	detail.Tag = tags
 	detail.Language = languages
 	detail.Sample = samples
 	detail.ProblemCase = cases
 	detail.SPJ = SPJ
 	detail.Template = template
+	detail.Limit = limit
 	return &detail, err
+}
+
+func (Problem) GetLimit(pbid int64) ([]dto.ProblemLimit, error) {
+	var s = `select id, pid, lid, max_cpu_time, max_real_time, max_memory, comp_mp, spj_mp from problem_limit 
+			where pid=?`
+	var limit []dto.ProblemLimit
+	err := gosql.Select(&limit, s, pbid)
+	return limit, err
+}
+
+func (Problem) GetLimitByLid(pbid int64, lid int64) (dto.ProblemLimit, error) {
+	var s = `select id, pid, lid, max_cpu_time, max_real_time, max_memory, comp_mp, spj_mp from problem_limit 
+			where pid=? and lid=?`
+	var limit dto.ProblemLimit
+	err := gosql.Get(&limit, s, pbid, lid)
+	return limit, err
 }
 
 func (Problem) GetSPJ(pbid int64) (dto.SPJ, error) {
@@ -344,7 +366,7 @@ func (Problem) InsertProblem(p *dto.Problem) error {
 		}
 	}
 	for i, j := 0, len(p.Limit); i < j; i++ {
-		p.Template[i].Pid = id
+		p.Limit[i].Pid = id
 		err := pb.InsertProblemLimit(tx, &p.Limit[i])
 		if err != nil {
 			log.Warn("%v", err)
