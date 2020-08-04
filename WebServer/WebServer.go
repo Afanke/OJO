@@ -13,6 +13,7 @@ import (
 
 func main() {
 	app := iris.New()
+	log.InitLog()
 	stop := make(chan int, 1)
 	go func() {
 		ch := make(chan os.Signal, 5)

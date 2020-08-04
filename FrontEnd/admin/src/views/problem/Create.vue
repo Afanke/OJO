@@ -984,71 +984,6 @@ func main(){
             this.getAllTags()
         },
         methods: {
-            async getDetail() {
-                try {
-                    const {
-                        data: res
-                    } = await this.$http.post('/admin/problem/getDetail', {
-                        id: Number(this.$route.query.id)
-                    });
-                    if (res.error) {
-                        this.$message.error(res.error)
-                        return
-                    }
-                    console.log(res)
-                    this.id = res.data.id
-                    this.title = res.data.title
-                    this.ref = res.data.ref
-                    this.description = res.data.description
-                    this.inputDescription = res.data.inputDescription
-                    this.outputDescription = res.data.outputDescription
-                    this.hint = res.data.hint
-                    this.source = res.data.source
-                    this.visible = res.data.visible
-                    this.shared = res.data.shared
-                    this.difficulty = res.data.difficulty
-                    this.problemCase = res.data.problemCase
-                    this.sample = res.data.sample
-                    if (res.data.useSPJ) {
-                        this.useSPJ=true
-                        this.SPJCode = res.data.spj.code
-                        this.SPJLang = this.getLang(res.data.spj.lid)
-                    }
-                    for (let i = 0; i < res.data.language.length; i++) {
-                        this.useLang[this.getLang(res.data.language[i].id)] = true
-                    }
-                    for (let i = 0; i < res.data.template.length; i++) {
-                        let tm = res.data.template[i]
-                        let lang = this.getLang(tm.lid)
-                        let sign = this.getTmplSign(lang)
-                        this.useTmpl[lang] = true
-                        this.tmpl[lang] =
-                            sign + " PREPEND BEGIN\n" +
-                            tm.prepend +
-                            sign + " PREPEND END\n\n" +
-                            sign + " TEMPLATE BEGIN\n" +
-                            tm.content +
-                            sign + " TEMPLATE END\n\n" +
-                            sign + " APPEND BEGIN\n" +
-                            tm.append +
-                            sign + " APPEND END\n"
-                    }
-                    for (let i = 0; i < res.data.limit.length; i++) {
-                        let lm = res.data.limit[i]
-                        let lang = this.getLang(lm.lid)
-                        this.limit[lang]=lm
-                    }
-                    if (res.data.tag) {
-                        for (let i = 0; i < res.data.tag.length; i++) {
-                            this.tags.push("" + res.data.tag[i].name)
-                        }
-                    }
-
-                } catch (err) {
-                    console.log(err);
-                    alert(err)
-                }
-            },
             resetTmpl(lang) {
                 this.tmpl[lang] = this.tmplExample[lang]
             },
@@ -1080,20 +1015,6 @@ func main(){
                     case "Go":
                         options.mode = "go"
                         break
-                }
-            },
-            getTmplSign(lang) {
-                switch (lang) {
-                    case "C":
-                    case "Cpp":
-                    case "Java":
-                    case "Go":
-                        return "//"
-                    case "Python":
-                        return "#"
-                    default:
-                        this.$message.error("unsupported language")
-                        return null
                 }
             },
             processTmpl(tmpl, lang) {
@@ -1145,76 +1066,8 @@ func main(){
                     return null
                 }
                 obj.append = s6[0]
-                if (obj.append.charAt(0) !== "\n") {
-                    obj.append = "\n" + obj.append
-                }
-                if (obj.append.charAt(obj.append.length - 1) !== "\n") {
-                    obj.append += "\n"
-                }
-                if(obj.prepend[obj.prepend.length-1]!=="\n"){
-                    obj.prepend+="\n"
-                }
-                if(obj.content[obj.content.length-1]!=="\n"){
-                    obj.content+="\n"
-                }
-                if(obj.append[0]==="\n"){
-                    obj.content=obj.content.substr(1)
-                }
                 console.log(obj)
                 return obj
-            },
-            async localTest() {
-                let code = this.ltCode
-                let lang = this.ltLang
-                if (lang === "") {
-                    this.$message.error("please select a local test language")
-                    return
-                }
-                if (this.useTmpl[lang]) {
-                    let r = this.processTmpl(this.tmpl[lang], lang)
-                    if (r === null) {
-                        return
-                    }
-                    code = r.prepend + code + r.append
-                }
-                let obj = {
-                    maxMemory: this.limit[lang].maxMemory,
-                    maxRealTime: this.limit[lang].maxRealTime,
-                    maxCpuTime: this.limit[lang].maxCpuTime,
-                    code: code,
-                    lid: this.getLid(lang),
-                    useSPJ: this.useSPJ,
-                    SPJCode: this.SPJCode,
-                    SPJLid: 1,
-                    testCase: [],
-                    compMp: this.limit[lang].compMp,
-                    SPJMp: this.limit[lang].SPJMp
-                }
-                if (this.useSPJ) {
-                    obj.SPJLid = this.getLid(this.SPJLang)
-                }
-                for (let i = 0; i < this.problemCase.length; i++) {
-                    obj.testCase.push({
-                        input: this.problemCase[i].input,
-                        expectedOutput: this.problemCase[i].output,
-                        score: this.problemCase[i].score,
-                        id: i
-                    })
-                }
-                try {
-                    this.ltRes = {
-                        flag: "Judging"
-                    }
-                    const {data: res} = await this.$http.post('/admin/problem/localTest', obj);
-                    if (res.error) {
-                        this.$message.error(res.error)
-                        return
-                    }
-                    this.ltRes = res.data
-                } catch (err) {
-                    console.log(err);
-                    alert(err)
-                }
             },
             check() {
                 let hasLang = false
@@ -1327,54 +1180,18 @@ func main(){
                     }
                 }
             },
-            async save() {
-                if (!this.check()) {
-                    return
-                }
-                this.getRealTags()
-                this.getRealLanguages()
-                let obj = {
-                    title: this.title,
-                    ref: this.ref,
-                    description: this.description,
-                    inputDescription: this.inputDescription,
-                    outputDescription: this.outputDescription,
-                    hint: this.hint,
-                    source: this.source,
-                    tag: this.realTags,
-                    visible: this.visible,
-                    shared: this.shared,
-                    difficulty: this.difficulty,
-                    language: this.realLanguages,
-                    sample: this.sample,
-                    problemCase: this.problemCase,
-                    useSPJ: this.useSPJ,
-                    template: [],
-                    spj: {},
-                    limit: [],
-                }
-                if (!this.handleTmpl(obj)) {
-                    return
-                }
-                this.handleSPJ(obj)
-                this.handleLimit(obj)
-                console.log(obj)
-                try {
-                    const {
-                        data: res
-                    } = await this.$http.post('/admin/problem/addProblem', obj);
-                    if (res.error) {
-                        this.$message.error(res.error)
-                        return
-                    }
-                    this.$message({
-                        message: res.data,
-                        type: 'success'
-                    });
-                    await this.$router.push("/problem")
-                } catch (err) {
-                    console.log(err);
-                    alert(err)
+            getTmplSign(lang) {
+                switch (lang) {
+                    case "C":
+                    case "Cpp":
+                    case "Java":
+                    case "Go":
+                        return "//"
+                    case "Python":
+                        return "#"
+                    default:
+                        this.$message.error("unsupported language")
+                        return null
                 }
             },
             handleTmpl(obj) {
@@ -1444,6 +1261,174 @@ func main(){
                 } catch (err) {
                     console.log(err);
                     // alert(err)
+                }
+            },
+            async localTest() {
+                let code = this.ltCode
+                let lang = this.ltLang
+                if (lang === "") {
+                    this.$message.error("please select a local test language")
+                    return
+                }
+                if (this.useTmpl[lang]) {
+                    let r = this.processTmpl(this.tmpl[lang], lang)
+                    if (r === null) {
+                        return
+                    }
+                    code = r.prepend + code + r.append
+                }
+                let obj = {
+                    maxMemory: this.limit[lang].maxMemory,
+                    maxRealTime: this.limit[lang].maxRealTime,
+                    maxCpuTime: this.limit[lang].maxCpuTime,
+                    code: code,
+                    lid: this.getLid(lang),
+                    useSPJ: this.useSPJ,
+                    SPJCode: this.SPJCode,
+                    SPJLid: 1,
+                    testCase: [],
+                    compMp: this.limit[lang].compMp,
+                    SPJMp: this.limit[lang].SPJMp
+                }
+                if (this.useSPJ) {
+                    obj.SPJLid = this.getLid(this.SPJLang)
+                }
+                for (let i = 0; i < this.problemCase.length; i++) {
+                    obj.testCase.push({
+                        input: this.problemCase[i].input,
+                        expectedOutput: this.problemCase[i].output,
+                        score: this.problemCase[i].score,
+                        id: i
+                    })
+                }
+                try {
+                    this.ltRes = {
+                        flag: "Judging"
+                    }
+                    const {data: res} = await this.$http.post('/admin/problem/localTest', obj);
+                    if (res.error) {
+                        this.$message.error(res.error)
+                        return
+                    }
+                    this.ltRes = res.data
+                } catch (err) {
+                    console.log(err);
+                    alert(err)
+                }
+            },
+            async getDetail() {
+                try {
+                    const {
+                        data: res
+                    } = await this.$http.post('/admin/problem/getDetail', {
+                        id: Number(this.$route.query.id)
+                    });
+                    if (res.error) {
+                        this.$message.error(res.error)
+                        return
+                    }
+                    console.log(res)
+                    this.id = res.data.id
+                    this.title = res.data.title
+                    this.ref = res.data.ref
+                    this.description = res.data.description
+                    this.inputDescription = res.data.inputDescription
+                    this.outputDescription = res.data.outputDescription
+                    this.hint = res.data.hint
+                    this.source = res.data.source
+                    this.visible = res.data.visible
+                    this.shared = res.data.shared
+                    this.difficulty = res.data.difficulty
+                    this.problemCase = res.data.problemCase
+                    this.sample = res.data.sample
+                    if (res.data.useSPJ) {
+                        this.useSPJ=true
+                        this.SPJCode = res.data.spj.code
+                        this.SPJLang = this.getLang(res.data.spj.lid)
+                    }
+                    for (let i = 0; i < res.data.language.length; i++) {
+                        this.useLang[this.getLang(res.data.language[i].id)] = true
+                    }
+                    for (let i = 0; i < res.data.template.length; i++) {
+                        let tm = res.data.template[i]
+                        let lang = this.getLang(tm.lid)
+                        let sign = this.getTmplSign(lang)
+                        this.useTmpl[lang] = true
+                        this.tmpl[lang] =
+                            sign + " PREPEND BEGIN\n" +
+                            tm.prepend +
+                            sign + " PREPEND END\n\n" +
+                            sign + " TEMPLATE BEGIN\n" +
+                            tm.content +
+                            sign + " TEMPLATE END\n\n" +
+                            sign + " APPEND BEGIN\n" +
+                            tm.append +
+                            sign + " APPEND END\n"
+                    }
+                    for (let i = 0; i < res.data.limit.length; i++) {
+                        let lm = res.data.limit[i]
+                        let lang = this.getLang(lm.lid)
+                        this.limit[lang]=lm
+                    }
+                    if (res.data.tag) {
+                        for (let i = 0; i < res.data.tag.length; i++) {
+                            this.tags.push("" + res.data.tag[i].name)
+                        }
+                    }
+
+                } catch (err) {
+                    console.log(err);
+                    alert(err)
+                }
+            },
+            async save() {
+                if (!this.check()) {
+                    return
+                }
+                this.getRealTags()
+                this.getRealLanguages()
+                let obj = {
+                    title: this.title,
+                    ref: this.ref,
+                    description: this.description,
+                    inputDescription: this.inputDescription,
+                    outputDescription: this.outputDescription,
+                    hint: this.hint,
+                    source: this.source,
+                    tag: this.realTags,
+                    visible: this.visible,
+                    shared: this.shared,
+                    difficulty: this.difficulty,
+                    language: this.realLanguages,
+                    sample: this.sample,
+                    problemCase: this.problemCase,
+                    useSPJ: this.useSPJ,
+                    template: [],
+                    spj: {},
+                    limit: [],
+                }
+                if (!this.handleTmpl(obj)) {
+                    return
+                }
+                this.handleSPJ(obj)
+                this.handleLimit(obj)
+                console.log(obj)
+                try {
+                    const {
+                        data: res
+                    } = await this.$http.post('/admin/problem/addProblem', obj);
+                    if (res.error) {
+                        this.$message.error(res.error)
+                        return
+                    }
+                    this.$message({
+                        message: res.data,
+                        type: 'success'
+                    });
+                    await this.$router.push("/problem")
+                } catch (err) {
+                    console.log(err);
+                    alert(err)
                 }
             },
         },

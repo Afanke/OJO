@@ -62,7 +62,7 @@ type FileLog struct {
 	Msg   string
 }
 
-func init() {
+func InitLog() {
 	var defaultCfg = Config{
 		ConsoleLevel:  0,
 		FileLevel:     0,
@@ -90,6 +90,21 @@ func init() {
 	cfg = lcfg.Log
 	file.Init()
 	// Print(INFO, "%v", cfg)
+	l.Print(INFO, "success to load log system")
+}
+
+func InitDefaultLog() {
+	var defaultCfg = Config{
+		ConsoleLevel:  0,
+		FileLevel:     0,
+		EnableConsole: true,
+		EnableFile:    false,
+		FilePath:      "",
+		MaxSize:       0,
+		FileChanSize:  10000,
+	}
+	cfg = defaultCfg
+	file.Init()
 	l.Print(INFO, "success to load log system")
 }
 

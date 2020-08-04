@@ -83,13 +83,15 @@ type UserDetail2 struct {
 }
 
 type JudgeServer struct {
-	Enabled bool   `json:"enabled" db:"enabled"`
-	Status  bool   `json:"status" db:"status"`
-	Id      int64  `json:"id" db:"id"`
-	Port    int    `json:"port" db:"port"`
-	Weight  int    `json:"weight" db:"weight"`
-	Name    string `json:"name" db:"name"`
-	Address string `json:"address" db:"address"`
+	Enabled   bool   `json:"enabled" db:"enabled"`
+	Connected bool   `json:"connected" db:"connected"`
+	Id        int64  `json:"id" db:"id"`
+	Port      int    `json:"port" db:"port"`
+	Weight    int    `json:"weight" db:"weight"`
+	Name      string `json:"name" db:"name"`
+	Address   string `json:"address" db:"address"`
+	Password  string `json:"password" db:"password"`
+	Message   string `json:"message" db:"message"`
 }
 
 type PracticeForm struct {
@@ -657,4 +659,9 @@ type TestCase struct {
 	RealMemory     int    `json:"realMemory"`
 	Score          int    `json:"score"`
 	Id             int64  `json:"id"` // Problem case Id
+}
+
+type TouchResult struct {
+	Message   string `json:"message"`
+	Connected bool   `json:"connected"`
 }

@@ -98,8 +98,29 @@ func checkForm(form *dto.JudgeForm) {
 func BindRoute(app *iris.Application) {
 	app.Use(PanicMidWare)
 	{
-		app.Get("/touch", func(c iris.Context) {
-			c.JSON(dto.Res{Error: "", Data: "success"})
+		app.Post("/touch", func(c iris.Context) {
+			p := &struct {
+				Password string `json:"password"`
+			}{}
+			err := c.ReadJSON(p)
+			if err != nil {
+				c.JSON(&dto.TouchResult{
+					Message:   "invalid input",
+					Connected: false,
+				})
+				return
+			}
+			if password != p.Password {
+				c.JSON(&dto.TouchResult{
+					Message:   "Wrong Password",
+					Connected: false,
+				})
+				return
+			}
+			c.JSON(&dto.TouchResult{
+				Message:   "Connected",
+				Connected: true,
+			})
 		})
 		app.Post("/judge", func(c iris.Context) {
 			var form dto.JudgeForm

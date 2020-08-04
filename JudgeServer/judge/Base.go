@@ -83,7 +83,7 @@ func (b Base) Judge(form *dto.JudgeForm) {
 	ts := &dto.TempStorage{}
 	form.Flag = "JUG"
 	err := b.writeCode(form, ts)
-	//defer b.cleanCodeFile(ts)
+	defer b.cleanCodeFile(ts)
 	if err != nil {
 		if form.Flag != "JUG" {
 			return

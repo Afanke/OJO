@@ -44,6 +44,11 @@ type Res struct {
 	Data  interface{} `json:"data"`
 }
 
+type TouchResult struct {
+	Message   string `json:"message"`
+	Connected bool   `json:"connected"`
+}
+
 // type RequestForm struct {
 // 	MaxCpuTime     int // 2 seconds
 // 	MaxRealTime    int // 4 seconds

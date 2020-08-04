@@ -2,7 +2,6 @@
 
   <div>
     <transition name="slide-fade">
-
       <div class="center-box" v-if="show">
         <el-row style="height:60px;line-height:60px">
           <span style="font-size:20px;margin-left:20px">Announcement</span>
@@ -294,14 +293,10 @@
           this.keywords = '';
         }
         if (this.$route.query.mine) {
-          if (typeof (this.$route.query.mine) === typeof (true)) {
+          if (typeof (this.$route.query.mine) === typeof true) {
             this.mine = this.$route.query.mine
           } else {
-            if (this.$route.query.mine === "true") {
-              this.mine = true
-            } else {
-              this.mine = false
-            }
+            this.mine = this.$route.query.mine === "true";
           }
         } else {
           this.mine = false
@@ -315,11 +310,7 @@
         if (this.$route.query.keywords) {
           obj.keywords = this.$route.query.keywords;
         }
-        if (this.$route.query.mine) {
-          obj.mine = true
-        } else {
-          obj.mine = false
-        }
+        obj.mine = !!this.$route.query.mine;
         return obj;
       },
       async queryList() {

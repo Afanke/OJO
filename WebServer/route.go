@@ -9,7 +9,6 @@ import (
 	"github.com/afanke/OJO/utils/randstr"
 	"github.com/afanke/OJO/utils/session"
 	"github.com/kataras/iris/v12"
-	"github.com/kataras/iris/v12/context"
 	"net/http"
 	"runtime"
 	"time"
@@ -271,12 +270,12 @@ func BindRoute(app *iris.Application) {
 			admin.Post("/announcement/delete", anno.Delete)
 		}
 		{
-			admin.Get("/jsp/getAllInfo", func(c context.Context) {
-				_, _ = c.JSON(&dto.Res{
-					Error: "",
-					Data:  jsp.GetAllInfo(),
-				})
-			})
+			admin.Get("/jsp/getAllInfo", jsp.GetAllInfo)
+			admin.Post("/jsp/setEnabledTrue", jsp.SetEnabledTrue)
+			admin.Post("/jsp/setEnabledFalse", jsp.SetEnabledFalse)
+			admin.Post("/jsp/addJudgeServer", jsp.AddJudgeServer)
+			admin.Post("/jsp/updateJudgeServer", jsp.UpdateJudgeServer)
+			admin.Post("/jsp/deleteJudgeServer", jsp.DeleteJudgeServer)
 		}
 
 	}
