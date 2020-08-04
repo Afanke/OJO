@@ -805,7 +805,7 @@ import (
 // PREPEND END
 
 // TEMPLATE BEGIN
-func add(a,b int){
+func add(a,b int) int {
   // Please fill this blank
   return ___________
 }
@@ -1066,6 +1066,9 @@ func main(){
                     return null
                 }
                 obj.append = s6[0]
+                if (obj.append[0] !== "\n") {
+                    obj.append = "\n" + obj.append
+                }
                 console.log(obj)
                 return obj
             },
@@ -1208,7 +1211,7 @@ func main(){
             },
             handleSPJ(obj) {
                 if (this.useSPJ) {
-                    obj.spj={
+                    obj.spj = {
                         lid: this.getLid(this.SPJLang),
                         code: this.SPJCode,
                     }
@@ -1342,7 +1345,7 @@ func main(){
                     this.problemCase = res.data.problemCase
                     this.sample = res.data.sample
                     if (res.data.useSPJ) {
-                        this.useSPJ=true
+                        this.useSPJ = true
                         this.SPJCode = res.data.spj.code
                         this.SPJLang = this.getLang(res.data.spj.lid)
                     }
@@ -1368,7 +1371,7 @@ func main(){
                     for (let i = 0; i < res.data.limit.length; i++) {
                         let lm = res.data.limit[i]
                         let lang = this.getLang(lm.lid)
-                        this.limit[lang]=lm
+                        this.limit[lang] = lm
                     }
                     if (res.data.tag) {
                         for (let i = 0; i < res.data.tag.length; i++) {

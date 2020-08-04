@@ -114,7 +114,7 @@
       }
     },
     created() {
-      this.$bus.emit("changeHeader", "2-2")
+      this.$bus.emit("changeHeader", "2-4")
       this.show = false
     },
     mounted() {

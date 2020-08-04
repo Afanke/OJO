@@ -202,7 +202,22 @@ func UpdateJudgeServer(c context.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	_, err = gosql.Exec(`update ojo.judge_server set 
+	if js.Password == "" {
+		_, err = gosql.Exec(`update ojo.judge_server set 
+                            name=?,
+                            address=?,
+                            port=?,
+                            weight=?,
+                            enabled=?
+                            where id=?`,
+			js.Name, js.Address, js.Port,
+			js.Weight, js.Enabled, js.Id)
+		if err != nil {
+			c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+			return
+		}
+	} else {
+		_, err = gosql.Exec(`update ojo.judge_server set 
                             name=?,
                             address=?,
                             port=?,
@@ -210,11 +225,12 @@ func UpdateJudgeServer(c context.Context) {
                             enabled=?,
                             password=? 
                             where id=?`,
-		js.Name, js.Address, js.Port,
-		js.Weight, js.Enabled, js.Password, js.Id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
+			js.Name, js.Address, js.Port,
+			js.Weight, js.Enabled, js.Password, js.Id)
+		if err != nil {
+			c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+			return
+		}
 	}
 	go UpdateJSP()
 	c.JSON(dto.Res{

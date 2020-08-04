@@ -44,7 +44,7 @@
   export default {
     data() {
       return {
-        activeIndex: '3-1',
+        activeIndex: '1',
       }
     },
     created() {

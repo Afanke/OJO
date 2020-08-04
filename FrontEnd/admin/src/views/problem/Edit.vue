@@ -805,7 +805,7 @@ import (
 // PREPEND END
 
 // TEMPLATE BEGIN
-func add(a,b int){
+func add(a,b int) int {
   // Please fill this blank
   return ___________
 }
@@ -1118,6 +1118,9 @@ func main(){
                     return null
                 }
                 obj.append = s6[0]
+                if (obj.append[0] !== "\n") {
+                    obj.append = "\n" + obj.append
+                }
                 console.log(obj)
                 return obj
             },
@@ -1294,7 +1297,7 @@ func main(){
                             sign + " TEMPLATE BEGIN\n" +
                             tm.content +
                             sign + " TEMPLATE END\n\n" +
-                            sign + " APPEND BEGIN\n" +
+                            sign + " APPEND BEGIN" +
                             tm.append +
                             sign + " APPEND END\n"
                     }

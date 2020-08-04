@@ -246,14 +246,30 @@
             clearTimeout(this.timeout)
         },
         created() {
-            this.$bus.emit("changeHeader", "2-2")
+            this.$bus.emit("changeHeader", "2-3")
             this.show = false
         },
         mounted() {
             this.show = true
             this.getAllInfo()
         },
+
         methods: {
+            check(obj) {
+                if (obj.name === "") {
+                    this.$message.error("name can't be empty")
+                    return false
+                }
+                if (obj.address === "") {
+                    this.$message.error("address can't be empty")
+                    return false
+                }
+                if (obj.port === "") {
+                    this.$message.error("port can't be empty")
+                    return false
+                }
+                return true
+            },
             edit(obj) {
                 this.editForm = obj
                 this.editVisible = true
@@ -278,6 +294,9 @@
             },
             async add() {
                 try {
+                    if (!this.check(this.addForm)) {
+                        return
+                    }
                     this.addForm.port = Number(this.addForm.port)
                     const {
                         data: res
@@ -319,6 +338,9 @@
             },
             async update() {
                 try {
+                    if (!this.check(this.editForm)) {
+                        return
+                    }
                     this.editForm.port = Number(this.editForm.port)
                     const {
                         data: res
