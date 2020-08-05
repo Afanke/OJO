@@ -152,11 +152,31 @@ func (Practice) GetDetail(pbid int64) (*dto.Practice, error) {
 		log.Warn("error:%v", err)
 		return nil, err
 	}
+	template, err := pb.GetTemplate(pbid)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	limit, err := pb.GetLimit(pbid)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	for i, j := 0, len(template); i < j; i++ {
+		template[i].Append = ""
+		template[i].Prepend = ""
+	}
+	for i, j := 0, len(limit); i < j; i++ {
+		limit[i].SPJMp = 0
+		limit[i].CompMp = 0
+	}
 	detail.CreatorName = name
-	detail.Tags = tags
-	detail.Languages = languages
+	detail.Tag = tags
+	detail.Language = languages
 	detail.Statistic = statistic
-	detail.Samples = samples
+	detail.Sample = samples
+	detail.Template = template
+	detail.Limit = limit
 	return &detail, err
 }
 
@@ -371,10 +391,10 @@ func (Practice) GetUserACCount(uid int64) (int, error) {
 
 func (Practice) GetUserScore(uid int64) (int, error) {
 	var count int
-	s := `select sum(a.score) from (select max(ps.total_score) score
-			from ojo.practice_submission ps
-			where ps.uid=?
-			group by ps.pid) a`
+	s := `select IFNULL(sum(a.score),0) from (select max(ps.total_score) score
+                                    from ojo.practice_submission ps
+                                    where ps.uid=?
+                                    group by ps.pid) a;`
 	err := gosql.Get(&count, s, uid)
 	return count, err
 }

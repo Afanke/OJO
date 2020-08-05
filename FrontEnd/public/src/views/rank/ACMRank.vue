@@ -133,9 +133,11 @@
             return;
           }
           this.tableData = res.data
-          this.tableData.forEach(e => {
-            e.rate = this.getRate(e.ac, e.total)
-          })
+          if(this.tableData){
+            this.tableData.forEach(e => {
+              e.rate = this.getRate(e.ac, e.total)
+            })
+          }
           this.rankLoading = false;
         } catch (err) {
           console.log(err);

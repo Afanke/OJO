@@ -652,6 +652,33 @@ func (Problem) DeleteProblem(pid int64) error {
 		}
 		return err
 	}
+	err = pb.DeleteProblemTemplate(tx, pid)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	err = pb.DeleteProblemLimit(tx, pid)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
+	err = pb.DeleteProblemSPJ(tx, pid)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
 	err = tx.Commit()
 	if err != nil {
 		log.Warn("%v", err)

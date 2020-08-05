@@ -116,9 +116,6 @@ type Practice struct {
 	Visible           bool   `json:"visible" db:"visible"`
 	Id                int64  `json:"id" db:"id"`
 	Cid               int64  `json:"cid" db:"cid"`
-	MemoryLimit       int    `json:"memoryLimit" db:"memory_limit"`
-	CpuTimeLimit      int    `json:"cpuTimeLimit" db:"cpu_time_limit"`
-	RealTimeLimit     int    `json:"realTimeLimit" db:"real_time_limit"`
 	Ref               string `json:"ref" db:"ref"`
 	Hint              string `json:"hint" db:"hint"`
 	Title             string `json:"title" db:"title"`
@@ -131,9 +128,11 @@ type Practice struct {
 	OutputDescription string `json:"outputDescription" db:"output_description"`
 	// ---------------------------------------------------
 	CreatorName string             `json:"creatorName"`
-	Languages   []Language         `json:"language"`
-	Samples     []ProblemSample    `json:"sample"`
-	Tags        []TagBrief         `json:"tag"`
+	Language    []Language         `json:"language"`
+	Sample      []ProblemSample    `json:"sample"`
+	Tag         []TagBrief         `json:"tag"`
+	Limit       []ProblemLimit     `json:"limit" db:"limit"`
+	Template    []Template         `json:"template" db:"template"`
 	Statistic   *PracticeStatistic `json:"statistic"`
 }
 type Id struct {

@@ -72,7 +72,7 @@ func (Practice) GetDetail(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	detail, err := pctdb.GetDetail(int64(ptid.Id))
+	detail, err := pctdb.GetDetail(ptid.Id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
