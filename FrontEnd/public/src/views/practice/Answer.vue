@@ -133,7 +133,7 @@
                             <el-button style="margin-left:15px" type="primary" plain v-if="flag === 'Sending'"
                                        @click="goStatusDetail">Sending
                             </el-button>
-                            <el-button type="primary" style="float:right;margin-top:-3px" @click="submit"
+                            <el-button type="primary" style="float:right;" @click="submit"
                                        :loading="isJudging"
                                        class="el-icon-s-promotion">&nbsp;&nbsp;Submit
                             </el-button>
@@ -480,7 +480,6 @@
                     this.refreshStatistic()
                     this.setTemplate()
                     this.show = true;
-                    console.log(this.detail)
                     const {
                         data: res1
                     } = await this.$http.post(
@@ -495,15 +494,18 @@
                         this.$message.error(res1.error);
                         return;
                     }
-                    if (res1.data.flag) {
-                        this.flag = res1.data.flag;
+                    let data=res1.data
+                    if (data.flag) {
+                        this.flag = data.flag;
                     }
-                    if (res1.data.code) {
-                        this.code = res1.data.code;
+                    if (data.code) {
+                        this.code[this.getLang(data.lid)] = data.code;
                     }
-                    if (res1.data.id) {
+                    this.currentLanguage=this.getLang(data.lid)
+                    if (data.id) {
                         this.psmid = res1.data.id;
                     }
+                    this.langOptions.mode = this.getMIMEType(this.currentLanguage)
                 } catch (err) {
                     console.log(err);
                     alert(err);
@@ -718,7 +720,7 @@
                     }
                     this.psmid = res.data.id;
                     this.flag = res.data.flag;
-                    setTimeout(this.getStatus, 200)
+                    setTimeout(this.getStatus, 500)
                 } catch (err) {
                     console.log(err);
                     alert(err);

@@ -469,8 +469,10 @@ func (Base) concludeFlag(form *dto.JudgeForm, i int) error {
 		case "31":
 			log.Debug("sig 31 mle")
 			tc.Flag = "RE"
+			tc.ErrorOutput += "\nInterrupted by signal 31\nMaybe Out of Memory Limit or Disallowed System Call"
 		default:
 			tc.Flag = "RE"
+			tc.ErrorOutput += "\nInterrupted by signal " + sig
 		}
 		return nil
 	}
@@ -792,7 +794,7 @@ func (b Base) cleanSPJFile(ts *dto.TempStorage) {
 }
 
 func getLmtStr(form *dto.JudgeForm, inputPath string, mp int) string {
-	return " " + strconv.Itoa(form.MaxCpuTime*mp) + " " + (strconv.Itoa(form.MaxRealTime * mp)) + " " + strconv.Itoa(form.MaxMemory*mp) + " " + inputPath + " "
+	return " " + strconv.Itoa(form.MaxCpuTime*mp+100) + " " + (strconv.Itoa(form.MaxRealTime*mp + 100)) + " " + strconv.Itoa(form.MaxMemory*mp+20000) + " " + inputPath + " "
 }
 
 func getCETimeOutMsg(cpuTime, realTime, maxCpuTime, maxRealtime int) string {

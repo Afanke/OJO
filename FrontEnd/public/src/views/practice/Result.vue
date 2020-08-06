@@ -194,7 +194,7 @@
           case 'CE':
             return "yellow-container"
           case 'PA':
-          case 'Judging':
+          case 'JUG':
           case 'Pending':
           case 'AC':
           default:
@@ -221,7 +221,7 @@
             this.bigFlag.iconCss = 'margin:35px 5px 0px;color:#E6A23C';
             break;
           case 'PA':
-          case 'Judging':
+          case 'JUG':
           case 'Pending':
             this.bigFlag.bgCss =
               'width:100%;height:100px;background-color:rgb(217, 236, 255);border-radius: 4px';
@@ -266,7 +266,7 @@
           case 'PA':
             this.bigFlag.flag = 'Partial Accepted';
             break;
-          case 'Judging':
+          case 'JUG':
             this.bigFlag.flag = 'Judging';
             break;
           case 'Pending':
@@ -364,7 +364,7 @@
             return 'Output Limit Exceeded';
           case 'PA':
             return 'Partial Accepted';
-          case 'Judging':
+          case 'JUG':
             return 'Judging';
           case 'Pending':
             return 'Pending';
@@ -386,7 +386,7 @@
           case 'CE':
             return 'warning';
           case 'PA':
-          case 'Judging':
+          case 'JUG':
           case 'Pending':
             return 'primary';
           case 'AC':
@@ -415,6 +415,18 @@
     overflow: scroll !important;
     min-height: 100px;
     height: auto;
+  }
+
+  .center-box >>> .el-form-item__label {
+    text-align: left;
+    vertical-align: middle;
+    float: left;
+    font-size: 14px;
+    min-width: 120px;
+    color: #99a9bf;
+    line-height: 40px;
+    padding: 0 12px 0 0;
+    box-sizing: border-box;
   }
 
   .red-container {
