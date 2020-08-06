@@ -184,12 +184,12 @@ type OperationForm struct {
 	Flag         string
 }
 type SubmitForm struct {
-	Cid      int64  `json:"cid" db:"cid"` // Contest Id
-	Sid      int64  `json:"sid" db:"sid"` // Submission Id
-	Uid      int64  `json:"uid" db:"uid"` // User Id
-	Pid      int64  `json:"pid" db:"pid"` // Problem Id
-	Language string `json:"language" db:"language"`
-	Code     string `json:"code" db:"code"`
+	Cid  int64  `json:"cid" db:"cid"` // Contest Id
+	Sid  int64  `json:"sid" db:"sid"` // Submission Id
+	Uid  int64  `json:"uid" db:"uid"` // User Id
+	Pid  int64  `json:"pid" db:"pid"` // Problem Id
+	Lid  int64  `json:"lid" db:"lid"`
+	Code string `json:"code" db:"code"`
 }
 type ContestBrief struct {
 	Id        int64  `json:"id" db:"id"`
@@ -419,11 +419,12 @@ type PracticeSubmission struct {
 	Id         int64  `json:"id" db:"id"`
 	Uid        int64  `json:"uid" db:"uid"`
 	Pid        int64  `json:"pid" db:"pid"`
-	Language   string `json:"language" db:"language"`
-	Status     string `json:"status" db:"status"`
+	Lid        int64  `json:"lid" db:"lid"`
+	Code       string `json:"code" db:"code"`
+	Flag       string `json:"flag" db:"flag"`
 	TotalScore int    `json:"totalScore" db:"total_score"`
 	SubmitTime string `json:"submitTime" db:"submit_time"`
-	Code       string `json:"code" db:"code"`
+	ErrorMsg   string `json:"errorMsg" db:"error_msg"`
 }
 type ProblemBrief struct {
 	Shared         bool       `json:"shared" db:"shared"`
@@ -637,6 +638,10 @@ type JudgeForm struct {
 	SPJMp       int        `json:"SPJMp"`  // time multiple of special judge
 	Id          int64      `json:"id"`
 	Lid         int64      `json:"lid"`
+	Sid         int64      `json:"sid"`
+	Pid         int64      `json:"pid"`
+	Cid         int64      `json:"cid"`
+	Uid         int64      `json:"uid"`
 	SPJLid      int64      `json:"SPJLid"`
 	SPJCode     string     `json:"SPJCode"`
 	Code        string     `json:"code"`

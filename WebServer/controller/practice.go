@@ -11,7 +11,6 @@ import (
 	"github.com/kataras/iris/v12"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -216,61 +215,65 @@ func (Practice) Submit(c iris.Context) {
 		return
 	}
 	form.Uid = userId
-	data, err := pctdb.Submit(form)
+	data, err := pctdb.Submit(&form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
 	form.Sid = data.Id
-	go pt.handleSubmit(form)
+	go pt.handleSubmit(&form)
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
-func (Practice) handleSubmit(form dto.SubmitForm) {
-	forms, err := pt.prepareForms(&form)
+func (Practice) handleSubmit(submitForm *dto.SubmitForm) {
+	form, err := pt.prepareForms(submitForm)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = pctdb.SetISE(form.Sid)
+		_ = pctdb.SetISE(submitForm.Sid)
 		return
 	}
-	forms, err = pt.sendToJudge(forms)
+	form, err = pt.sendToJudge(form)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = pctdb.SetISE(form.Sid)
+		_ = pctdb.SetISE(submitForm.Sid)
 		return
 	}
-	err = pt.updateStatistic(form.Pid, form.Sid, form.Uid, forms)
+	err = pt.updateStatistic(form)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = pctdb.SetISE(form.Sid)
+		_ = pctdb.SetISE(submitForm.Sid)
 		return
 	}
-	flag := pt.concludeFlag(forms)
-	score := pt.countTotalScore(forms)
-	err = pctdb.UpdateFlagAndScore(form.Sid, score, flag)
+	err = pt.InsertCaseRes(form)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = pctdb.SetISE(form.Sid)
+		_ = pctdb.SetISE(submitForm.Sid)
+		return
+	}
+	err = pctdb.UpdateFlagAndScore(form.Sid, form.TotalScore, form.Flag)
+	if err != nil {
+		log.Warn("error:%v", err)
+		_ = pctdb.SetISE(submitForm.Sid)
 		return
 	}
 }
 
-func (Practice) sendToJudge(forms []dto.OperationForm) ([]dto.OperationForm, error) {
-	fmt.Println(forms)
+func (Practice) sendToJudge(form *dto.JudgeForm) (*dto.JudgeForm, error) {
+	fmt.Println(form)
 	addr, err := jsp.GetAddr()
 	if err != nil {
 		log.Error("error:%v", err)
 		return nil, err
 	}
 	client := &http.Client{
-		Timeout: 1 * time.Second,
+		Timeout: time.Duration(4 * form.MaxRealTime * form.SPJMp * form.CompMp),
 	}
-	buff, err := json.Marshal(forms)
+	buff, err := json.Marshal(form)
 	if err != nil {
 		log.Error("error:%v", err)
 		return nil, err
 	}
-	res, err := client.Post("http://"+addr+"/"+forms[0].Language, "application/json", bytes.NewBuffer(buff))
+	res, err := client.Post("http://"+addr+"/judge", "application/json", bytes.NewBuffer(buff))
 	if err != nil {
 		log.Error("error:%v", err)
 		return nil, err
@@ -282,31 +285,71 @@ func (Practice) sendToJudge(forms []dto.OperationForm) ([]dto.OperationForm, err
 		return nil, err
 	}
 	fmt.Println(string(body))
-	err = json.Unmarshal(body, &forms)
+	err = json.Unmarshal(body, &form)
 	if err != nil {
 		log.Error("error:%v", err)
 		return nil, err
 	}
-	fmt.Println(forms)
-	return forms, err
+	fmt.Println(form)
+	return form, err
 }
 
-func (Practice) prepareForms(subForm *dto.SubmitForm) ([]dto.OperationForm, error) {
+func (Practice) prepareForms(subForm *dto.SubmitForm) (*dto.JudgeForm, error) {
+	useSPJ, err := pbdb.UseSPJ(subForm.Pid)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	limit, err := pbdb.GetLimitByLid(subForm.Pid, subForm.Lid)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	form := &dto.JudgeForm{
+		UseSPJ:      useSPJ,
+		MaxCpuTime:  limit.MaxCpuTime,
+		MaxRealTime: limit.MaxRealTime,
+		MaxMemory:   limit.MaxMemory,
+		TotalScore:  0,
+		CompMp:      limit.CompMp,
+		SPJMp:       limit.SPJMp,
+		Id:          subForm.Sid,
+		Lid:         subForm.Lid,
+		Sid:         subForm.Sid,
+		Pid:         subForm.Pid,
+		Cid:         subForm.Cid,
+		Uid:         subForm.Uid,
+		SPJLid:      0,
+		SPJCode:     "",
+		Code:        subForm.Code,
+		Flag:        "",
+		ErrorMsg:    "",
+		TestCase:    nil,
+	}
+	if useSPJ {
+		spj, err := pbdb.GetSPJ(subForm.Pid)
+		if err != nil {
+			log.Warn("error:%v", err)
+			return nil, err
+		}
+		form.SPJCode = spj.Code
+		form.SPJLid = spj.Lid
+	}
+
 	cases, err := pbdb.GetCase(subForm.Pid)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err
 	}
-	forms := make([]dto.OperationForm, len(cases))
+	testCase := make([]dto.TestCase, len(cases))
 	for i := 0; i < len(cases); i++ {
-		forms[i].Input = cases[i].Input
-		forms[i].ExpectOutput = strings.ReplaceAll(cases[i].Output, "\r\n", "\n")
-		forms[i].Score = cases[i].Score
-		forms[i].PcId = cases[i].Id
-		forms[i].Language = subForm.Language
-		forms[i].Code = subForm.Code
+		testCase[i].Input = cases[i].Input
+		testCase[i].ExpectedOutput = cases[i].Output
+		testCase[i].Score = cases[i].Score
+		testCase[i].Id = cases[i].Id
 	}
-	return forms, nil
+	form.TestCase = testCase
+	return form, nil
 }
 
 func (Practice) countTotalScore(forms []dto.OperationForm) int {
@@ -342,8 +385,8 @@ func (Practice) concludeFlag(forms []dto.OperationForm) string {
 	}
 }
 
-func (Practice) updateStatistic(pbid, psmid, uid int64, forms []dto.OperationForm) error {
-	var total = 0
+func (Practice) updateStatistic(form *dto.JudgeForm) error {
+	var total = 1
 	var ac = 0
 	var wa = 0
 	var ce = 0
@@ -351,37 +394,33 @@ func (Practice) updateStatistic(pbid, psmid, uid int64, forms []dto.OperationFor
 	var tle = 0
 	var mle = 0
 	var ole = 0
-	for i := 0; i < len(forms); i++ {
-		switch forms[i].Flag {
-		case "ISE":
-		case "AC":
-			total++
-			ac++
-		case "RE":
-			total++
-			re++
-		case "CE":
-			total++
-			ce++
-		case "TLE":
-			total++
-			tle++
-		case "WA":
-			total++
-			wa++
-		case "MLE":
-			total++
-			mle++
-		case "OLE":
-			total++
-			ole++
-		}
-		err := pctdb.InsertCaseRes(psmid, uid, forms[i])
+	switch form.Flag {
+	case "ISE":
+	case "AC":
+		ac++
+	case "RE":
+		re++
+	case "CE":
+		ce++
+	case "TLE":
+		tle++
+	case "WA":
+		wa++
+	case "MLE":
+		mle++
+	case "OLE":
+		ole++
+	}
+	err := pctdb.UpdateStat(form.Pid, total, ac, wa, ce, mle, re, tle, ole)
+	return err
+}
+
+func (Practice) InsertCaseRes(form *dto.JudgeForm) error {
+	for i, j := 0, len(form.TestCase); i < j; i++ {
+		err := pctdb.InsertCaseRes(form.Sid, form.Uid, &form.TestCase[i])
 		if err != nil {
 			log.Warn("error:%v", err)
 			return err
 		}
 	}
-	err := pctdb.UpdateStat(pbid, total, ac, wa, ce, mle, re, tle, ole)
-	return err
 }

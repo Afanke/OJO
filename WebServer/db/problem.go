@@ -127,10 +127,10 @@ func (Problem) GetSharedCount(cid int64) (int, error) {
 	return count, err
 }
 
-func (Problem) GetProblem(id int64) (*dto.Problem, error) {
-	var res dto.Problem
-	err := gosql.Get(&res, `select * from ojo.problem p where p.id=? limit 1`, id)
-	return &res, err
+func (Problem) UseSPJ(id int64) (bool, error) {
+	var res bool
+	err := gosql.Get(&res, `select use_spj from ojo.problem p where p.id=? limit 1`, id)
+	return res, err
 }
 
 func (Problem) GetDetail(id int64) (*dto.Problem, error) {

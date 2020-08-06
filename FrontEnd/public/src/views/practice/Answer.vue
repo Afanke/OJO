@@ -708,8 +708,8 @@
                     const {
                         data: res
                     } = await this.$http.post('/practice/submit', {
-                        code: this.code,
-                        language: this.currentLanguage,
+                        code: this.code[this.currentLanguage],
+                        lid: this.getLid(this.currentLanguage) ,
                         pid: this.detail.id,
                     });
                     if (res.error) {
@@ -718,7 +718,7 @@
                     }
                     this.psmid = res.data.id;
                     this.status = res.data.status;
-                    setTimeout(this.getStatus, 500)
+                    setTimeout(this.getStatus, 200)
                 } catch (err) {
                     console.log(err);
                     alert(err);

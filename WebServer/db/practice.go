@@ -242,11 +242,11 @@ func (Practice) GetCaseRes(psmid int64) ([]dto.PracticeCaseResult, error) {
 	return res, err
 }
 
-func (Practice) Submit(form dto.SubmitForm) (*dto.PracticeSubmission, error) {
+func (Practice) Submit(form *dto.SubmitForm) (*dto.PracticeSubmission, error) {
 	var sql = `insert into ojo.practice_submission
-			(uid,pid,language,status,total_score,submit_time,code)
-		values(?,?,?,'Judging',0,now(),?)`
-	exec, err := gosql.Exec(sql, form.Uid, form.Pid, form.Language, form.Code)
+			(uid,pid,lid,code,submit_time,total_score,flag)
+		values(?,?,?,?,now(),0,'JUG')`
+	exec, err := gosql.Exec(sql, form.Uid, form.Pid, form.Lid, form.Code)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err
@@ -293,12 +293,13 @@ func (Practice) UpdateFlagAndScore(psmid int64, score int, flag string) error {
 	return err
 }
 
-func (Practice) InsertCaseRes(psmid, uid int64, form dto.OperationForm) error {
+func (Practice) InsertCaseRes(psmid, uid int64, tc *dto.TestCase) error {
 	var sql = `  insert into ojo.practice_case_result
-  (psmid,pcaseid,uid,flag,cpu_time,real_time,real_memory,real_output,error_output,score)
-  				values(?,?,?,?,?,?,?,?,?,?)`
-	_, err := gosql.Exec(sql, psmid, form.PcId, uid, form.Flag, form.ActualCpuTime,
-		form.ActualRealTime, form.RealMemory, form.RealOutput, form.ErrorOutput, form.Score)
+  (psmid,pcaseid,uid,flag,cpu_time,real_time,real_memory,real_output,error_output,spj_output,spj_error_output,score)
+  				values(?,?,?,?,?,?,?,?,?,?,?,?)`
+	_, err := gosql.Exec(sql, psmid, tc.Id, uid, tc.Flag, tc.ActualCpuTime,
+		tc.ActualRealTime, tc.RealMemory, tc.RealOutput, tc.ErrorOutput,
+		tc.SPJOutput, tc.SPJErrorOutput, tc.Score)
 	return err
 }
 

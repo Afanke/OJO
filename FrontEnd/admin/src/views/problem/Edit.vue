@@ -762,19 +762,19 @@ class Test{
 // PREPEND END
 
 // TEMPLATE BEGIN
-    public static int add(int a,int b){
-        // Please fill this blank
-        return ___________;
-    }
+public static int add(int a,int b){
+    // Please fill this blank
+    return ___________;
+}
 // TEMPLATE END
 
 // APPEND BEGIN
-    public static void main(String args[]){
-        Scanner sc = new Scanner(System.in);
-        int a = sc.nextInt();
-        int b = sc.nextInt();
-        System.out.printf("%d",add(a,b));
-    }
+public static void main(String args[]){
+    Scanner sc = new Scanner(System.in);
+    int a = sc.nextInt();
+    int b = sc.nextInt();
+    System.out.printf("%d",add(a,b));
+}
 }
 // APPEND END`,
                     Python: `# PREPEND BEGIN

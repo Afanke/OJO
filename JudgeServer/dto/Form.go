@@ -10,6 +10,10 @@ type JudgeForm struct {
 	SPJMp       int        `json:"SPJMp"`  // time multiple of special judge
 	Id          int64      `json:"id"`
 	Lid         int64      `json:"lid"`
+	Sid         int64      `json:"sid"`
+	Pid         int64      `json:"pid"`
+	Cid         int64      `json:"cid"`
+	Uid         int64      `json:"uid"`
 	SPJLid      int64      `json:"SPJLid"`
 	SPJCode     string     `json:"SPJCode"`
 	Code        string     `json:"code"`
