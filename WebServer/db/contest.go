@@ -421,7 +421,7 @@ func (Contest) Submit(form dto.SubmitForm) (*dto.ContestSubmission, error) {
 	var sql = `insert into ojo.contest_submission
 			(cid,uid,pid,language,status,total_score,submit_time,code)
 		values(?,?,?,?,'Judging',0,now(),?)`
-	exec, err := gosql.Exec(sql, form.Cid, form.Uid, form.Pid, form.Language, form.Code)
+	exec, err := gosql.Exec(sql, form.Cid, form.Uid, form.Pid, form.Lid, form.Code)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err

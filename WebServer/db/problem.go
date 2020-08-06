@@ -222,6 +222,14 @@ func (Problem) GetTemplate(pbid int64) ([]dto.Template, error) {
 	return template, err
 }
 
+func (Problem) GetTemplateByLid(pbid, lid int64) (*dto.Template, error) {
+	var s = `select id, pid, lid, prepend, content, append from problem_template 
+			where pid=? and lid=?`
+	var template dto.Template
+	err := gosql.Get(&template, s, pbid, lid)
+	return &template, err
+}
+
 func (Problem) GetLanguage(pbid int64) ([]dto.Language, error) {
 	var s = `select l.id,l.name from language l,problem_language pl 
 			where pl.pid=? and pl.lid=l.id`

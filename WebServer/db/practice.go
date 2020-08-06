@@ -244,8 +244,8 @@ func (Practice) GetCaseRes(psmid int64) ([]dto.PracticeCaseResult, error) {
 
 func (Practice) Submit(form *dto.SubmitForm) (*dto.PracticeSubmission, error) {
 	var sql = `insert into ojo.practice_submission
-			(uid,pid,lid,code,submit_time,total_score,flag)
-		values(?,?,?,?,now(),0,'JUG')`
+			(uid,pid,lid,code,submit_time,total_score,flag,error_msg)
+		values(?,?,?,?,now(),0,'JUG','')`
 	exec, err := gosql.Exec(sql, form.Uid, form.Pid, form.Lid, form.Code)
 	if err != nil {
 		log.Warn("error:%v", err)
@@ -284,12 +284,13 @@ func (Practice) SetISE(psmid int64) error {
 	return err
 }
 
-func (Practice) UpdateFlagAndScore(psmid int64, score int, flag string) error {
+func (Practice) UpdateFlagScoreMsg(psmid int64, score int, flag, errorMsg string) error {
 	var sql = `  update ojo.practice_submission set 
-                status =?,
-                total_score = ?
+                flag =?,
+                total_score = ?,
+                error_msg=?
         where id = ?`
-	_, err := gosql.Exec(sql, flag, score, psmid)
+	_, err := gosql.Exec(sql, flag, score, errorMsg, psmid)
 	return err
 }
 

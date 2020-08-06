@@ -153,13 +153,14 @@ type PracticeSubStat struct {
 	Id          int64  `json:"id" db:"id"`
 	Uid         int64  `json:"uid" db:"uid"`
 	Pid         int64  `json:"pid" db:"pid"`
+	Lid         int64  `json:"lid" db:"lid"`
 	TotalScore  int    `json:"totalScore" db:"total_score"`
-	Language    string `json:"language" db:"language"`
-	Status      string `json:"status" db:"status"`
+	Flag        string `json:"flag" db:"flag"`
 	SubmitTime  string `json:"submitTime" db:"submit_time"`
 	Code        string `json:"code" db:"code"`
 	ProblemName string `json:"problemName" db:"problem_name"`
 	Username    string `json:"username" db:"username"`
+	ErrorMsg    string `json:"errorMsg" db:"error_msg"`
 }
 type OperationForm struct {
 	MaxCpuTime     int // 2 seconds

@@ -90,47 +90,47 @@
                         </el-row>
                         <el-row style="width:95%;margin:15px auto 15px">
                             <div></div>
-                            <span v-if="status">Status:</span>
-                            <el-button style="margin-left:15px" type="primary" plain v-if="status === 'Judging'"
+                            <span v-if="flag">Status:</span>
+                            <el-button style="margin-left:15px" type="primary" plain v-if="flag === 'JUG'"
                                        @click="goStatusDetail">Judging
                             </el-button>
-                            <el-button style="margin-left:15px" type="danger" plain v-if="status === 'WA'"
+                            <el-button style="margin-left:15px" type="danger" plain v-if="flag === 'WA'"
                                        @click="goStatusDetail">
                                 Wrong Answer
                             </el-button>
-                            <el-button style="margin-left:15px" type="danger" plain v-if="status === 'ISE'"
+                            <el-button style="margin-left:15px" type="danger" plain v-if="flag === 'ISE'"
                                        @click="goStatusDetail">
                                 Internal Server Error
                             </el-button>
-                            <el-button style="margin-left:15px" type="danger" plain v-if="status === 'RE'"
+                            <el-button style="margin-left:15px" type="danger" plain v-if="flag === 'RE'"
                                        @click="goStatusDetail">
                                 Runtime Error
                             </el-button>
-                            <el-button style="margin-left:15px" type="warning" plain v-if="status === 'CE'"
+                            <el-button style="margin-left:15px" type="warning" plain v-if="flag === 'CE'"
                                        @click="goStatusDetail">
                                 Compile Error
                             </el-button>
-                            <el-button style="margin-left:15px" type="warning" plain v-if="status === 'OLE'"
+                            <el-button style="margin-left:15px" type="warning" plain v-if="flag === 'OLE'"
                                        @click="goStatusDetail">
                                 Output Limit Exceeded
                             </el-button>
-                            <el-button style="margin-left:15px" type="warning" plain v-if="status === 'TLE'"
+                            <el-button style="margin-left:15px" type="warning" plain v-if="flag === 'TLE'"
                                        @click="goStatusDetail">
                                 Time Limit Exceeded
                             </el-button>
-                            <el-button style="margin-left:15px" type="warning" plain v-if="status === 'MLE'"
+                            <el-button style="margin-left:15px" type="warning" plain v-if="flag === 'MLE'"
                                        @click="goStatusDetail">
                                 Memory Limit Exceeded
                             </el-button>
-                            <el-button style="margin-left:15px" type="success" plain v-if="status === 'AC'"
+                            <el-button style="margin-left:15px" type="success" plain v-if="flag === 'AC'"
                                        @click="goStatusDetail">
                                 Accepted
                             </el-button>
-                            <el-button style="margin-left:15px" type="primary" plain v-if="status === 'PA'"
+                            <el-button style="margin-left:15px" type="primary" plain v-if="flag === 'PA'"
                                        @click="goStatusDetail">
                                 Partial Accepted
                             </el-button>
-                            <el-button style="margin-left:15px" type="primary" plain v-if="status === 'Sending'"
+                            <el-button style="margin-left:15px" type="primary" plain v-if="flag === 'Sending'"
                                        @click="goStatusDetail">Sending
                             </el-button>
                             <el-button type="primary" style="float:right;margin-top:-3px" @click="submit"
@@ -290,7 +290,7 @@
         },
         data() {
             return {
-                status: '',
+                flag: "",
                 statistic: {},
                 isJudging: false,
                 psmid: -1,
@@ -495,8 +495,8 @@
                         this.$message.error(res1.error);
                         return;
                     }
-                    if (res1.data.status) {
-                        this.status = res1.data.status;
+                    if (res1.data.flag) {
+                        this.flag = res1.data.flag;
                     }
                     if (res1.data.code) {
                         this.code = res1.data.code;
@@ -581,7 +581,7 @@
                 if (theme) {
                     this.langOptions.theme = theme
                     this.currentTheme = theme
-                }else {
+                } else {
                     this.langOptions.theme = this.theme[0]
                     this.currentTheme = this.theme[0]
                 }
@@ -676,7 +676,7 @@
                 this.$router.push('/status');
             },
             async getStatus() {
-                if (this.status === "Judging" && this.waitTimes < 50) {
+                if (this.flag === "JUG" && this.waitTimes < 50) {
                     this.isJudging = true;
                     const {
                         data: res
@@ -687,9 +687,9 @@
                         this.$message.error(res.error);
                         return;
                     }
-                    this.status = res.data.status
+                    this.flag = res.data.flag
                     this.waitTimes += 1
-                    if (this.status === "Judging" && this.waitTimes < 50 && this.$route.path === "/practice/answer") {
+                    if (this.flag === "JUG" && this.waitTimes < 50 && this.$route.path === "/practice/answer") {
                         setTimeout(this.getStatus, 500)
                     } else {
                         this.isJudging = false;
@@ -704,12 +704,12 @@
                 try {
                     this.isJudging = true;
                     this.waitTimes = 0
-                    this.status = 'Sending';
+                    this.flag = 'Sending';
                     const {
                         data: res
                     } = await this.$http.post('/practice/submit', {
                         code: this.code[this.currentLanguage],
-                        lid: this.getLid(this.currentLanguage) ,
+                        lid: this.getLid(this.currentLanguage),
                         pid: this.detail.id,
                     });
                     if (res.error) {
@@ -717,7 +717,7 @@
                         return;
                     }
                     this.psmid = res.data.id;
-                    this.status = res.data.status;
+                    this.flag = res.data.flag;
                     setTimeout(this.getStatus, 200)
                 } catch (err) {
                     console.log(err);

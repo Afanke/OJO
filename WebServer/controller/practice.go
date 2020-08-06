@@ -100,7 +100,7 @@ func (Practice) GetCurrentStatus(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: detail})
 }
 
-// 根据pcmid获得对应Practice提交的总体信息
+// 根据psmid获得对应Practice提交的总体信息
 func (Practice) GetStatus(c iris.Context) {
 	var psmid dto.Id
 	err := c.ReadJSON(&psmid)
@@ -250,7 +250,7 @@ func (Practice) handleSubmit(submitForm *dto.SubmitForm) {
 		_ = pctdb.SetISE(submitForm.Sid)
 		return
 	}
-	err = pctdb.UpdateFlagAndScore(form.Sid, form.TotalScore, form.Flag)
+	err = pctdb.UpdateFlagScoreMsg(form.Sid, form.TotalScore, form.Flag, form.ErrorMsg)
 	if err != nil {
 		log.Warn("error:%v", err)
 		_ = pctdb.SetISE(submitForm.Sid)
@@ -265,8 +265,9 @@ func (Practice) sendToJudge(form *dto.JudgeForm) (*dto.JudgeForm, error) {
 		log.Error("error:%v", err)
 		return nil, err
 	}
+	timeOut := time.Millisecond * time.Duration(4*form.MaxRealTime*form.SPJMp*form.CompMp)
 	client := &http.Client{
-		Timeout: time.Duration(4 * form.MaxRealTime * form.SPJMp * form.CompMp),
+		Timeout: timeOut,
 	}
 	buff, err := json.Marshal(form)
 	if err != nil {
@@ -284,13 +285,12 @@ func (Practice) sendToJudge(form *dto.JudgeForm) (*dto.JudgeForm, error) {
 		log.Error("error:%v", err)
 		return nil, err
 	}
-	fmt.Println(string(body))
 	err = json.Unmarshal(body, &form)
 	if err != nil {
 		log.Error("error:%v", err)
 		return nil, err
 	}
-	fmt.Println(form)
+	fmt.Printf("%#v", form)
 	return form, err
 }
 
@@ -305,6 +305,12 @@ func (Practice) prepareForms(subForm *dto.SubmitForm) (*dto.JudgeForm, error) {
 		log.Warn("error:%v", err)
 		return nil, err
 	}
+	t, err := pbdb.GetTemplateByLid(subForm.Pid, subForm.Lid)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	code := t.Prepend + subForm.Code + t.Append
 	form := &dto.JudgeForm{
 		UseSPJ:      useSPJ,
 		MaxCpuTime:  limit.MaxCpuTime,
@@ -321,7 +327,7 @@ func (Practice) prepareForms(subForm *dto.SubmitForm) (*dto.JudgeForm, error) {
 		Uid:         subForm.Uid,
 		SPJLid:      0,
 		SPJCode:     "",
-		Code:        subForm.Code,
+		Code:        code,
 		Flag:        "",
 		ErrorMsg:    "",
 		TestCase:    nil,
@@ -350,39 +356,6 @@ func (Practice) prepareForms(subForm *dto.SubmitForm) (*dto.JudgeForm, error) {
 	}
 	form.TestCase = testCase
 	return form, nil
-}
-
-func (Practice) countTotalScore(forms []dto.OperationForm) int {
-	var count int
-	for i := 0; i < len(forms); i++ {
-		count += forms[i].Score
-	}
-	return count
-}
-
-func (Practice) concludeFlag(forms []dto.OperationForm) string {
-	var flag = false
-	var res = "NULL"
-	for i := 0; i < len(forms); i++ {
-		if forms[i].Flag != "AC" {
-			if forms[i].Flag == "ISE" {
-				return "ISE"
-			} else if forms[i].Flag == "CE" {
-				return "CE"
-			} else if res == "NULL" {
-				res = forms[i].Flag
-			}
-		} else {
-			flag = true
-		}
-	}
-	if flag && res == "NULL" {
-		return "AC"
-	} else if flag {
-		return "PA"
-	} else {
-		return res
-	}
 }
 
 func (Practice) updateStatistic(form *dto.JudgeForm) error {
@@ -423,4 +396,5 @@ func (Practice) InsertCaseRes(form *dto.JudgeForm) error {
 			return err
 		}
 	}
+	return nil
 }

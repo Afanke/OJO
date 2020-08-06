@@ -855,7 +855,6 @@ func (Contest) prepareForms(subForm *dto.SubmitForm) ([]dto.OperationForm, error
 		forms[i].ExpectOutput = strings.ReplaceAll(cases[i].Output, "\r\n", "\n")
 		forms[i].Score = cases[i].Score
 		forms[i].PcId = cases[i].Id
-		forms[i].Language = subForm.Language
 		forms[i].Code = subForm.Code
 	}
 	return forms, nil
