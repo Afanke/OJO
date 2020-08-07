@@ -11,6 +11,7 @@ import (
 	"github.com/afanke/OJO/utils/session"
 	"github.com/kataras/iris/v12"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -72,46 +73,6 @@ func (Contest) GetCtsProblem(c iris.Context) {
 	}
 	data, err := ctsdb.GetCtsProblem(id.Id)
 	c.JSON(&dto.Res{Error: "", Data: data})
-}
-
-func (Contest) SetVisibleTrue(c iris.Context) {
-	var id dto.Id
-	err := c.ReadJSON(&id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	err = cts.isPermitted(c, id.Id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	err = ctsdb.SetVisibleTrue(id.Id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	c.JSON(&dto.Res{Error: "", Data: "update successfully"})
-}
-
-func (Contest) SetVisibleFalse(c iris.Context) {
-	var id dto.Id
-	err := c.ReadJSON(&id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	err = cts.isPermitted(c, id.Id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	err = ctsdb.SetVisibleFalse(id.Id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	c.JSON(&dto.Res{Error: "", Data: "update successfully"})
 }
 
 // 获得所有的Contest的数量
@@ -1178,6 +1139,46 @@ func (Contest) GetRecentCount(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: res})
 }
 
+func (Contest) SetVisibleTrue(c iris.Context) {
+	var id dto.Id
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = cts.isPermitted(c, id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = ctsdb.SetVisibleTrue(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: "update successfully"})
+}
+
+func (Contest) SetVisibleFalse(c iris.Context) {
+	var id dto.Id
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = cts.isPermitted(c, id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = ctsdb.SetVisibleFalse(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: "update successfully"})
+}
+
 func (Contest) isCreator(c iris.Context, id int64) error {
 	i, err := session.GetInt64(c, "userId")
 	if err != nil {
@@ -1201,6 +1202,44 @@ func (Contest) isPermitted(c iris.Context, id int64) error {
 		if err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func (Contest) isIPMatched(c iris.Context, id int64) error {
+	s := c.RemoteAddr()
+	split := strings.Split(s, ":")
+	ip := net.ParseIP(split[0])
+	if ip == nil {
+		return errors.New("parse ip error")
+	}
+	limit, err := ctsdb.GetIPLimit(id)
+	if err != nil {
+		return err
+	}
+	matched := false
+	for i, j := 0, len(limit); i < j; i++ {
+		lip := net.ParseIP(limit[i].Address)
+		if lip == nil {
+			return errors.New("illegal ip limit, please contact with admin")
+		}
+		mask := net.CIDRMask(limit[i].Mask, 32)
+		rlip := lip.Mask(mask)
+		if rlip == nil {
+			return errors.New("illegal ip limit, please contact with admin")
+		}
+		rip := ip.Mask(mask)
+		if rip == nil {
+			return errors.New("illegal ip limit, please contact with admin")
+		}
+		equal := rip.Equal(ip)
+		if equal {
+			matched = true
+			break
+		}
+	}
+	if !matched {
+		return errors.New("ip range not allowed")
 	}
 	return nil
 }

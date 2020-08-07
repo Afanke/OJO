@@ -370,9 +370,10 @@ type Contest struct {
 	IPLimit        []ContestIPLimit `json:"IPLimit"`
 }
 type ContestIPLimit struct {
-	Id      int    `json:"id" db:"id"`
-	Cid     int    `json:"cid" db:"cid"`
+	Id      int64  `json:"id" db:"id"`
+	Cid     int64  `json:"cid" db:"cid"`
 	Address string `json:"address" db:"address"`
+	Mask    int    `json:"mask" db:"mask"`
 }
 type ContestStatistic struct {
 	Pid   int64 `json:"pid" db:"pid"`

@@ -116,6 +116,12 @@ func BindRoute(app *iris.Application) {
 		app.Options("*", func(c iris.Context) {
 			c.Next()
 		})
+		app.Get("/addr", func(c iris.Context) {
+			c.JSON(&dto.Res{
+				Error: "",
+				Data:  c.Request().RemoteAddr,
+			})
+		})
 	}
 	user := app.Party("/user")
 	{
