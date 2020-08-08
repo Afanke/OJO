@@ -352,9 +352,10 @@ type Administrator struct {
 	LastLoginTime string `json:"lastLoginTime" db:"last_login_time"`
 }
 type Contest struct {
+	ChangePassword bool             `json:"changePassword"`
 	Visible        bool             `json:"visible" db:"visible"`
 	ShowOutput     bool             `json:"showOutput" db:"show_output"`
-	ShowRank       bool             `json:"showRank" db:"show_ranl"`
+	ShowRank       bool             `json:"showRank" db:"show_rank"`
 	Id             int64            `json:"id" db:"id"`
 	Cid            int64            `json:"cid" db:"cid"`
 	Punish         int              `json:"punish" db:"punish"`
@@ -672,4 +673,10 @@ type TestCase struct {
 type TouchResult struct {
 	Message   string `json:"message"`
 	Connected bool   `json:"connected"`
+}
+
+type ContestTime struct {
+	StartTime string `json:"startTime" db:"start_time"`
+	Now       string `json:"now"`
+	EndTime   string `json:"endTime" db:"end_time"`
 }

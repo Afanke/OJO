@@ -229,12 +229,6 @@
           alert(err)
         }
       },
-      addIPRange() {
-        this.IPRange.push({
-          address: "",
-          mask:"",
-        })
-      },
       dateFormat(fmt, date) {
         let ret;
         const opt = {
@@ -253,6 +247,12 @@
           }
         }
         return fmt;
+      },
+      addIPRange() {
+        this.IPRange.push({
+          address: "",
+          mask:"",
+        })
       },
       deleteIPRange(index) {
         if (this.IPRange.length === 1) {

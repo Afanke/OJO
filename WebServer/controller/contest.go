@@ -914,6 +914,9 @@ func (Contest) AddContest(c iris.Context) {
 		return
 	}
 	contest.Cid = userId
+	if contest.Password != "" {
+		contest.Password = Encrypt(contest.Password)
+	}
 	err = ctsdb.InsertContest(&contest)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -979,18 +982,12 @@ func (Contest) DeleteProblem(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	detail, err := ctsdb.GetDetail(id.Cid)
+	isStarted, err := cts.isStarted(id.Cid)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	startTime, err := time.Parse("2006-01-02 15:04:05", detail.StartTime)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	before := startTime.Before(time.Now())
-	if before {
+	if isStarted {
 		c.JSON(&dto.Res{Error: "can't delete problem once the contest begun", Data: nil})
 		return
 	}
@@ -1014,30 +1011,14 @@ func (Contest) DeleteContest(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	detail, err := ctsdb.GetDetail(id.Id)
+	isUnderway, err := cts.isUnderway(id.Id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	startTime, err := time.ParseInLocation("2006-01-02 15:04:05", detail.StartTime, time.Local)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+	if isUnderway {
+		c.JSON(&dto.Res{Error: "can't delete contest underway", Data: nil})
 		return
-	}
-	endTime, err := time.ParseInLocation("2006-01-02 15:04:05", detail.EndTime, time.Local)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	now := time.Now()
-	before := startTime.Before(now)
-	if before {
-		after := endTime.After(time.Now())
-		log.Debug("after:%v", after)
-		if after {
-			c.JSON(&dto.Res{Error: "can't delete contest underway", Data: nil})
-			return
-		}
 	}
 	err = ctsdb.DeleteContest(id.Id)
 	if err != nil {
@@ -1094,6 +1075,26 @@ func (Contest) UpdateContest(c iris.Context) {
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
+	}
+	isStarted, err := cts.isStarted(contest.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	if isStarted {
+		data, err := ctsdb.GetDetail(contest.Id)
+		if err != nil {
+			c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+			return
+		}
+		contest.StartTime = data.StartTime
+		contest.Rule = data.Rule
+		contest.ShowOutput = data.ShowOutput
+		contest.Punish = data.Punish
+		contest.SubmitLimit = data.SubmitLimit
+	}
+	if contest.Password != "" {
+		contest.Password = Encrypt(contest.Password)
 	}
 	err = ctsdb.UpdateContest(&contest)
 	if err != nil {
@@ -1242,4 +1243,47 @@ func (Contest) isIPMatched(c iris.Context, id int64) error {
 		return errors.New("ip range not allowed")
 	}
 	return nil
+}
+
+func (Contest) isStarted(pid int64) (bool, error) {
+	ctsTime, err := ctsdb.GetStartEndTime(pid)
+	if err != nil {
+		return false, err
+	}
+	startTime, err := time.ParseInLocation("2006-01-02 15:04:05", ctsTime.StartTime, time.Local)
+	if err != nil {
+		return false, err
+	}
+	now := time.Now()
+	return now.After(startTime), nil
+}
+
+func (Contest) isEnded(pid int64) (bool, error) {
+	ctsTime, err := ctsdb.GetStartEndTime(pid)
+	if err != nil {
+		return false, err
+	}
+	endTime, err := time.ParseInLocation("2006-01-02 15:04:05", ctsTime.EndTime, time.Local)
+	if err != nil {
+		return false, err
+	}
+	now := time.Now()
+	return now.After(endTime), nil
+}
+
+func (Contest) isUnderway(pid int64) (bool, error) {
+	ctsTime, err := ctsdb.GetStartEndTime(pid)
+	if err != nil {
+		return false, err
+	}
+	startTime, err := time.ParseInLocation("2006-01-02 15:04:05", ctsTime.StartTime, time.Local)
+	if err != nil {
+		return false, err
+	}
+	endTime, err := time.ParseInLocation("2006-01-02 15:04:05", ctsTime.EndTime, time.Local)
+	if err != nil {
+		return false, err
+	}
+	now := time.Now()
+	return now.After(startTime) && now.Before(endTime), nil
 }

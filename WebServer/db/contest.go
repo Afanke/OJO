@@ -934,6 +934,13 @@ func (Contest) DeleteCtsPb(cid, pid int64) error {
 	return err
 }
 
+func (Contest) GetStartEndTime(pid int64) (*dto.ContestTime, error) {
+	s := "select start_time,end_time from contest where id=?"
+	var res dto.ContestTime
+	err := gosql.Get(&res, s, pid)
+	return &res, err
+}
+
 func (Contest) InsertIPRange(db *gosql.DB, limit *dto.ContestIPLimit) error {
 	s := `insert into ojo.contest_ip_limit(cid, address,mask) VALUES (?,?,?)`
 	_, err := db.Exec(s, limit.Cid, limit.Address, limit.Mask)
@@ -945,7 +952,7 @@ func (Contest) GetDetail(id int64) (*dto.Contest, error) {
 	err := gosql.Get(&detail, `select id, title,
        description, rule, start_time,
        end_time, create_time, last_update_time,
-       cid, password, punish, visible, submit_limit
+       cid, punish, visible, submit_limit,show_output,show_rank
        from ojo.contest c where c.id=? limit 1`, id)
 	if err != nil {
 		log.Warn("error:%v", err)
@@ -957,6 +964,7 @@ func (Contest) GetDetail(id int64) (*dto.Contest, error) {
 		return nil, err
 	}
 	detail.IPLimit = limit
+	detail.Now = time.Now().Format("2006-01-02 15:04:05")
 	return &detail, err
 }
 
@@ -968,7 +976,9 @@ func (Contest) GetIPLimit(id int64) ([]dto.ContestIPLimit, error) {
 }
 
 func (Contest) UpdateContest(c *dto.Contest) error {
-	var s = `update ojo.contest set 
+	s := ""
+	if c.ChangePassword {
+		s = `update ojo.contest set 
                         title=?,
                         description=?,
                         rule=?,
@@ -982,21 +992,50 @@ func (Contest) UpdateContest(c *dto.Contest) error {
                         end_time=?, 
                         last_update_time=now()
 			 where id=?`
+	} else {
+		s = `update ojo.contest set 
+                        title=?,
+                        description=?,
+                        rule=?,
+                        punish=?,
+                        visible=?,
+						submit_limit=?,    
+                       	show_rank=?,
+                        show_output=?,
+                		start_time=?,
+                        end_time=?, 
+                        last_update_time=now()
+			 where id=?`
+	}
 	tx, err := gosql.Begin()
 	if err != nil {
 		log.Warn("%v", err)
 		return err
 	}
-	_, err = tx.Exec(s, c.Title, c.Description, c.Rule,
-		c.Password, c.Punish, c.Visible, c.SubmitLimit,
-		c.ShowRank, c.ShowOutput, c.StartTime, c.EndTime, c.Id)
-	if err != nil {
-		log.Warn("%v", err)
-		err2 := tx.Rollback()
-		if err2 != nil {
-			log.Warn("%v", err2)
+	if c.ChangePassword {
+		_, err = tx.Exec(s, c.Title, c.Description, c.Rule,
+			c.Password, c.Punish, c.Visible, c.SubmitLimit,
+			c.ShowRank, c.ShowOutput, c.StartTime, c.EndTime, c.Id)
+		if err != nil {
+			log.Warn("%v", err)
+			err2 := tx.Rollback()
+			if err2 != nil {
+				log.Warn("%v", err2)
+			}
+			return err
 		}
-		return err
+	} else {
+		_, err = tx.Exec(s, c.Title, c.Description, c.Rule,
+			c.Punish, c.Visible, c.SubmitLimit,
+			c.ShowRank, c.ShowOutput, c.StartTime, c.EndTime, c.Id)
+		if err != nil {
+			log.Warn("%v", err)
+			err2 := tx.Rollback()
+			if err2 != nil {
+				log.Warn("%v", err2)
+			}
+			return err
+		}
 	}
 	err = cts.DeleteIPLimit(tx, c.Id)
 	if err != nil {
