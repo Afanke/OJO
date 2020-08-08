@@ -744,17 +744,18 @@ func (Contest) InsertContest(c *dto.Contest) error {
 	s := `insert into ojo.contest(
                 title, description, rule,
                 cid, password,punish,visible,
-				submit_limit,                        
+				submit_limit,show_output,show_rank,                        
                 start_time, end_time, create_time,
                 last_update_time ) 
-                VALUES (?,?,?,?,?,?,?,?,?,?,now(),now())`
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,now(),now())`
 	db, err := gosql.Begin()
 	if err != nil {
 		log.Warn("%v", err)
 		return err
 	}
 	res, err := db.Exec(s, c.Title, c.Description, c.Rule,
-		c.Cid, c.Password, c.Punish, c.Visible, c.SubmitLimit, c.StartTime, c.EndTime)
+		c.Cid, c.Password, c.Punish, c.Visible, c.SubmitLimit,
+		c.ShowOutput, c.ShowRank, c.StartTime, c.EndTime)
 	if err != nil {
 		log.Warn("%v", err)
 		err2 := db.Rollback()
@@ -974,7 +975,9 @@ func (Contest) UpdateContest(c *dto.Contest) error {
                         password=?,
                         punish=?,
                         visible=?,
-						submit_limit=?,                        
+						submit_limit=?,    
+                       	show_rank=?,
+                        show_output=?,
                 		start_time=?,
                         end_time=?, 
                         last_update_time=now()
@@ -985,7 +988,8 @@ func (Contest) UpdateContest(c *dto.Contest) error {
 		return err
 	}
 	_, err = tx.Exec(s, c.Title, c.Description, c.Rule,
-		c.Password, c.Punish, c.Visible, c.SubmitLimit, c.StartTime, c.EndTime, c.Id)
+		c.Password, c.Punish, c.Visible, c.SubmitLimit,
+		c.ShowRank, c.ShowOutput, c.StartTime, c.EndTime, c.Id)
 	if err != nil {
 		log.Warn("%v", err)
 		err2 := tx.Rollback()

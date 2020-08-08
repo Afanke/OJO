@@ -47,15 +47,8 @@
             </el-col>
           </el-row>
           <el-row :gutter="20" style="margin-top:40px">
-            <el-col :span="2" style="padding-top:3px">
-              <span style="color:red">*</span>
-              <span>&nbsp;Visible</span>
-              <el-row style="margin-top:29px;margin-left:10px">
-                <el-switch v-model="visible" active-color="#13ce66" inactive-color="#ff4949">
-                </el-switch>
-              </el-row>
-            </el-col>
-            <el-col :span="5" style="padding-top:3px">
+
+            <el-col :span="7" style="padding-top:3px">
               <span style="color:red">*</span>
               <span>&nbsp;Rule</span>
               <el-row class="small-element" style="margin-top:30px;margin-left:10px">
@@ -63,15 +56,15 @@
                 <el-radio v-model="rule" label="ACM">ACM</el-radio>
               </el-row>
             </el-col>
-            <el-col :span="8" :offset="1">
+            <el-col :span="7" v-if="rule==='ACM'" :offset="1">
               <span style="color:#ffffff">*</span>
-              <span v-if="rule==='OI'">&nbsp;Punish Score</span>
+<!--              <span v-if="rule==='OI'">&nbsp;Punish Score</span>-->
               <span v-if="rule==='ACM'">&nbsp;Punish Time (second)</span>
               <el-row class="small-element">
                 <el-input-number v-model="punish" controls-position="right" :min="0"></el-input-number>
               </el-row>
             </el-col>
-            <el-col :span="8">
+            <el-col :span="7" :offset="1">
               <span style="color:#ffffff">*</span>
               <span>&nbsp;Submit Limit</span>
               <el-row class="small-element">
@@ -79,16 +72,46 @@
               </el-row>
             </el-col>
           </el-row>
+          <el-row :gutter="20" style="margin-top:40px">
+
+            <el-col :span="2" style="padding-top:3px">
+              <span style="color:red">*</span>
+              <span>&nbsp;Show Rank</span>
+              <el-row style="margin-top:29px;margin-left:10px">
+                <el-switch v-model="showRank" active-color="#13ce66" inactive-color="#ff4949">
+                </el-switch>
+              </el-row>
+            </el-col>
+            <el-col :span="3"  style="padding-top:3px">
+              <span style="color:red">*</span>
+              <span>&nbsp;Show Output</span>
+              <el-row style="margin-top:29px;margin-left:10px">
+                <el-switch v-model="showOutput" active-color="#13ce66" inactive-color="#ff4949">
+                </el-switch>
+              </el-row>
+            </el-col>
+            <el-col :span="3" :offset="3" style="padding-top:3px">
+              <span style="color:red">*</span>
+              <span>&nbsp;Visible</span>
+              <el-row style="margin-top:29px;margin-left:10px">
+                <el-switch v-model="visible" active-color="#13ce66" inactive-color="#ff4949">
+                </el-switch>
+              </el-row>
+            </el-col>
+          </el-row>
           <el-row style="margin-top:30px">
             <span style="color:#ffffff">*</span>
             <span>&nbsp;Allowed IP Ranges</span>
             <div style="height:10px"></div>
-            <el-row style="width:40%;margin-top:15px;margin-left:10px;display:flex" v-for="(item,index) in IPRange"
+            <el-row style="width:40%;margin-top:15px;margin-left:10px;" v-for="(item,index) in IPRange"
               :key="index">
-              <el-input style="flex:1" placeholder="CIDR Network" v-model="item.address" clearable>
+              <el-input style="width:40%" placeholder="Address" v-model="item.address" clearable>
               </el-input>
-              <el-button plain style="float:right;margin-left:11px" icon="el-icon-plus" @click="addIPRange"></el-button>
-              <el-button plain style="float:right" icon="el-icon-minus" @click="deleteIPRange(index)"></el-button>
+              <span style="margin: 0 10px;font-size: 20px;color:#5c6065;opacity: 0.3">/</span>
+              <el-input style="width:20%;"  placeholder="Mask" v-model="item.mask" clearable>
+              </el-input>
+              <el-button plain style="float:right;margin-left:11px" icon="el-icon-minus" @click="deleteIPRange(index)"></el-button>
+              <el-button plain style="float:right;" icon="el-icon-plus" @click="addIPRange"></el-button>
             </el-row>
           </el-row>
           <el-row style="margin-top:30px;margin-bottom:20px;">
@@ -115,10 +138,13 @@
         description: '',
         visible: false,
         rule: "OI",
+        showOutput:false,
+        showRank:false,
         submitLimit: 0,
         punish: 0,
         IPRange: [{
-          address: ""
+          address: "",
+          mask:"",
         }]
       }
     },
@@ -131,6 +157,24 @@
     },
     methods: {
       check() {
+        for (let i = 0; i < this.IPRange.length; i++) {
+          if (this.IPRange[i].address === "" && this.IPRange[i].mask==="") {
+            this.IPRange[i].address="0.0.0.0"
+            this.IPRange[i].mask=0
+            continue
+          }
+          if (/^\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}$/.test(this.IPRange[i].address)) {
+            if (/^\d{1,2}$/.test(this.IPRange[i].mask)) {
+              let mask = Number(this.IPRange[i].mask)
+              if (mask >= 0 && mask <= 32) {
+                this.IPRange[i].mask=mask
+                continue
+              }
+            }
+          }
+          this.$message.error("ip range " + (i + 1) + " is not legal")
+          return false
+        }
         if (this.title === "") {
           this.$message.error("title is required")
           return false
@@ -143,24 +187,6 @@
           this.$message.error("End time cannot be earlier than or equal to start time")
           return false
         }
-        for (let i = 0; i < this.IPRange.length; i++) {
-          if (this.IPRange[i].address === "") {
-            continue
-          }
-          if (/^\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}$/.test(this.IPRange[i].address)) {
-            console.log(this.IPRange[i].address, 1)
-            continue
-          }
-          if (/^\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}[/]\d{1,2}$/.test(this.IPRange[i].address)) {
-            let mask = Number(this.IPRange[i].address.split("/")[1])
-            if (mask >= 0 && mask <= 32) {
-              console.log(this.IPRange[i].address, 2)
-              continue
-            }
-          }
-          this.$message.error("ip address " + (i + 1) + " is not legal")
-          return false
-        }
         return true
       },
       goBack() {
@@ -170,8 +196,6 @@
         if (!this.check()) {
           return
         }
-        console.log(this.dateFormat("YYYY-mm-dd HH:MM:SS", this.startTime))
-        console.log(this.endTime)
         let obj = {
           title: this.title,
           password: this.password,
@@ -182,8 +206,11 @@
           rule: this.rule,
           submitLimit: this.submitLimit,
           punish: this.punish,
-          IPLimit: this.IPRange
+          showRank:this.showRank,
+          showOutput:this.showOutput,
+          IPLimit: this.IPRange,
         }
+        console.log(obj)
         try {
           const {
             data: res
@@ -196,7 +223,7 @@
             message: res.data,
             type: 'success'
           });
-          this.$router.push("/contest")
+          await this.$router.push("/contest")
         } catch (err) {
           console.log(err);
           alert(err)
@@ -204,7 +231,8 @@
       },
       addIPRange() {
         this.IPRange.push({
-          address: ""
+          address: "",
+          mask:"",
         })
       },
       dateFormat(fmt, date) {
@@ -221,9 +249,9 @@
         for (let k in opt) {
           ret = new RegExp("(" + k + ")").exec(fmt);
           if (ret) {
-            fmt = fmt.replace(ret[1], (ret[1].length == 1) ? (opt[k]) : (opt[k].padStart(ret[1].length, "0")))
-          };
-        };
+            fmt = fmt.replace(ret[1], (ret[1].length === 1) ? (opt[k]) : (opt[k].padStart(ret[1].length, "0")))
+          }
+        }
         return fmt;
       },
       deleteIPRange(index) {

@@ -353,6 +353,8 @@ type Administrator struct {
 }
 type Contest struct {
 	Visible        bool             `json:"visible" db:"visible"`
+	ShowOutput     bool             `json:"showOutput" db:"show_output"`
+	ShowRank       bool             `json:"showRank" db:"show_ranl"`
 	Id             int64            `json:"id" db:"id"`
 	Cid            int64            `json:"cid" db:"cid"`
 	Punish         int              `json:"punish" db:"punish"`
