@@ -619,9 +619,6 @@
                     this.$message.error("copy failed")
                 }
             },
-            pre(val) {
-                return ("" + val + "<br>").replace(/\r?\n/g, '↵&#10;')
-            },
             refreshStatistic() {
                 this.briefChartData.rows = [{
                     status: 'AC',
@@ -727,12 +724,6 @@
                 }
             }
         },
-
-        filters: {
-            linefeed: function (value) {
-                return value.replace(/\r?\n/g, '<br />')
-            }
-        }
     };
 </script>
 
@@ -767,7 +758,6 @@
         font-weight: 400;
         float: left
     }
-
 
     .title {
         color: #3091f2;

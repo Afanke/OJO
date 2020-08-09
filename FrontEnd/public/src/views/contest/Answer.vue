@@ -6,7 +6,7 @@
           <el-row class="problem-box">
             <el-row style="height:60px;line-height:60px">
               <span style="font-size:22px;margin-left:2%">
-                {{ problemDetail.title }}
+                {{ detail.title }}
               </span>
               <div style="float:right;margin-right:30px">
                 <el-button plain size="small">
@@ -19,52 +19,51 @@
               </div>
             </el-row>
             <el-row style="width:94%;margin-left:3%">
-              <el-row v-if="problemDetail.description">
-                <p class="title" style="margin-top:10px">Description</p>
-                <p class="content" style="margin-left:3%">
-                  {{ problemDetail.description }}
+              <el-row v-if="detail.description">
+                <p class="title" style="margin-top:10px;">Description</p>
+                <p class="content" style="margin-left:3%" v-html="detail.description">
                 </p>
               </el-row>
-              <el-row v-if="problemDetail.inputDescription">
+              <el-row v-if="detail.inputDescription">
                 <p class="title">Input</p>
-                <p class="content" style="margin-left:3%">
-                  {{ problemDetail.inputDescription }}
+                <p class="content" style="margin-left:3%" v-html="detail.inputDescription">
                 </p>
               </el-row>
-              <el-row v-if="problemDetail.outputDescription">
+              <el-row v-if="detail.outputDescription">
                 <p class="title">Output</p>
-                <p class="content" style="margin-left:3%">
-                  {{ problemDetail.outputDescription }}
+                <p class="content" style="margin-left:3%" v-html="detail.outputDescription">
                 </p>
               </el-row>
-              <el-row class="sample" v-bind:key="i" v-for="(sample, i) in problemDetail.sample" :gutter="20">
+              <el-row class="sample" v-bind:key="i" v-for="(sample, i) in detail.sample" :gutter="20">
                 <el-col :span="12">
                   <el-row style="width:100%">
-                    <p class="sample-title">Sample Input {{ i + 1 }} <i class="el-icon-document-copy"
-                        @click="copyText(i)" style="cursor:pointer"></i></p>
-                    <el-input :id="'sampleInput'+i" type="textarea" resize="none" readonly autosize
-                      v-model="sample.input">
+                    <p class="sample-title">Sample Input {{ i + 1 }} <i
+                            class="el-icon-document-copy"
+                            @click="copyText(i)" style="cursor:pointer"
+                    ></i></p>
+                    <el-input type="textarea" :id="'sampleInput'+i" resize="none" readonly autosize
+                              v-model="sample.input">
                     </el-input>
                   </el-row>
                 </el-col>
                 <el-col :span="12">
                   <el-row style="width:100%">
                     <p class="sample-title">Sample Output {{ i + 1 }}</p>
-                    <el-input type="textarea" resize="none" readonly autosize v-model="sample.output">
+
+                    <el-input type="textarea" resize="none" readonly autosize
+                              v-model="sample.output">
                     </el-input>
                   </el-row>
                 </el-col>
               </el-row>
-              <el-row v-if="problemDetail.hint">
+              <el-row v-if="detail.hint">
                 <p class="title" style="margin-top:10px">Hint</p>
-                <p class="content" style="margin-left:3%">
-                  {{ problemDetail.hint }}
+                <p class="content" style="margin-left:3%" v-html="detail.hint">
                 </p>
               </el-row>
-              <el-row v-if="problemDetail.source">
+              <el-row v-if="detail.source">
                 <p class="title" style="margin-top:10px">Source</p>
-                <p class="content" style="margin-left:3%">
-                  {{ problemDetail.source }}
+                <p class="content" style="margin-left:3%" v-html="detail.source">
                 </p>
               </el-row>
               <el-row style="height:35px"></el-row>
@@ -73,53 +72,82 @@
           <el-row style="text-align:left;" class="answer-box">
             <el-row style=";margin: 15px auto 15px;width:95%">
               <span style="font-size:15px;">Language:</span>
-              <el-select v-model="currentLanguage" placeholder="请选择" style="margin-left:15px;" size="small">
-                <el-option v-for="item in problemDetail.language" :key="item.id" :label="item.name" :value="item.id">
+              <el-select v-model="currentLanguage" placeholder="Language" style="margin-left:15px;"
+                         size="small" @change="langOptions.mode = getMIMEType(currentLanguage)">
+                <el-option v-for="item in detail.language" :key="item.id" :label="item.name"
+                           :value="item.name">
                 </el-option>
               </el-select>
+              <el-tooltip effect="dark" content="Reset Code" placement="top-start">
+                <el-button @click="resetCode" plain style="margin-left:20px" size="small"
+                           class="el-icon-refresh"></el-button>
+              </el-tooltip>
+              <div style="float:right">
+                <span style="font-size:15px;">Theme:</span>
+                <el-select v-model="currentTheme" placeholder="Theme" style="margin-left:15px;"
+                           size="small" @change="setTheme">
+                  <el-option v-for="item in theme" :key="item" :label="item"
+                             :value="item">
+                  </el-option>
+                </el-select>
+              </div>
+
             </el-row>
             <el-row>
-              <codemirror v-model="code" :options="cmOptions"
-                style="width:95%;margin:0 auto;min-height: 400px!important"></codemirror>
+              <codemirror v-model="code[currentLanguage]" :options="langOptions"
+                          style="width:95%;margin:0 auto;min-height: 400px!important"></codemirror>
             </el-row>
-            <el-row style="margin-top:15px;width:95%;margin:15px auto 15px">
+            <el-row style="width:95%;margin:15px auto 15px">
               <div></div>
-              <span>Status:</span>
-              <el-button style="margin-left:15px" plain v-if="status === 'Waiting'">Waiting</el-button>
-              <el-button style="margin-left:15px" type="primary" plain v-if="status === 'Judging'"
-                @click="goStatusDetail">
-                Judging
+              <span v-if="flag">Status:</span>
+              <el-button style="margin-left:15px" type="primary" plain v-if="flag === 'JUG'"
+                         @click="goStatusDetail">Judging
               </el-button>
-              <el-button style="margin-left:15px" type="danger" plain v-if="status === 'WA'" @click="goStatusDetail">
+              <el-button style="margin-left:15px" type="danger" plain v-if="flag === 'WA'"
+                         @click="goStatusDetail">
                 Wrong Answer
               </el-button>
-              <el-button style="margin-left:15px" type="danger" plain v-if="status === 'ISE'" @click="goStatusDetail">
+              <el-button style="margin-left:15px" type="danger" plain v-if="flag === 'ISE'"
+                         @click="goStatusDetail">
                 Internal Server Error
               </el-button>
-              <el-button style="margin-left:15px" type="danger" plain v-if="status === 'RE'" @click="goStatusDetail">
+              <el-button style="margin-left:15px" type="danger" plain v-if="flag === 'RE'"
+                         @click="goStatusDetail">
                 Runtime Error
               </el-button>
-              <el-button style="margin-left:15px" type="warning" plain v-if="status === 'CE'" @click="goStatusDetail">
+              <el-button style="margin-left:15px" type="warning" plain v-if="flag === 'CE'"
+                         @click="goStatusDetail">
                 Compile Error
               </el-button>
-              <el-button style="margin-left:15px" type="warning" plain v-if="status === 'OLE'" @click="goStatusDetail">
+              <el-button style="margin-left:15px" type="warning" plain v-if="flag === 'OLE'"
+                         @click="goStatusDetail">
                 Output Limit Exceeded
               </el-button>
-              <el-button style="margin-left:15px" type="warning" plain v-if="status === 'TLE'" @click="goStatusDetail">
+              <el-button style="margin-left:15px" type="warning" plain v-if="flag === 'TLE'"
+                         @click="goStatusDetail">
                 Time Limit Exceeded
               </el-button>
-              <el-button style="margin-left:15px" type="warning" plain v-if="status === 'MLE'" @click="goStatusDetail">
+              <el-button style="margin-left:15px" type="warning" plain v-if="flag === 'MLE'"
+                         @click="goStatusDetail">
                 Memory Limit Exceeded
               </el-button>
-              <el-button style="margin-left:15px" type="success" plain v-if="status === 'AC'" @click="goStatusDetail">
+              <el-button style="margin-left:15px" type="success" plain v-if="flag === 'AC'"
+                         @click="goStatusDetail">
                 Accepted
               </el-button>
-              <el-button style="margin-left:15px" type="primary" plain v-if="status === 'PA'" @click="goStatusDetail">
+              <el-button style="margin-left:15px" type="primary" plain v-if="flag === 'PA'"
+                         @click="goStatusDetail">
                 Partial Accepted
               </el-button>
-              <el-button style="margin-left:15px" type="primary" plain v-if="status === 'Sending'">Sending</el-button>
-              <el-button type="primary" style="float:right;margin-top:-3px" @click="submit" :loading="isJuding"
-                class="el-icon-s-promotion" :disabled="over">&nbsp;&nbsp;Submit</el-button>
+              <el-button style="margin-left:15px" type="primary" plain v-if="flag === 'Sending'"
+                         @click="goStatusDetail">Sending
+              </el-button>
+              <el-button type="primary" style="float:right;" @click="submit"
+                         :loading="isJudging"
+                         class="el-icon-s-promotion">&nbsp;&nbsp;Submit
+              </el-button>
+
+              <!-- <el-progress :text-inside="true" :stroke-width="20" :percentage="70"></el-progress> -->
             </el-row>
           </el-row>
         </div>
@@ -153,34 +181,40 @@
               <div style="width:100%;font-size:14px;">
                 <el-row style="margin-bottom: 14px;">
                   <span style="float:left">ID</span>
-                  <span style="float:right"> {{ problemDetail.id }}</span>
+                  <span style="float:right"> {{ detail.id }}</span>
                 </el-row>
                 <el-row style="margin-bottom: 14px;">
-                  <span style="float:left">Time Limit</span>
+                  <span style="float:left">CPU Time Limit</span>
                   <span style="float:right">
-                    {{ problemDetail.cpuTimeLimit + "s" }}</span>
+                    {{ detail.limit[getIndexByLang(detail.limit,currentLanguage)].maxCpuTime + 'ms' }}</span>
+                </el-row>
+                <el-row style="margin-bottom: 14px;">
+                  <span style="float:left">Real Time Limit</span>
+                  <span style="float:right">
+                    {{ detail.limit[getIndexByLang(detail.limit,currentLanguage)].maxRealTime + 'ms' }}</span>
                 </el-row>
                 <el-row style="margin-bottom: 14px;">
                   <span style="float:left">Memory Limit</span>
                   <span style="float:right">
-                    {{ problemDetail.memoryLimit / 1024 / 1024 + "MB" }}</span>
+                    {{ detail.limit[getIndexByLang(detail.limit,currentLanguage)].maxMemory  + 'KB' }}</span>
                 </el-row>
                 <el-row style="margin-bottom: 14px;">
                   <span style="float:left">Created By</span>
                   <span style="float:right">
-                    {{ problemDetail.creatorName }}</span>
+                    {{ detail.creatorName }}</span>
                 </el-row>
                 <el-row style="margin-bottom: 14px;">
                   <span style="float:left">Level</span>
                   <span style="float:right">{{
-                    problemDetail.difficulty
+                    detail.difficulty
                   }}</span>
                 </el-row>
                 <el-row style="margin-bottom: 14px;">
                   <span style="float:left">Tags</span>
-                  <div v-bind:key="i" v-for="(tag, i) in problemDetail.tag">
+                  <div v-bind:key="i" v-for="(tag, i) in detail.tag">
                     <el-row>
-                      <el-button style="float:right;margin-bottom:5px" type="primary" size="mini" plain>{{ tag.name }}
+                      <el-button style="float:right;margin-bottom:5px" type="primary" size="mini"
+                                 plain>{{ tag.name }}
                       </el-button>
                     </el-row>
                   </div>
@@ -216,7 +250,7 @@
             </el-card>
             <el-row style="width:100%">
               <el-button type="primary" style="width:100%;height:40px;margin-top:20px;" class="el-icon-back"
-                @click="goback">&nbsp;Back</el-button>
+                @click="goBack">&nbsp;Back</el-button>
             </el-row>
           </el-row>
         </div>
@@ -232,27 +266,30 @@
   } from "vue-codemirror";
 
   // require styles
-  import "codemirror/lib/codemirror.css";
-  import "codemirror/theme/monokai.css";
-  import "codemirror/theme/ambiance.css";
-  import "codemirror/theme/darcula.css";
-  // import 'codemirror/addon/hint/show-hint.css'
-  // import 'codemirror/addon/hint/show-hint.js'
-  // import 'codemirror/addon/hint/anyword-hint.js'
-  // import 'codemirror/mode/javascript/javascript'
-  import "codemirror/mode/clike/clike";
-  // import 'codemirror/addon/hint/clike-hint'
-  // import 'codemirror/mode/go/go'
-  // import 'codemirror/mode/htmlmixed/htmlmixed'
-  // import 'codemirror/mode/http/http'
-  // import 'codemirror/mode/php/php'
-  import "codemirror/mode/python/python";
-  // import 'codemirror/mode/http/http'
-  // import 'codemirror/mode/sql/sql'
-  // import 'codemirror/mode/vue/vue'
-  // import 'codemirror/mode/xml/xml'
+  import 'codemirror/lib/codemirror.css';
 
-  import "codemirror/addon/selection/active-line";
+  import 'codemirror/theme/idea.css';
+  import 'codemirror/theme/darcula.css';
+
+  import 'codemirror/mode/clike/clike';
+  import 'codemirror/mode/go/go';
+  import 'codemirror/mode/python/python';
+  import 'codemirror/addon/scroll/annotatescrollbar.js'
+  import 'codemirror/addon/search/matchesonscrollbar.js'
+  import 'codemirror/addon/search/match-highlighter.js'
+  import 'codemirror/addon/search/jump-to-line.js'
+  import 'codemirror/addon/dialog/dialog.js'
+  import 'codemirror/addon/dialog/dialog.css'
+  import 'codemirror/addon/search/searchcursor.js'
+  import 'codemirror/addon/search/search.js'
+  import 'codemirror/addon/fold/foldgutter.css'
+  import 'codemirror/addon/fold/foldcode'
+  import 'codemirror/addon/fold/foldgutter'
+  import 'codemirror/addon/fold/brace-fold'
+  import 'codemirror/addon/fold/comment-fold'
+
+
+  import 'codemirror/addon/selection/active-line';
 
   /* MIME Type
   C: text/x-csrc
@@ -271,15 +308,38 @@
     },
     data() {
       return {
-        status: "Waiting",
+        flag: "",
         statistic: {},
-        isJuding: false,
-        csmid: -1,
+        isJudging: false,
         show: false,
-        code: ``,
+        code: {
+          C: "",
+          Cpp: "",
+          Java: "",
+          Python3: "",
+          Go: "",
+        },
+        currentTheme: "",
+        theme: ['idea', 'darcula'],
         waitTimes: 0,
-        currentLanguage: "",
+        currentLanguage: '',
         DetailChartVisible: false,
+        langOptions: {
+          // codemirror options
+          tabSize: 4,
+          mode: '',
+          autoRefresh: true,
+          styleActiveLine: true,
+          smartIndent: true,
+          indentUnit: 4,
+          theme: 'idea',
+          lineNumbers: true,
+          line: true,
+          foldGutter: true,
+          lineWrapping: true,
+          gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
+        },
+        csmid: -1,
         countDown: null,
         startTime: null,
         endTime: null,
@@ -293,7 +353,6 @@
           mode: "python",
           autoRefresh: true,
           styleActiveLine: true,
-          styleActiveLine: true,
           smartIndent: true,
           indentUnit: 4,
           theme: "darcula",
@@ -301,7 +360,7 @@
           line: true
           // more codemirror options, 更多 codemirror 的高级配置...
         },
-        problemDetail: {
+        detail: {
           cpuTimeLimit: 0,
           createTime: "",
           creatorName: "",
@@ -429,66 +488,161 @@
         }
       };
     },
-    mounted() {},
-    async beforeCreate() {
+    mounted() {
+      this.loadTheme()
+    },
+     beforeCreate() {
       this.show = false;
       this.$bus.emit("changeHeader", "3");
-      try {
-        const {
-          data: res
-        } = await this.$http.post("/contest/getProblemDetail", {
-          cid: Number(this.$route.query.cid),
-          pid: Number(this.$route.query.pid)
-        });
-        if (res.error) {
-          this.$message.error(res.error);
-          return;
-        }
-        this.statistic = res.data.statistic;
-        this.problemDetail = res.data;
-        this.currentLanguage = this.problemDetail.language[0].name;
-        this.refreshStatistic();
-        this.show = true;
-        const {
-          data: res1
-        } = await this.$http.post("/contest/getTime", {
-          id: Number(this.$route.query.cid)
-        });
-        this.startTime = new Date(res1.data.startTime.replace(/-/g, "/"));
-        this.endTime = new Date(res1.data.endTime.replace(/-/g, "/"));
-        this.now = new Date(res1.data.now.replace(/-/g, "/"));
-        clearTimeout(this.timeout);
-        this.startCountDown();
-
-        const {
-          data: res2
-        } = await this.$http.post(
-          "/contest/getCurrentStatus", {
-            cid: Number(this.$route.query.cid),
-            pid: Number(this.$route.query.pid)
-          }
-        );
-        if (!res2.data) {
-          return;
-        }
-        if (res2.data.status) {
-          this.status = res2.data.status;
-          if (this.status === "AC") {
-            this.over = true;
-          }
-        }
-        if (res2.data.code) {
-          this.code = res2.data.code;
-        }
-        if (res2.data.id) {
-          this.csmid = res2.data.id;
-        }
-      } catch (err) {
-        console.log(err);
-        alert(err);
-      }
+    },
+    async created() {
+      await this.getDetail()
     },
     methods: {
+      async getDetail() {
+        try {
+          const {
+            data: res
+          } = await this.$http.post("/contest/getProblemDetail", {
+            cid: Number(this.$route.query.cid),
+            pid: Number(this.$route.query.pid)
+          });
+          if (res.error) {
+            this.$message.error(res.error);
+            return;
+          }
+          this.statistic = res.data.statistic;
+          this.detail = res.data;
+          this.currentLanguage = this.detail.language[0].name;
+          this.langOptions.mode = this.getMIMEType(this.currentLanguage)
+          this.refreshStatistic();
+          this.setTemplate()
+          this.show = true;
+          const {
+            data: res1
+          } = await this.$http.post("/contest/getTime", {
+            id: Number(this.$route.query.cid)
+          });
+          this.startTime = new Date(res1.data.startTime.replace(/-/g, "/"));
+          this.endTime = new Date(res1.data.endTime.replace(/-/g, "/"));
+          this.now = new Date(res1.data.now.replace(/-/g, "/"));
+          clearTimeout(this.timeout);
+          this.startCountDown();
+          const {
+            data: res2
+          } = await this.$http.post(
+                  "/contest/getCurrentStatus", {
+                    cid: Number(this.$route.query.cid),
+                    pid: Number(this.$route.query.pid)
+                  }
+          );
+          if (!res2.data) {
+            return;
+          }
+          if (res2.data.status) {
+            this.status = res2.data.status;
+            if (this.status === "AC") {
+              this.over = true;
+            }
+          }
+          if (res2.data.code) {
+            this.code = res2.data.code;
+          }
+          if (res2.data.id) {
+            this.csmid = res2.data.id;
+          }
+        } catch (err) {
+          console.log(err);
+          alert(err);
+        }
+      },
+      getMIMEType(lang) {
+        switch (lang) {
+          case "C":
+            return "text/x-csrc"
+          case "Cpp":
+            return "text/x-c++src"
+          case "Java":
+            return "text/x-java"
+          case "Python":
+            return "python"
+          case "Go":
+            return "go"
+        }
+      },
+      getIndexByLang(obj, lang) {
+        let lid = this.getLid(lang)
+        if (obj) {
+          for (let i = 0; i < obj.length; i++) {
+            if (obj[i].lid === lid) {
+              return i;
+            }
+          }
+        }
+      },
+      getLid(lang) {
+        switch (lang) {
+          case "C":
+            return 1
+          case "Cpp":
+            return 2
+          case "Java":
+            return 3
+          case "Python":
+            return 4
+          case "Go":
+            return 5
+          default:
+            this.$message.error("no such language " + lang)
+            throw "no such language"
+        }
+      },
+      getLang(lid) {
+        switch (lid) {
+          case 1:
+            return "C"
+          case 2:
+            return "Cpp"
+          case 3:
+            return "Java"
+          case 4:
+            return "Python"
+          case 5:
+            return "Go"
+          default:
+            this.$message.error("no such language id" + lid)
+            throw "no such language id"
+        }
+      },
+      setTemplate() {
+        let tmpl = this.detail.template
+        if (tmpl) {
+          for (let i = 0; i < tmpl.length; i++) {
+            this.code[this.getLang(tmpl[i].lid)] = tmpl[i].content;
+          }
+        }
+      },
+      loadTheme() {
+        let storage = window.localStorage
+        let theme = storage.getItem("theme")
+        if (theme) {
+          this.langOptions.theme = theme
+          this.currentTheme = theme
+        } else {
+          this.langOptions.theme = this.theme[0]
+          this.currentTheme = this.theme[0]
+        }
+      },
+      setTheme() {
+        this.langOptions.theme = this.currentTheme
+        let storage = window.localStorage
+        storage.setItem("theme", this.currentTheme)
+      },
+      resetCode() {
+        let lang = this.currentLanguage
+        let tmpl = this.detail.template
+        this.code[lang] = tmpl[this.getIndexByLang(tmpl, lang)].content
+      },
       copyToClipBoard(id) { //复制到剪切板
         if (document.execCommand) {
           var e = document.getElementById(id);
@@ -551,7 +705,7 @@
           }
         ];
       },
-      goback() {
+      goBack() {
         this.$router.go(-1);
       },
       goStatusDetail() {
@@ -671,24 +825,27 @@
         return hour + ":" + minute + ":" + second;
       }
     },
-
-    filters: {
-      linefeed: function (value) {
-        return value.replace(/\r?\n/g, "<br />");
-      }
-    }
   };
 </script>
 
 <style scoped>
   .center-box {
     min-width: 600px;
-    margin-top: 20px !important;
-    margin: 0 auto;
+    margin: 20px auto 0 auto;
     width: 95%;
     background-color: rgb(244, 244, 245);
     border-radius: 10px;
     display: flex;
+  }
+
+  .center-box >>> .CodeMirror-scroll {
+    overflow: scroll !important;
+    min-height: 400px;
+    height: auto;
+  }
+
+  .center-box >>> .CodeMirror {
+    height: auto;
   }
 
   .showed-button {
