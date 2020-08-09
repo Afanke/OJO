@@ -160,6 +160,7 @@ func BindRoute(app *iris.Application) {
 		contest.Post("/getAll", c.GetAllVisible)
 		contest.Post("/getCount", c.GetVisibleCount)
 		contest.Post("/getDetail", c.GetVisibleDetail)
+		contest.Post("/hasPassword", c.HasPassword)
 		contest.Post("/getQualification", c.GetQualification)
 		contest.Post("/qualify", c.Qualify)
 		contest.Post("/getAllProblem", c.GetAllProblem)

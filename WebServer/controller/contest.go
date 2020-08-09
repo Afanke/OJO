@@ -128,6 +128,21 @@ func (Contest) GetVisibleDetail(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: res})
 }
 
+func (Contest) HasPassword(c iris.Context) {
+	var id dto.Id
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	res, err := ctsdb.HasPassword(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: res})
+}
+
 // 获得对应id的Contest的时间信息
 func (Contest) GetTime(c iris.Context) {
 	var id dto.Id
@@ -220,18 +235,13 @@ func (Contest) isOver(cid int64) (bool, error) {
 }
 
 // 根据Session和cid比对用户是否具有Contest的访问权限
-func (Contest) isQualified(cid int64, c iris.Context) (bool, *dto.UserToken, error) {
-	s, err := session.GetSession(c)
+func (Contest) isQualified(cid int64, c iris.Context) (bool, int64, error) {
+	userId, err := session.GetInt64(c, "userId")
 	if err != nil {
-		log.Warn("error:%v\n", err)
-		return false, nil, err
+		return false, 0, errors.New("please login")
 	}
-	user, ok := s.Get("user").(dto.UserToken)
-	if !ok {
-		return false, nil, errors.New("please login")
-	}
-	qualified, err := ctsdb.GetQualification(user.Id, cid)
-	return qualified, &user, err
+	qualified, err := ctsdb.GetQualification(userId, cid)
+	return qualified, userId, err
 }
 
 // 获得用户在cid对应Contest的所有提交记录
@@ -242,7 +252,7 @@ func (Contest) GetAllStatus(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	qualified, user, err := cts.isQualified(form.Cid, c)
+	qualified, userId, err := cts.isQualified(form.Cid, c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -257,7 +267,7 @@ func (Contest) GetAllStatus(c iris.Context) {
 		form.Offset = (form.Page - 1) * 10
 	}
 	form.Limit = 10
-	data, err := ctsdb.GetAllStat(form.Cid, user.Id, form.Offset, form.Limit)
+	data, err := ctsdb.GetAllStat(form.Cid, userId, form.Offset, form.Limit)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -273,7 +283,7 @@ func (Contest) GetAllStatusCount(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	qualified, user, err := cts.isQualified(form.Cid, c)
+	qualified, userId, err := cts.isQualified(form.Cid, c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -282,7 +292,7 @@ func (Contest) GetAllStatusCount(c iris.Context) {
 		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
 		return
 	}
-	data, err := ctsdb.GetAllStatCount(form.Cid, user.Id)
+	data, err := ctsdb.GetAllStatCount(form.Cid, userId)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -378,7 +388,7 @@ func (Contest) GetCurrentStatus(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	qualified, user, err := cts.isQualified(form.Cid, c)
+	qualified, userId, err := cts.isQualified(form.Cid, c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -387,7 +397,7 @@ func (Contest) GetCurrentStatus(c iris.Context) {
 		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
 		return
 	}
-	detail, err := ctsdb.GetSubmission(user.Id, form.Pid, form.Cid)
+	detail, err := ctsdb.GetSubmission(userId, form.Pid, form.Cid)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -592,7 +602,7 @@ func (Contest) Submit(c iris.Context) {
 		c.JSON(&dto.Res{Error: errors.New("the contest is over").Error(), Data: nil})
 		return
 	}
-	qualified, user, err := cts.isQualified(form.Cid, c)
+	qualified, userId, err := cts.isQualified(form.Cid, c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -601,7 +611,7 @@ func (Contest) Submit(c iris.Context) {
 		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
 		return
 	}
-	form.Uid = user.Id
+	form.Uid = userId
 	data, err := ctsdb.Submit(form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})

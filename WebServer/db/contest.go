@@ -187,10 +187,20 @@ func (Contest) GetVisibleDetail(id int64) (*dto.ContestDetail, error) {
 	return &data, nil
 }
 
+func (Contest) HasPassword(id int64) (bool, error) {
+	var res bool
+	err := gosql.Get(&res, "select Length(password)>0 from contest where id=? limit 1;", id)
+	if err != nil {
+		log.Warn("error:%v\n", err)
+		return false, err
+	}
+	return res, nil
+}
+
 func (Contest) GetQualification(uid, cid int64) (bool, error) {
 	var ok int
 	err := gosql.Get(&ok, "select count(*) from ojo.contest_user where uid=? and cid=? limit 1", uid, cid)
-	return ok == 1, err
+	return ok >= 1, err
 }
 
 func (Contest) AddQualification(uid, cid int64) error {
@@ -274,7 +284,7 @@ func (Contest) GetStatistic(cid, pid int64) (*dto.ContestStatistic, error) {
 
 func (Contest) GetProblemDetail(cid, pid int64) (*dto.ContestProblem, error) {
 	var detail dto.ContestProblem
-	err := gosql.Get(&detail, `select id, cid, ref, title, description, input_description, output_description, hint, create_time, last_update_time, cpu_time_limit, memory_limit, difficulty, real_time_limit, source from ojo.problem p where p.id=? limit 1`, pid)
+	err := gosql.Get(&detail, `select * from ojo.problem p where p.id=? and p.visible=1 limit 1`, pid)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err
@@ -304,11 +314,31 @@ func (Contest) GetProblemDetail(cid, pid int64) (*dto.ContestProblem, error) {
 		log.Warn("error:%v", err)
 		return nil, err
 	}
+	template, err := pb.GetTemplate(pid)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	limit, err := pb.GetLimit(pid)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	for i, j := 0, len(template); i < j; i++ {
+		template[i].Append = ""
+		template[i].Prepend = ""
+	}
+	for i, j := 0, len(limit); i < j; i++ {
+		limit[i].SPJMp = 0
+		limit[i].CompMp = 0
+	}
 	detail.CreatorName = name
-	detail.Tags = tags
-	detail.Languages = languages
+	detail.Tag = tags
+	detail.Language = languages
 	detail.Statistic = statistic
-	detail.Samples = samples
+	detail.Sample = samples
+	detail.Template = template
+	detail.Limit = limit
 	return &detail, err
 }
 
