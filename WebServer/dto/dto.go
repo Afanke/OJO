@@ -332,15 +332,16 @@ type UserStatistic struct {
 
 // ------------------------------------------------------------------------------
 type ContestSubmission struct {
-	Cid        int64  `json:"cid" db:"cid"`
 	Id         int64  `json:"id" db:"id"`
-	Pid        int64  `json:"pid" db:"pid"`
-	Code       string `json:"code" db:"code"`
-	TotalScore int    `json:"totalScore" db:"total_score"`
+	Cid        int64  `json:"cid" db:"cid"`
 	Uid        int64  `json:"uid" db:"uid"`
-	Language   string `json:"language" db:"language"`
-	Status     string `json:"status" db:"status"`
+	Pid        int64  `json:"pid" db:"pid"`
+	Lid        int64  `json:"lid" db:"lid"`
+	Code       string `json:"code" db:"code"`
+	Flag       string `json:"flag" db:"flag"`
+	TotalScore int    `json:"totalScore" db:"total_score"`
 	SubmitTime string `json:"submitTime" db:"submit_time"`
+	ErrorMsg   string `json:"errorMsg" db:"error_msg"`
 }
 type Administrator struct {
 	Id            int64  `json:"id" db:"id"`

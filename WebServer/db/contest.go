@@ -449,8 +449,8 @@ func (Contest) GetOIDetail(cid, uid int64) ([]dto.OIDetail, error) {
 
 func (Contest) Submit(form dto.SubmitForm) (*dto.ContestSubmission, error) {
 	var sql = `insert into ojo.contest_submission
-			(cid,uid,pid,language,status,total_score,submit_time,code)
-		values(?,?,?,?,'Judging',0,now(),?)`
+			(cid,uid,pid,lid,code,submit_time,total_score,flag,error_msg)
+		values(?,?,?,?,?,now(),0,'JUG','')`
 	exec, err := gosql.Exec(sql, form.Cid, form.Uid, form.Pid, form.Lid, form.Code)
 	if err != nil {
 		log.Warn("error:%v", err)
@@ -482,7 +482,7 @@ func (Contest) UpdateStat(cid, pid int64, total, ac, wa, ce, mle, re, tle, ole i
 }
 
 func (Contest) SetISE(csmid int64) error {
-	_, err := gosql.Exec("update ojo.contest_submission set status='ISE' where id=?", csmid)
+	_, err := gosql.Exec("update ojo.contest_submission set flag='ISE' where id=? limit 1", csmid)
 	if err != nil {
 		log.Warn("error:%v", err)
 	}
@@ -491,7 +491,7 @@ func (Contest) SetISE(csmid int64) error {
 
 func (Contest) UpdateFlagAndScore(csmid int64, score int, flag string) error {
 	var sql = `  update ojo.contest_submission set 
-                status =?,
+                flag =?,
                 total_score = ?
         where id = ?`
 	_, err := gosql.Exec(sql, flag, score, csmid)
@@ -514,7 +514,7 @@ func (Contest) GetCaseRes(csmid int64) ([]dto.ContestCaseResult, error) {
 
 func (Contest) GetAllStat(cid, uid int64, offset, limit int) ([]dto.ContestSubStat, error) {
 	var res []dto.ContestSubStat
-	err := gosql.Select(&res, "select cs.id,cs.uid,cs.cid,cs.pid,cs.total_score,cs.language,cs.status,cs.submit_time from contest_submission cs where cs.cid=? and cs.uid=? order by cs.submit_time desc limit ?,?", cid, uid, offset, limit)
+	err := gosql.Select(&res, "select cs.id,cs.uid,cs.cid,cs.pid,cs.total_score,cs.lid,cs.flag,cs.submit_time from contest_submission cs where cs.cid=? and cs.uid=? order by cs.submit_time desc limit ?,?", cid, uid, offset, limit)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err
@@ -540,9 +540,9 @@ func (Contest) GetAllStatCount(cid, uid int64) (int, error) {
 	return count, nil
 }
 
-func (Contest) GetTime(id int64) (*dto.ContestDetail, error) {
-	var data dto.ContestDetail
-	err := gosql.Get(&data, "select id, start_time, end_time from contest where id=?", id)
+func (Contest) GetTime(id int64) (*dto.ContestTime, error) {
+	var data dto.ContestTime
+	err := gosql.Get(&data, "select id, start_time, end_time from contest where id=? limit 1", id)
 	if err != nil {
 		log.Warn("error:%v\n", err)
 		return nil, err
@@ -962,13 +962,6 @@ func (Contest) DeleteCtsPb(cid, pid int64) error {
 		return err
 	}
 	return err
-}
-
-func (Contest) GetStartEndTime(pid int64) (*dto.ContestTime, error) {
-	s := "select start_time,end_time from contest where id=?"
-	var res dto.ContestTime
-	err := gosql.Get(&res, s, pid)
-	return &res, err
 }
 
 func (Contest) InsertIPRange(db *gosql.DB, limit *dto.ContestIPLimit) error {

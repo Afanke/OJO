@@ -188,7 +188,7 @@ func (Practice) GetSubmission(uid, pid int64) (*dto.PracticeSubmission, error) {
 
 func (Practice) GetAllStat(uid int64, offset, limit int) ([]dto.PracticeSubStat, error) {
 	var res []dto.PracticeSubStat
-	err := gosql.Select(&res, "select ps.id,ps.uid,ps.pid,ps.total_score,ps.language,ps.status,ps.submit_time from practice_submission ps where ps.uid=? order by ps.submit_time desc limit ?,?", uid, offset, limit)
+	err := gosql.Select(&res, "select ps.id,ps.uid,ps.pid,ps.total_score,ps.language,ps.flag,ps.submit_time from practice_submission ps where ps.uid=? order by ps.submit_time desc limit ?,?", uid, offset, limit)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err
@@ -277,7 +277,7 @@ func (Practice) UpdateStat(pbid int64, total, ac, wa, ce, mle, re, tle, ole int)
 }
 
 func (Practice) SetISE(psmid int64) error {
-	_, err := gosql.Exec("update ojo.practice_submission set status='ISE' where id=?", psmid)
+	_, err := gosql.Exec("update ojo.practice_submission set flag='ISE' where id=? limit 1", psmid)
 	if err != nil {
 		log.Warn("error:%v", err)
 	}
@@ -382,11 +382,12 @@ func (Practice) GetUserSubmissionCount(uid int64) (int, error) {
 	err := gosql.Get(&count, s, uid)
 	return count, err
 }
+
 func (Practice) GetUserACCount(uid int64) (int, error) {
 	var count int
 	s := `select count(*)
 			from ojo.practice_submission ps
-			where ps.uid=? and ps.status='AC'`
+			where ps.uid=? and ps.flag='AC' group by ps.pid`
 	err := gosql.Get(&count, s, uid)
 	return count, err
 }
@@ -405,7 +406,7 @@ func (Practice) GetUserSolvedList(uid int64) ([]int, error) {
 	var data []int
 	s := `select distinct ps.pid
 		from ojo.practice_submission ps
-		where ps.uid=? and ps.status='AC'`
+		where ps.uid=? and ps.flag='AC'`
 	err := gosql.Select(&data, s, uid)
 	return data, err
 }

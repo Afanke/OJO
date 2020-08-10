@@ -28,6 +28,7 @@ var (
 )
 
 var userdb = db.User{}
+var pbdb = db.Problem{}
 
 func init() {
 	initJSP()
@@ -149,6 +150,103 @@ func TouchJSP() {
 			}()
 		}
 	}
+}
+
+func SendToJudge(form *dto.JudgeForm) (*dto.JudgeForm, error) {
+	addr, err := GetAddr()
+	if err != nil {
+		log.Error("error:%v", err)
+		return nil, err
+	}
+	timeOut := time.Millisecond * time.Duration(4*form.MaxRealTime*form.SPJMp*form.CompMp)
+	client := &http.Client{
+		Timeout: timeOut,
+	}
+	buff, err := json.Marshal(form)
+	if err != nil {
+		log.Error("error:%v", err)
+		return nil, err
+	}
+	res, err := client.Post("http://"+addr+"/judge", "application/json", bytes.NewBuffer(buff))
+	if err != nil {
+		log.Error("error:%v", err)
+		return nil, err
+	}
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Error("error:%v", err)
+		return nil, err
+	}
+	err = json.Unmarshal(body, &form)
+	if err != nil {
+		log.Error("error:%v", err)
+		return nil, err
+	}
+	return form, err
+}
+
+func PrepareForm(subForm *dto.SubmitForm) (*dto.JudgeForm, error) {
+	useSPJ, err := pbdb.UseSPJ(subForm.Pid)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	limit, err := pbdb.GetLimitByLid(subForm.Pid, subForm.Lid)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	t, err := pbdb.GetTemplateByLid(subForm.Pid, subForm.Lid)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	code := t.Prepend + subForm.Code + t.Append
+	form := &dto.JudgeForm{
+		UseSPJ:      useSPJ,
+		MaxCpuTime:  limit.MaxCpuTime,
+		MaxRealTime: limit.MaxRealTime,
+		MaxMemory:   limit.MaxMemory,
+		TotalScore:  0,
+		CompMp:      limit.CompMp,
+		SPJMp:       limit.SPJMp,
+		Id:          subForm.Sid,
+		Lid:         subForm.Lid,
+		Sid:         subForm.Sid,
+		Pid:         subForm.Pid,
+		Cid:         subForm.Cid,
+		Uid:         subForm.Uid,
+		SPJLid:      0,
+		SPJCode:     "",
+		Code:        code,
+		Flag:        "",
+		ErrorMsg:    "",
+		TestCase:    nil,
+	}
+	if useSPJ {
+		spj, err := pbdb.GetSPJ(subForm.Pid)
+		if err != nil {
+			log.Warn("error:%v", err)
+			return nil, err
+		}
+		form.SPJCode = spj.Code
+		form.SPJLid = spj.Lid
+	}
+	cases, err := pbdb.GetCase(subForm.Pid)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	testCase := make([]dto.TestCase, len(cases))
+	for i := 0; i < len(cases); i++ {
+		testCase[i].Input = cases[i].Input
+		testCase[i].ExpectedOutput = cases[i].Output
+		testCase[i].Score = cases[i].Score
+		testCase[i].Id = cases[i].Id
+	}
+	form.TestCase = testCase
+	return form, nil
 }
 
 func GetAllInfo(c context.Context) {

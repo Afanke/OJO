@@ -696,7 +696,7 @@
                 }
             },
             async submit() {
-                if (!this.code) {
+                if (!this.code[this.currentLanguage]) {
                     this.$message.error('Code can not be empty!');
                     return;
                 }

@@ -1,8 +1,6 @@
 package ctrl
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"github.com/afanke/OJO/WebServer/db"
 	"github.com/afanke/OJO/WebServer/dto"
@@ -10,9 +8,7 @@ import (
 	"github.com/afanke/OJO/utils/log"
 	"github.com/afanke/OJO/utils/session"
 	"github.com/kataras/iris/v12"
-	"io/ioutil"
 	"net"
-	"net/http"
 	"strings"
 	"time"
 )
@@ -212,26 +208,6 @@ func (Contest) Qualify(c iris.Context) {
 		return
 	}
 	c.JSON(&dto.Res{Error: "", Data: "success"})
-}
-
-// 判断Contest是否已经结束
-func (Contest) isOver(cid int64) (bool, error) {
-	res, err := ctsdb.GetTime(cid)
-	if err != nil {
-		log.Warn("error:%v\n", err)
-		return true, err
-	}
-	end, err := time.Parse("2006-01-02 15:04:05", res.EndTime)
-	if err != nil {
-		log.Warn("error:%v\n", err)
-		return true, err
-	}
-	now, err := time.Parse("2006-01-02 15:04:05", res.Now)
-	if err != nil {
-		log.Warn("error:%v\n", err)
-		return true, err
-	}
-	return now.After(end), nil
 }
 
 // 根据Session和cid比对用户是否具有Contest的访问权限
@@ -593,7 +569,7 @@ func (Contest) Submit(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	over, err := cts.isOver(form.Cid)
+	over, err := cts.isEnded(form.Cid)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -636,85 +612,83 @@ func (Contest) handleSubmit(form *dto.SubmitForm) {
 	}
 }
 
-func handleOI(contest *dto.ContestDetail, form *dto.SubmitForm) {
-	forms, err := cts.prepareForms(form)
+func handleOI(contest *dto.ContestDetail, submitForm *dto.SubmitForm) {
+	form, err := jsp.PrepareForm(submitForm)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(form.Sid)
+		_ = ctsdb.SetISE(submitForm.Sid)
 		return
 	}
-	forms, err = cts.sendToJudge(forms)
+	form, err = jsp.SendToJudge(form)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(form.Sid)
+		_ = ctsdb.SetISE(submitForm.Sid)
 		return
 	}
-	err = cts.updateStatistic(form.Cid, form.Pid, form.Sid, form.Uid, forms)
+	err = cts.updateStatistic(submitForm.Cid, submitForm.Pid, submitForm.Sid, submitForm.Uid, form)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(form.Sid)
+		_ = ctsdb.SetISE(submitForm.Sid)
 		return
 	}
-	flag := cts.concludeFlag(forms)
-	score := cts.countTotalScore(forms)
-	err = ctsdb.UpdateFlagAndScore(form.Sid, score, flag)
+	err = ctsdb.UpdateFlagAndScore(submitForm.Sid, form.TotalScore, form.Flag)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(form.Sid)
+		_ = ctsdb.SetISE(submitForm.Sid)
 		return
 	}
 }
 
-func handleACM(contest *dto.ContestDetail, form *dto.SubmitForm) {
-	forms, err := cts.prepareForms(form)
+func handleACM(contest *dto.ContestDetail, submitForm *dto.SubmitForm) {
+	form, err := jsp.PrepareForm(submitForm)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(form.Sid)
+		_ = ctsdb.SetISE(submitForm.Sid)
 		return
 	}
-	forms, err = cts.sendToJudge(forms)
+	form, err = jsp.SendToJudge(form)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(form.Sid)
+		_ = ctsdb.SetISE(submitForm.Sid)
 		return
 	}
-	err = cts.updateStatistic(form.Cid, form.Pid, form.Sid, form.Uid, forms)
+	err = cts.updateStatistic(submitForm.Cid, submitForm.Pid, submitForm.Sid, submitForm.Uid, form)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(form.Sid)
+		_ = ctsdb.SetISE(submitForm.Sid)
 		return
 	}
-	flag := cts.concludeFlag(forms)
-	stat, err := ctsdb.GetStat(form.Sid)
+	flag := form.Flag
+	stat, err := ctsdb.GetStat(submitForm.Sid)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(form.Sid)
+		_ = ctsdb.SetISE(submitForm.Sid)
 		return
 	}
 	startTime, err := time.Parse("2006-01-02 15:04:05", contest.StartTime)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(form.Sid)
+		_ = ctsdb.SetISE(submitForm.Sid)
 		return
 	}
 	subTime, err := time.Parse("2006-01-02 15:04:05", stat.SubmitTime)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(form.Sid)
+		_ = ctsdb.SetISE(submitForm.Sid)
 		return
 	}
 	duration := int(subTime.Unix() - startTime.Unix())
-	yes, err := ctsdb.HasACMOverAll(form)
+	yes, err := ctsdb.HasACMOverAll(submitForm)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(form.Sid)
+		_ = ctsdb.SetISE(submitForm.Sid)
 		return
 	}
 	if yes {
-		wrong, err := ctsdb.GetACMWrong(form)
+		wrong, err := ctsdb.GetACMWrong(submitForm)
 		if err != nil {
 			log.Warn("error:%v", err)
-			_ = ctsdb.SetISE(form.Sid)
+			_ = ctsdb.SetISE(submitForm.Sid)
 			return
 		}
 		du := duration
@@ -723,10 +697,10 @@ func handleACM(contest *dto.ContestDetail, form *dto.SubmitForm) {
 		} else {
 			du += wrong * contest.Punish
 		}
-		err = ctsdb.UpdateACMOverAll(form, du, flag == "AC")
+		err = ctsdb.UpdateACMOverAll(submitForm, du, flag == "AC")
 		if err != nil {
 			log.Warn("error:%v", err)
-			_ = ctsdb.SetISE(form.Sid)
+			_ = ctsdb.SetISE(submitForm.Sid)
 			return
 		}
 	} else {
@@ -734,133 +708,46 @@ func handleACM(contest *dto.ContestDetail, form *dto.SubmitForm) {
 		if flag != "AC" {
 			du += contest.Punish
 		}
-		err = ctsdb.InsertACMOverAll(form, du, flag == "AC")
+		err = ctsdb.InsertACMOverAll(submitForm, du, flag == "AC")
 		if err != nil {
 			log.Warn("error:%v", err)
-			_ = ctsdb.SetISE(form.Sid)
+			_ = ctsdb.SetISE(submitForm.Sid)
 			return
 		}
 	}
-	yes, err = ctsdb.HasACMDetail(form)
+	yes, err = ctsdb.HasACMDetail(submitForm)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(form.Sid)
+		_ = ctsdb.SetISE(submitForm.Sid)
 		return
 	}
-	first, err := ctsdb.HasACMFirstDetail(form)
+	first, err := ctsdb.HasACMFirstDetail(submitForm)
 	if yes {
-		err = ctsdb.UpdateACMDetail(form, duration, flag == "AC", first && flag == "AC")
+		err = ctsdb.UpdateACMDetail(submitForm, duration, flag == "AC", first && flag == "AC")
 		if err != nil {
 			log.Warn("error:%v", err)
-			_ = ctsdb.SetISE(form.Sid)
+			_ = ctsdb.SetISE(submitForm.Sid)
 			return
 		}
 	} else {
 		if err != nil {
 			log.Warn("error:%v", err)
-			_ = ctsdb.SetISE(form.Sid)
+			_ = ctsdb.SetISE(submitForm.Sid)
 			return
 		}
-		err = ctsdb.InsertACMDetail(form, duration, flag == "AC", first && flag == "AC")
+		err = ctsdb.InsertACMDetail(submitForm, duration, flag == "AC", first && flag == "AC")
 		if err != nil {
 			log.Warn("error:%v", err)
-			_ = ctsdb.SetISE(form.Sid)
+			_ = ctsdb.SetISE(submitForm.Sid)
 			return
 		}
 	}
-	score := 0
-	if flag == "AC" {
-		score = cts.countTotalScore(forms)
-	}
-	err = ctsdb.UpdateFlagAndScore(form.Sid, score, flag)
+
+	err = ctsdb.UpdateFlagAndScore(submitForm.Sid, form.TotalScore, flag)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(form.Sid)
+		_ = ctsdb.SetISE(submitForm.Sid)
 		return
-	}
-}
-
-func (Contest) sendToJudge(forms []dto.OperationForm) ([]dto.OperationForm, error) {
-	addr, err := jsp.GetAddr()
-	if err != nil {
-		log.Error("error:%v", err)
-		return nil, err
-	}
-	client := &http.Client{
-		Timeout: 1 * time.Second,
-	}
-	buff, err := json.Marshal(forms)
-	if err != nil {
-		log.Error("error:%v", err)
-		return nil, err
-	}
-	res, err := client.Post("http://"+addr+"/"+forms[0].Language, "application/json", bytes.NewBuffer(buff))
-	if err != nil {
-		log.Error("error:%v", err)
-		return nil, err
-	}
-	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		log.Error("error:%v", err)
-		return nil, err
-	}
-	err = json.Unmarshal(body, &forms)
-	if err != nil {
-		log.Error("error:%v", err)
-		return nil, err
-	}
-	return forms, err
-}
-
-func (Contest) prepareForms(subForm *dto.SubmitForm) ([]dto.OperationForm, error) {
-	cases, err := pbdb.GetCase(subForm.Pid)
-	if err != nil {
-		log.Warn("error:%v", err)
-		return nil, err
-	}
-
-	forms := make([]dto.OperationForm, len(cases))
-	for i := 0; i < len(cases); i++ {
-		forms[i].Input = cases[i].Input
-		forms[i].ExpectOutput = strings.ReplaceAll(cases[i].Output, "\r\n", "\n")
-		forms[i].Score = cases[i].Score
-		forms[i].PcId = cases[i].Id
-		forms[i].Code = subForm.Code
-	}
-	return forms, nil
-}
-
-func (Contest) countTotalScore(forms []dto.OperationForm) int {
-	var count int
-	for i := 0; i < len(forms); i++ {
-		count += forms[i].Score
-	}
-	return count
-}
-
-func (Contest) concludeFlag(forms []dto.OperationForm) string {
-	var flag = false
-	var res = "NULL"
-	for i := 0; i < len(forms); i++ {
-		if forms[i].Flag != "AC" {
-			if forms[i].Flag == "ISE" {
-				return "ISE"
-			} else if forms[i].Flag == "CE" {
-				return "CE"
-			} else if res == "NULL" {
-				res = forms[i].Flag
-			}
-		} else {
-			flag = true
-		}
-	}
-	if flag && res == "NULL" {
-		return "AC"
-	} else if flag {
-		return "PA"
-	} else {
-		return res
 	}
 }
 
@@ -1256,7 +1143,7 @@ func (Contest) isIPMatched(c iris.Context, id int64) error {
 }
 
 func (Contest) isStarted(pid int64) (bool, error) {
-	ctsTime, err := ctsdb.GetStartEndTime(pid)
+	ctsTime, err := ctsdb.GetTime(pid)
 	if err != nil {
 		return false, err
 	}
@@ -1269,7 +1156,7 @@ func (Contest) isStarted(pid int64) (bool, error) {
 }
 
 func (Contest) isEnded(pid int64) (bool, error) {
-	ctsTime, err := ctsdb.GetStartEndTime(pid)
+	ctsTime, err := ctsdb.GetTime(pid)
 	if err != nil {
 		return false, err
 	}
@@ -1282,7 +1169,7 @@ func (Contest) isEnded(pid int64) (bool, error) {
 }
 
 func (Contest) isUnderway(pid int64) (bool, error) {
-	ctsTime, err := ctsdb.GetStartEndTime(pid)
+	ctsTime, err := ctsdb.GetTime(pid)
 	if err != nil {
 		return false, err
 	}
