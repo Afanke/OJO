@@ -2,18 +2,15 @@
   <div>
         <div class="center-box">
           <el-row style="height:60px">
-            <span
-              style="float:left;font-size:20px;margin-left:20px;margin-top:15px"
-              >Status</span
-            >
+            <span style="float:left;font-size:20px;margin-left:20px;margin-top:15px">Status</span>
             <el-button
               style="float:right;margin-top:15px;margin-right:20px;"
               class="el-icon-refresh"
               type="primary"
               size="small"
-              @click="reset"
-              >&nbsp;Reset</el-button
-            >
+              @click="reset">
+              &nbsp;Reset
+            </el-button>
           </el-row>
           <el-row>
             <el-table
@@ -21,14 +18,12 @@
               size="small"
               :data="status"
               style="width:100%;border-radius:10px"
-              v-loading="loading"
-            >
+              v-loading="loading">
               <el-table-column align="center" label="Submit Time" width="180">
                 <template slot-scope="scope">
                   <i class="el-icon-time"></i>
-                  <span style="margin-left: 10px">{{
-                    scope.row.submitTime | formatDateTime
-                  }}</span>
+                  <span style="margin-left: 10px">
+                    {{scope.row.submitTime | formatDateTime}}</span>
                 </template>
               </el-table-column>
               <el-table-column align="center" label="Id" min-width="80">
@@ -36,27 +31,27 @@
                   <el-link
                     type="primary"
                     :underline="false"
-                    @click="gotoResult(scope.row.id)"
-                    >{{ scope.row.id }}</el-link
-                  >
+                    @click="gotoResult(scope.row.id)">
+                    {{ scope.row.id }}
+                  </el-link>
                 </template>
               </el-table-column>
               <el-table-column align="center" label="Status" min-width="120">
                 <template slot-scope="scope">
                   <el-button
                     size="mini"
-                    :type="scope.row.status | formatType"
-                    >{{ scope.row.status | formatFlags }}</el-button
-                  >
+                    :type="scope.row.flag | formatType">
+                    {{ scope.row.flag | formatFlags }}
+                  </el-button>
                 </template>
               </el-table-column>
               <el-table-column align="center" label="Problem" min-width="80" >
                 <template slot-scope="scope">
                   <el-link
                     :underline="false"
-                    @click="gotoAnswer(scope.row.pid)"
-                    >{{ scope.row.problemName }}</el-link
-                  >
+                    @click="gotoAnswer(scope.row.pid)">
+                    {{ scope.row.problemName }}
+                  </el-link>
                 </template>
               </el-table-column>
               <el-table-column align="center" prop="language" label="Language" min-width="80">
@@ -66,7 +61,7 @@
             </el-table>
           </el-row>
         </div>
-        <el-row style="margin:20px auto 0px">
+        <el-row style="margin:20px auto 0">
           <el-pagination
             style="float:right;"
             hide-on-single-page
@@ -75,8 +70,7 @@
             :page-size="10"
             @current-change="handlePageChange"
             :current-page="page"
-            :total="count"
-          >
+            :total="count">
           </el-pagination>
         </el-row>
   </div>
@@ -91,7 +85,7 @@ export default {
   async mounted() {
     this.show = true;
     this.loading = true;
-    this.queryList();
+    await this.queryList();
   },
   data() {
     return {
@@ -181,7 +175,6 @@ export default {
         });
         if (res1.error) {
           this.$message.error(res1.error);
-          return;
         } else {
           this.count = res1.data;
         }
@@ -218,37 +211,26 @@ export default {
       switch (value) {
         case 'RE':
           return 'Runtime Error';
-          break;
         case 'CE':
           return 'Compile Error';
-          break;
         case 'WA':
           return 'Wrong Answer';
-          break;
         case 'ISE':
           return 'Internal Server Error';
-          break;
         case 'TLE':
           return 'Time Limit Exceeded';
-          break;
         case 'MLE':
           return 'Memory Limit Exceeded';
-          break;
         case 'OLE':
           return 'Output Limit Exceeded';
-          break;
         case 'PA':
           return 'Partial Accepted';
-          break;
-        case 'Judging':
+        case 'JUG':
           return 'Judging';
-          break;
         case 'Pending':
           return 'Pending';
-          break;
         case 'AC':
           return 'Accepted';
-          break;
       }
     },
     formatType: function(value) {
@@ -257,22 +239,16 @@ export default {
         case 'WA':
         case 'ISE':
           return 'danger';
-
-          break;
         case 'TLE':
         case 'MLE':
         case 'OLE':
         case 'CE':
           return 'warning';
-          break;
         case 'PA':
-        case 'Judging':
-        case 'Pending':
+        case 'JUG':
           return 'primary';
-          break;
         case 'AC':
           return 'success';
-          break;
       }
     }
   }

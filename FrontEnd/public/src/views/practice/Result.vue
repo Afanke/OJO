@@ -98,7 +98,7 @@
           </div>
         </el-row>
         <el-row style="width:auto;margin-top:20px;">
-          <el-button type="primary" style="float:right" class="el-icon-back" @click="goback">Back</el-button>
+          <el-button type="primary" style="float:right" class="el-icon-back" @click="goBack">Back</el-button>
         </el-row>
       </div>
     </transition>
@@ -117,7 +117,7 @@
   export default {
     data() {
       return {
-        errorMsg:"asdasdsa\nasdasdadasd\nasdasdasddas",
+        errorMsg:"",
         show: false,
         option: 0,
         waitTimes: 0,
@@ -283,7 +283,7 @@
       log() {
         console.log(typeof this.option);
       },
-      goback() {
+      goBack() {
         this.$router.go(-1);
       },
       async getStatus() {

@@ -227,6 +227,11 @@ func (Problem) GetTemplateByLid(pbid, lid int64) (*dto.Template, error) {
 			where pid=? and lid=?`
 	var template dto.Template
 	err := gosql.Get(&template, s, pbid, lid)
+	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			return &template, nil
+		}
+	}
 	return &template, err
 }
 

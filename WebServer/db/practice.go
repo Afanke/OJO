@@ -214,7 +214,7 @@ func (Practice) GetAllStatCount(uid int64) (int, error) {
 	return count, nil
 }
 
-func (Practice) GetStat(psmid int64) (*dto.PracticeSubStat, error) {
+func (Practice) GetStatus(psmid int64) (*dto.PracticeSubStat, error) {
 	var s dto.PracticeSubStat
 	err := gosql.Get(&s, "select * from practice_submission ps where ps.id=? limit 1", psmid)
 	if err != nil {
@@ -285,7 +285,7 @@ func (Practice) SetISE(psmid int64) error {
 }
 
 func (Practice) UpdateFlagScoreMsg(psmid int64, score int, flag, errorMsg string) error {
-	var sql = `  update ojo.practice_submission set 
+	var sql = ` update ojo.practice_submission set 
                 flag =?,
                 total_score = ?,
                 error_msg=?

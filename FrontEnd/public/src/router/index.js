@@ -43,9 +43,9 @@ const routes = [
   { path: '/user/home', component: UserHome },
   { path: '/user/settings', component: UserSettings },
 
-  // { path: '/', redirect: '/practice' }
+  { path: '/', redirect: '/practice' }
   // { path: '/', component: UserSettings }
-  { path: '/', component:Test }
+  // { path: '/', component:Test }
 ];
 // routes.afterEach(function (to) {
 //   document.title = to.name

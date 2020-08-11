@@ -108,7 +108,7 @@ func (Practice) GetStatus(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	detail, err := pctdb.GetStat(psmid.Id)
+	detail, err := pctdb.GetStatus(psmid.Id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return

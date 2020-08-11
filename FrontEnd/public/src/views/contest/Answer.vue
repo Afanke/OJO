@@ -142,7 +142,7 @@
                             <el-button style="margin-left:15px" type="primary" plain v-if="flag === 'Sending'"
                                        @click="goStatusDetail">Sending
                             </el-button>
-                            <el-button type="primary" style="float:right;" @click="submit"
+                            <el-button type="primary" :disabled="over"  style="float:right;" @click="submit"
                                        :loading="isJudging"
                                        class="el-icon-s-promotion">&nbsp;&nbsp;Submit
                             </el-button>

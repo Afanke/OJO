@@ -348,9 +348,9 @@ func (Contest) IsMatched(cid, pid int64) (bool, error) {
 	return ok == 1, err
 }
 
-func (Contest) GetStat(psmid int64) (*dto.ContestSubStat, error) {
+func (Contest) GetStatus(csmid int64) (*dto.ContestSubStat, error) {
 	var s dto.ContestSubStat
-	err := gosql.Get(&s, "select * from contest_submission ps where ps.id=? limit 1", psmid)
+	err := gosql.Get(&s, "select * from contest_submission cs where cs.id=? limit 1", csmid)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err
@@ -466,18 +466,18 @@ func (Contest) Submit(form dto.SubmitForm) (*dto.ContestSubmission, error) {
 	return &res, err
 }
 
-func (Contest) UpdateStat(cid, pid int64, total, ac, wa, ce, mle, re, tle, ole int) error {
+func (Contest) UpdateStat(cid, pid int64, total, ac, wa, ce, re, tle, mle, ole int) error {
 	var sql = `  update ojo.contest_statistic set 
                 total =total+ ?,
                 ac =ac+ ?,
                 wa =wa+ ?,
+                ce =ce+ ?,
                 re =re+ ?,
                 tle =tle+ ?,
                 mle =mle+ ?,
-                ce =ce+ ?,
                 ole =ole+ ?
         where cid = ? and pid=?`
-	_, err := gosql.Exec(sql, total, ac, wa, re, tle, mle, ce, ole, cid, pid)
+	_, err := gosql.Exec(sql, total, ac, wa, ce, re, tle, mle, ole, cid, pid)
 	return err
 }
 
@@ -489,23 +489,26 @@ func (Contest) SetISE(csmid int64) error {
 	return err
 }
 
-func (Contest) UpdateFlagAndScore(csmid int64, score int, flag string) error {
-	var sql = `  update ojo.contest_submission set 
+func (Contest) UpdateFlagScoreMsg(csmid int64, score int, flag, errorMsg string) error {
+	var sql = ` update ojo.contest_submission set 
                 flag =?,
-                total_score = ?
+                total_score = ?,
+                error_msg=?
         where id = ?`
-	_, err := gosql.Exec(sql, flag, score, csmid)
+	_, err := gosql.Exec(sql, flag, score, errorMsg, csmid)
 	return err
 }
 
-func (Contest) InsertCaseRes(csmid, uid int64, form dto.OperationForm) error {
+func (Contest) InsertCaseRes(csmid, uid int64, tc *dto.TestCase) error {
 	var sql = `  insert into ojo.contest_case_result
-  (csmid,pcaseid,uid,flag,cpu_time,real_time,real_memory,real_output,error_output,score)
-  				values(?,?,?,?,?,?,?,?,?,?)`
-	_, err := gosql.Exec(sql, csmid, form.PcId, uid, form.Flag, form.ActualCpuTime,
-		form.ActualRealTime, form.RealMemory, form.RealOutput, form.ErrorOutput, form.Score)
+  (csmid,pcaseid,uid,flag,cpu_time,real_time,real_memory,real_output,error_output,spj_output,spj_error_output,score)
+  				values(?,?,?,?,?,?,?,?,?,?,?,?)`
+	_, err := gosql.Exec(sql, csmid, tc.Id, uid, tc.Flag, tc.ActualCpuTime,
+		tc.ActualRealTime, tc.RealMemory, tc.RealOutput, tc.ErrorOutput,
+		tc.SPJOutput, tc.SPJErrorOutput, tc.Score)
 	return err
 }
+
 func (Contest) GetCaseRes(csmid int64) ([]dto.ContestCaseResult, error) {
 	var res []dto.ContestCaseResult
 	err := gosql.Select(&res, "select * from ojo.contest_case_result where csmid=?", csmid)
@@ -656,6 +659,12 @@ func (Contest) GetACMRankCount(cid int64) (int, error) {
 	var count int
 	err := gosql.Get(&count, sql, cid)
 	return count, err
+}
+
+func (Contest) GetACMSubmission(cid int64) ([]dto.ACMSubmission, error) {
+	var s []dto.ACMSubmission
+	err := gosql.Select(&s, "select id, uid, cid, pid, submit_time, flag from contest_submission cs where cs.cid=? order by cs.submit_time ", cid)
+	return s, err
 }
 
 func (Contest) HasACMOverAll(form *dto.SubmitForm) (bool, error) {

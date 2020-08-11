@@ -389,7 +389,7 @@ func (Contest) GetStatus(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	detail, err := ctsdb.GetStat(csmid.Id)
+	detail, err := ctsdb.GetStatus(csmid.Id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -598,21 +598,7 @@ func (Contest) Submit(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
-func (Contest) handleSubmit(form *dto.SubmitForm) {
-	contest, err := ctsdb.GetVisibleDetail(form.Cid)
-	if err != nil {
-		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(form.Sid)
-		return
-	}
-	if contest.Rule == "OI" {
-		handleOI(contest, form)
-	} else {
-		handleACM(contest, form)
-	}
-}
-
-func handleOI(contest *dto.ContestDetail, submitForm *dto.SubmitForm) {
+func (Contest) handleSubmit(submitForm *dto.SubmitForm) {
 	form, err := jsp.PrepareForm(submitForm)
 	if err != nil {
 		log.Warn("error:%v", err)
@@ -622,137 +608,31 @@ func handleOI(contest *dto.ContestDetail, submitForm *dto.SubmitForm) {
 	form, err = jsp.SendToJudge(form)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(submitForm.Sid)
+		_ = pctdb.SetISE(submitForm.Sid)
 		return
 	}
-	err = cts.updateStatistic(submitForm.Cid, submitForm.Pid, submitForm.Sid, submitForm.Uid, form)
+	err = cts.updateStatistic(form)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(submitForm.Sid)
+		_ = pctdb.SetISE(submitForm.Sid)
 		return
 	}
-	err = ctsdb.UpdateFlagAndScore(submitForm.Sid, form.TotalScore, form.Flag)
+	err = cts.InsertCaseRes(form)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(submitForm.Sid)
+		_ = pctdb.SetISE(submitForm.Sid)
+		return
+	}
+	err = ctsdb.UpdateFlagScoreMsg(form.Sid, form.TotalScore, form.Flag, form.ErrorMsg)
+	if err != nil {
+		log.Warn("error:%v", err)
+		_ = pctdb.SetISE(submitForm.Sid)
 		return
 	}
 }
 
-func handleACM(contest *dto.ContestDetail, submitForm *dto.SubmitForm) {
-	form, err := jsp.PrepareForm(submitForm)
-	if err != nil {
-		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(submitForm.Sid)
-		return
-	}
-	form, err = jsp.SendToJudge(form)
-	if err != nil {
-		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(submitForm.Sid)
-		return
-	}
-	err = cts.updateStatistic(submitForm.Cid, submitForm.Pid, submitForm.Sid, submitForm.Uid, form)
-	if err != nil {
-		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(submitForm.Sid)
-		return
-	}
-	flag := form.Flag
-	stat, err := ctsdb.GetStat(submitForm.Sid)
-	if err != nil {
-		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(submitForm.Sid)
-		return
-	}
-	startTime, err := time.Parse("2006-01-02 15:04:05", contest.StartTime)
-	if err != nil {
-		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(submitForm.Sid)
-		return
-	}
-	subTime, err := time.Parse("2006-01-02 15:04:05", stat.SubmitTime)
-	if err != nil {
-		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(submitForm.Sid)
-		return
-	}
-	duration := int(subTime.Unix() - startTime.Unix())
-	yes, err := ctsdb.HasACMOverAll(submitForm)
-	if err != nil {
-		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(submitForm.Sid)
-		return
-	}
-	if yes {
-		wrong, err := ctsdb.GetACMWrong(submitForm)
-		if err != nil {
-			log.Warn("error:%v", err)
-			_ = ctsdb.SetISE(submitForm.Sid)
-			return
-		}
-		du := duration
-		if flag != "AC" {
-			du += (wrong + 1) * contest.Punish
-		} else {
-			du += wrong * contest.Punish
-		}
-		err = ctsdb.UpdateACMOverAll(submitForm, du, flag == "AC")
-		if err != nil {
-			log.Warn("error:%v", err)
-			_ = ctsdb.SetISE(submitForm.Sid)
-			return
-		}
-	} else {
-		du := duration
-		if flag != "AC" {
-			du += contest.Punish
-		}
-		err = ctsdb.InsertACMOverAll(submitForm, du, flag == "AC")
-		if err != nil {
-			log.Warn("error:%v", err)
-			_ = ctsdb.SetISE(submitForm.Sid)
-			return
-		}
-	}
-	yes, err = ctsdb.HasACMDetail(submitForm)
-	if err != nil {
-		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(submitForm.Sid)
-		return
-	}
-	first, err := ctsdb.HasACMFirstDetail(submitForm)
-	if yes {
-		err = ctsdb.UpdateACMDetail(submitForm, duration, flag == "AC", first && flag == "AC")
-		if err != nil {
-			log.Warn("error:%v", err)
-			_ = ctsdb.SetISE(submitForm.Sid)
-			return
-		}
-	} else {
-		if err != nil {
-			log.Warn("error:%v", err)
-			_ = ctsdb.SetISE(submitForm.Sid)
-			return
-		}
-		err = ctsdb.InsertACMDetail(submitForm, duration, flag == "AC", first && flag == "AC")
-		if err != nil {
-			log.Warn("error:%v", err)
-			_ = ctsdb.SetISE(submitForm.Sid)
-			return
-		}
-	}
-
-	err = ctsdb.UpdateFlagAndScore(submitForm.Sid, form.TotalScore, flag)
-	if err != nil {
-		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(submitForm.Sid)
-		return
-	}
-}
-
-func (Contest) updateStatistic(cid, pid, csmid, uid int64, forms []dto.OperationForm) error {
-	var total = 0
+func (Contest) updateStatistic(form *dto.JudgeForm) error {
+	var total = 1
 	var ac = 0
 	var wa = 0
 	var ce = 0
@@ -760,39 +640,37 @@ func (Contest) updateStatistic(cid, pid, csmid, uid int64, forms []dto.Operation
 	var tle = 0
 	var mle = 0
 	var ole = 0
-	for i := 0; i < len(forms); i++ {
-		switch forms[i].Flag {
-		case "ISE":
-		case "AC":
-			total++
-			ac++
-		case "RE":
-			total++
-			re++
-		case "CE":
-			total++
-			ce++
-		case "TLE":
-			total++
-			tle++
-		case "WA":
-			total++
-			wa++
-		case "MLE":
-			total++
-			mle++
-		case "OLE":
-			total++
-			ole++
-		}
-		err := ctsdb.InsertCaseRes(csmid, uid, forms[i])
+	switch form.Flag {
+	case "ISE":
+		total--
+	case "AC":
+		ac++
+	case "RE":
+		re++
+	case "CE":
+		ce++
+	case "TLE":
+		tle++
+	case "WA":
+		wa++
+	case "MLE":
+		mle++
+	case "OLE":
+		ole++
+	}
+	err := ctsdb.UpdateStat(form.Cid, form.Pid, total, ac, wa, ce, re, tle, mle, ole)
+	return err
+}
+
+func (Contest) InsertCaseRes(form *dto.JudgeForm) error {
+	for i, j := 0, len(form.TestCase); i < j; i++ {
+		err := ctsdb.InsertCaseRes(form.Sid, form.Uid, &form.TestCase[i])
 		if err != nil {
 			log.Warn("error:%v", err)
 			return err
 		}
 	}
-	err := ctsdb.UpdateStat(cid, pid, total, ac, wa, ce, mle, re, tle, ole)
-	return err
+	return nil
 }
 
 // -------------------------------------------------------------

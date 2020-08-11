@@ -1,5 +1,7 @@
 package dto
 
+import "time"
+
 type Res struct {
 	Error string      `json:"error"`
 	Data  interface{} `json:"data"`
@@ -256,30 +258,34 @@ type ContestProblem struct {
 }
 
 type ContestCaseResult struct {
-	CpuTime     int    `json:"cpuTime" db:"cpu_time"`
-	Csmid       int64  `json:"csmid" db:"csmid"`
-	ErrorOutput string `json:"errorOutput" db:"error_output"`
-	Flag        string `json:"flag" db:"flag"`
-	Id          int64  `json:"id" db:"id"`
-	Pcaseid     int64  `json:"pcaseid" db:"pcaseid"`
-	RealMemory  int    `json:"realMemory" db:"real_memory"`
-	RealOutput  string `json:"realOutput" db:"real_output"`
-	RealTime    int    `json:"realTime" db:"real_time"`
-	Score       int    `json:"score" db:"score"`
-	Uid         int64  `json:"uid" db:"uid"`
+	//Id          int64  `json:"id" db:"id"`
+	Csmid          int64  `json:"csmid" db:"csmid"`
+	Psmid          int64  `json:"psmid" db:"psmid"`
+	Pcaseid        int64  `json:"pcaseid" db:"pcaseid"`
+	Uid            int64  `json:"uid" db:"uid"`
+	CpuTime        int    `json:"cpuTime" db:"cpu_time"`
+	RealTime       int    `json:"realTime" db:"real_time"`
+	RealMemory     int    `json:"realMemory" db:"real_memory"`
+	Score          int    `json:"score" db:"score"`
+	Flag           string `json:"flag" db:"flag"`
+	RealOutput     string `json:"realOutput" db:"real_output"`
+	ErrorOutput    string `json:"errorOutput" db:"error_output"`
+	SPJOutput      string `json:"SPJOutput" db:"spj_output"`
+	SPJErrorOutput string `json:"SPJErrorOutput" db:"spj_error_output"`
 }
 type ContestSubStat struct {
 	Id          int64  `json:"id" db:"id"`
 	Uid         int64  `json:"uid" db:"uid"`
 	Cid         int64  `json:"cid" db:"cid"`
 	Pid         int64  `json:"pid" db:"pid"`
+	Lid         int64  `json:"lid" db:"lid"`
 	TotalScore  int    `json:"totalScore" db:"total_score"`
-	Language    string `json:"language" db:"language"`
-	Status      string `json:"status" db:"status"`
 	SubmitTime  string `json:"submitTime" db:"submit_time"`
 	Code        string `json:"code" db:"code"`
 	ProblemName string `json:"problemName" db:"problem_name"`
 	Username    string `json:"username" db:"username"`
+	Flag        string `json:"flag" db:"flag"`
+	ErrorMsg    string `json:"errorMsg" db:"error_msg"`
 }
 type OIRank struct {
 	Cid            int64      `json:"cid" db:"cid"`
@@ -396,17 +402,19 @@ type Language struct {
 	Name string `json:"name" db:"name"`
 }
 type PracticeCaseResult struct {
-	Id          int64  `json:"id" db:"id"`
-	Psmid       int64  `json:"psmid" db:"psmid"`
-	Pcaseid     int64  `json:"pcaseid" db:"pcaseid"`
-	Uid         int64  `json:"uid" db:"uid"`
-	Flag        string `json:"flag" db:"flag"`
-	CpuTime     int    `json:"cpuTime" db:"cpu_time"`
-	RealTime    int    `json:"realTime" db:"real_time"`
-	RealMemory  int    `json:"realMemory" db:"real_memory"`
-	RealOutput  string `json:"realOutput" db:"real_output"`
-	ErrorOutput string `json:"errorOutput" db:"error_output"`
-	Score       int    `json:"score" db:"score"`
+	//Id             int64  `json:"id" db:"id"`
+	Psmid          int64  `json:"psmid" db:"psmid"`
+	Pcaseid        int64  `json:"pcaseid" db:"pcaseid"`
+	Uid            int64  `json:"uid" db:"uid"`
+	Flag           string `json:"flag" db:"flag"`
+	CpuTime        int    `json:"cpuTime" db:"cpu_time"`
+	RealTime       int    `json:"realTime" db:"real_time"`
+	RealMemory     int    `json:"realMemory" db:"real_memory"`
+	RealOutput     string `json:"realOutput" db:"real_output"`
+	ErrorOutput    string `json:"errorOutput" db:"error_output"`
+	SPJOutput      string `json:"SPJOutput" db:"spj_output"`
+	SPJErrorOutput string `json:"SPJErrorOutput" db:"spj_error_output"`
+	Score          int    `json:"score" db:"score"`
 }
 type PracticeStatistic struct {
 	Id    int64 `json:"id" db:"id"`
@@ -679,4 +687,13 @@ type ContestTime struct {
 	StartTime string `json:"startTime" db:"start_time"`
 	Now       string `json:"now"`
 	EndTime   string `json:"endTime" db:"end_time"`
+}
+
+type ACMSubmission struct {
+	Id         int64     `json:"id" db:"id"`
+	Cid        int64     `json:"cid" db:"cid"`
+	Uid        int64     `json:"uid" db:"uid"`
+	Pid        int64     `json:"pid" db:"pid"`
+	Flag       string    `json:"flag" db:"flag"`
+	SubmitTime time.Time `json:"submitTime" db:"submit_time"`
 }
