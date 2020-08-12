@@ -505,17 +505,23 @@ type ACMRank struct {
 	lock       sync.RWMutex
 }
 
+type ACMRankForm struct {
+	FirstAC    map[int64]time.Time `json:"firstAC"`
+	Rank       RankList            `json:"rank"`
+	UpdateTime time.Time           `json:"updateTime"`
+}
+
 type ACMData struct {
-	Uid       int64                `json:"uid" db:"uid"`
-	Total     int                  `json:"total" db:"total"`
-	AC        int                  `json:"ac" db:"ac"`
-	TotalTime time.Time            `json:"totalTime" db:"total_time"`
-	Username  string               `json:"username" db:"username"`
-	ACMDetail map[int64]*ACMDetail `json:"ACMDetail" db:"acm_detail"`
+	Uid        int64      `json:"uid" db:"uid"`
+	Total      int        `json:"total" db:"total"`
+	AC         int        `json:"ac" db:"ac"`
+	TotalTime  time.Time  `json:"totalTime" db:"total_time"`
+	Username   string     `json:"username" db:"username"`
+	Detail     DetailList `json:"detail" db:"detail"`
+	detailData map[int64]*ACMDetail
 }
 
 type ACMDetail struct {
-	Id             int64     `json:"id" db:"id"`
 	Pid            int64     `json:"pid" db:"pid"`
 	LastSubmitTime time.Time `json:"lastSubmitTime" db:"last_submit_time"`
 	Total          int       `json:"total" db:"total"`
@@ -523,6 +529,8 @@ type ACMDetail struct {
 }
 
 type RankList []ACMData
+
+type DetailList []ACMDetail
 
 func (l RankList) Len() int {
 	return len(l)
@@ -533,6 +541,18 @@ func (l RankList) Less(i, j int) bool {
 }
 
 func (l RankList) Swap(i, j int) {
+	l[i], l[j] = l[j], l[i]
+}
+
+func (l DetailList) Len() int {
+	return len(l)
+}
+
+func (l DetailList) Less(i, j int) bool {
+	return l[i].LastSubmitTime.Before(l[j].LastSubmitTime)
+}
+
+func (l DetailList) Swap(i, j int) {
 	l[i], l[j] = l[j], l[i]
 }
 
@@ -566,11 +586,11 @@ func TryUpdateACMRank(cid int64) error {
 		return nil
 	}
 	next := time.Now()
-	s, err := ctsdb.GetACMSubByTime(1, rank.UpdateTime, next)
+	s, err := ctsdb.GetACMSubByTime(cid, rank.UpdateTime, next)
 	if err != nil {
 		return err
 	}
-	d, err := ctsdb.GetDetail(1)
+	d, err := ctsdb.GetDetail(cid)
 	if err != nil {
 		return err
 	}
@@ -580,14 +600,14 @@ func TryUpdateACMRank(cid int64) error {
 		pid := s[i].Pid
 		user, ok := rank.data[uid]
 		if !ok {
-			rank.data[uid] = &ACMData{ACMDetail: map[int64]*ACMDetail{}}
+			rank.data[uid] = &ACMData{detailData: map[int64]*ACMDetail{}}
 			user = rank.data[uid]
 		}
 		user.Uid = uid
-		detail, ok := user.ACMDetail[pid]
+		detail, ok := user.detailData[pid]
 		if !ok {
-			user.ACMDetail[pid] = &ACMDetail{}
-			detail = user.ACMDetail[pid]
+			user.detailData[pid] = &ACMDetail{}
+			detail = user.detailData[pid]
 		}
 		detail.Pid = pid
 		if s[i].Flag == "AC" {
@@ -597,16 +617,16 @@ func TryUpdateACMRank(cid int64) error {
 		if s[i].Flag != "ISE" {
 			detail.Total++
 			user.Total++
-		}
-		submitTime, err := time.Parse("2006-01-02 15:04:05", s[i].SubmitTime)
-		if err != nil {
-			return err
-		}
-		if submitTime.After(detail.LastSubmitTime) {
-			detail.LastSubmitTime = submitTime
-		}
-		if submitTime.After(user.TotalTime) {
-			user.TotalTime = submitTime
+			submitTime, err := time.Parse("2006-01-02 15:04:05", s[i].SubmitTime)
+			if err != nil {
+				return err
+			}
+			if submitTime.After(detail.LastSubmitTime) {
+				detail.LastSubmitTime = submitTime
+			}
+			if submitTime.After(user.TotalTime) {
+				user.TotalTime = submitTime
+			}
 		}
 		firstAC := rank.FirstAC[pid]
 		if detail.AC && ((detail.LastSubmitTime.Before(firstAC)) || firstAC.Equal(time.Time{})) {
@@ -616,10 +636,21 @@ func TryUpdateACMRank(cid int64) error {
 	rank.Rank = []ACMData{}
 	for k := range rank.data {
 		rank.Rank = append(rank.Rank, *rank.data[k])
-		ac := rank.data[k].AC
-		total := rank.data[k].Total
-		totalTime := rank.data[k].TotalTime
-		rank.data[k].TotalTime = totalTime.Add(time.Second * time.Duration((total-ac)*punishTime))
+	}
+	for i, j := 0, len(rank.Rank); i < j; i++ {
+		ac := rank.Rank[i].AC
+		total := rank.Rank[i].Total
+		totalTime := rank.Rank[i].TotalTime
+		rank.Rank[i].TotalTime = totalTime.Add(time.Second * time.Duration((total-ac)*punishTime))
+		name, err := userdb.GetName(rank.Rank[i].Uid)
+		if err != nil {
+			log.Warn("error:%v", err)
+		}
+		rank.Rank[i].Username = name
+		for k := range rank.Rank[i].detailData {
+			rank.Rank[i].Detail = append(rank.Rank[i].Detail, *rank.Rank[i].detailData[k])
+		}
+		sort.Sort(rank.Rank[i].Detail)
 	}
 	sort.Sort(rank.Rank)
 	rank.UpdateTime = next
@@ -642,13 +673,26 @@ func (Contest) GetACMTop10(c iris.Context) {
 		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
 		return
 	}
-	detail, err := ctsdb.GetACMTop10(id.Id)
+	err = TryUpdateACMRank(id.Id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	c.JSON(&dto.Res{Error: "", Data: detail})
+	acm[id.Id].lock.RLock()
+	defer acm[id.Id].lock.RUnlock()
+	length := len(acm[id.Id].Rank)
+	right := 10
+	if right > length {
+		right = length
+	}
+	data := ACMRankForm{
+		Rank:       acm[id.Id].Rank[0:right],
+		UpdateTime: acm[id.Id].UpdateTime,
+	}
+	c.JSON(&dto.Res{Error: "", Data: data})
 }
+
+var ACMRankPageSize = 10
 
 func (Contest) GetACMRank(c iris.Context) {
 	var form dto.ContestForm
@@ -657,7 +701,8 @@ func (Contest) GetACMRank(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	qualified, _, err := cts.isQualified(form.Cid, c)
+	cid := form.Cid
+	qualified, _, err := cts.isQualified(cid, c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -666,14 +711,33 @@ func (Contest) GetACMRank(c iris.Context) {
 		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
 		return
 	}
-	err = TryUpdateACMRank(form.Cid)
+	page := form.Page
+	if page <= 0 {
+		page = 1
+	}
+	err = TryUpdateACMRank(cid)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	acm[form.Cid].lock.RLock()
-	defer acm[form.Cid].lock.RUnlock()
-	data := acm[form.Cid]
+	acm[cid].lock.RLock()
+	defer acm[cid].lock.RUnlock()
+	length := len(acm[cid].Rank)
+	left := (page - 1) * ACMRankPageSize
+	right := page * ACMRankPageSize
+	if length < left {
+		right = 0
+		left = 0
+	} else if right > length {
+		right = length
+	}
+	log.Debug("%v %v", left, right)
+	data := ACMRankForm{
+		FirstAC:    acm[cid].FirstAC,
+		Rank:       acm[cid].Rank[left:right],
+		UpdateTime: acm[cid].UpdateTime,
+	}
+
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 

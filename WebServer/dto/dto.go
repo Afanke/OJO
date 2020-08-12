@@ -306,7 +306,7 @@ type ACMRank struct {
 	AC        int         `json:"ac" db:"ac"`
 	TotalTime int         `json:"totalTime" db:"total_time"`
 	Username  string      `json:"username" db:"username"`
-	ACMDetail []ACMDetail `json:"ACMDetail" db:"acm_detail"`
+	ACMDetail []ACMDetail `json:"detailData" db:"acm_detail"`
 }
 
 type ACMRank2 struct {
