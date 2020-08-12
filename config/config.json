@@ -2,7 +2,7 @@
   "Port": 80,
   "DataBase": {
     "DriverName": "mysql",
-    "DataSourceName": "root:123123@tcp(127.0.0.1:3306)/ojo?charset=utf8mb4&parseTime=true"
+    "DataSourceName": "root:123123@tcp(127.0.0.1:3306)/ojo?charset=utf8mb4"
   },
   "Session": {
     "CleanCycle" :3600,

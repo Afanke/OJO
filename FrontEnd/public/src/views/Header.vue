@@ -362,8 +362,9 @@
             }
             this.loginDrawer = false;
             this.username = res.data.username;
+            this.userId=res.data.id;
             this.isLogined = true;
-            this.getDetail()
+            await this.getDetail()
             this.$message.success("Welcome " + this.username + " !");
           } catch (err) {
             console.log(err);

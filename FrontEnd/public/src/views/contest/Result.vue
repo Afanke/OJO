@@ -54,14 +54,10 @@
                     <span>{{ props.row.score }}</span>
                   </el-form-item>
                   <el-form-item label="Output:">
-                    <span style="white-space: pre-wrap;">{{
-                      props.row.realOutput
-                    }}</span>
+                    <span  v-html="props.row.realOutput.replaceAll('\n','<br>')"></span>
                   </el-form-item>
-                  <el-form-item label="ErrorOutput:">
-                    <span style="white-space: pre-wrap;">{{
-                      props.row.errorOutput
-                    }}</span>
+                  <el-form-item v-if="props.row.errorOutput" label="ErrorOutput:" >
+                    <span style="white-space: pre-wrap;" v-html="props.row.errorOutput.replaceAll('\n','<br>')"></span>
                   </el-form-item>
                 </el-form>
               </template>

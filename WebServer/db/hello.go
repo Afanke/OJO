@@ -21,6 +21,7 @@ func init() {
 		MaxLifetime:  int(100 * time.Second),
 		MaxOpenConns: 100,
 	}
+	gosql.SetLogging(true)
 	gosql.SetLogger(log.GetLogger())
 	err := gosql.Connect(configs)
 	if err != nil {

@@ -201,21 +201,21 @@
         }
       },
       handleStatus() {
-        for (var i = 0; i < this.contest.length; i++) {
-          var startTime = new Date(this.contest[i].startTime.replace(/-/g, '/'));
-          var now = new Date(this.contest[i].now.replace(/-/g, '/'));
-          var endTime = new Date(this.contest[i].endTime.replace(/-/g, '/'));
-          var timeDiff = endTime - startTime;
+        for (let i = 0; i < this.contest.length; i++) {
+          let startTime = new Date(this.contest[i].startTime.replace(/-/g, '/'));
+          let now = new Date(this.contest[i].now.replace(/-/g, '/'));
+          let endTime = new Date(this.contest[i].endTime.replace(/-/g, '/'));
+          let timeDiff = endTime - startTime;
           if (timeDiff < 3600000) {
             this.contest[i].timeDiff =
               this.toDecimal(timeDiff / 60000) + ' minutes';
-          } else if (3600000 < timeDiff && timeDiff < 86400000) {
+          } else if (3600000 <= timeDiff && timeDiff < 86400000) {
             this.contest[i].timeDiff =
               this.toDecimal(timeDiff / 3600000) + ' hours';
-          } else if (86400000 < timeDiff && timeDiff < 2592000000) {
+          } else if (86400000 <= timeDiff && timeDiff < 2592000000) {
             this.contest[i].timeDiff =
               this.toDecimal(timeDiff / 86400000) + ' days';
-          } else if (2592000000 < timeDiff && timeDiff < 31104000000) {
+          } else if (2592000000 <= timeDiff && timeDiff < 31104000000) {
             this.contest[i].timeDiff =
               this.toDecimal(timeDiff / 2592000000) + ' months';
           }

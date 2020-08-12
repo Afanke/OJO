@@ -385,21 +385,21 @@
         }
       },
       handleStatus() {
-        for (var i = 0; i < this.tableData.length; i++) {
-          var startTime = new Date(this.tableData[i].startTime.replace(/-/g, '/'));
-          var now = new Date(this.tableData[i].now.replace(/-/g, '/'));
-          var endTime = new Date(this.tableData[i].endTime.replace(/-/g, '/'));
-          var timeDiff = endTime - startTime;
+        for (let i = 0; i < this.tableData.length; i++) {
+          let startTime = new Date(this.tableData[i].startTime.replace(/-/g, '/'));
+          let now = new Date(this.tableData[i].now.replace(/-/g, '/'));
+          let endTime = new Date(this.tableData[i].endTime.replace(/-/g, '/'));
+          let timeDiff = endTime - startTime;
           if (timeDiff < 3600000) {
             this.tableData[i].timeDiff =
               this.toDecimal(timeDiff / 60000) + ' minutes';
-          } else if (3600000 < timeDiff && timeDiff < 86400000) {
+          } else if (3600000 <= timeDiff && timeDiff < 86400000) {
             this.tableData[i].timeDiff =
               this.toDecimal(timeDiff / 3600000) + ' hours';
-          } else if (86400000 < timeDiff && timeDiff < 2592000000) {
+          } else if (86400000 <= timeDiff && timeDiff < 2592000000) {
             this.tableData[i].timeDiff =
               this.toDecimal(timeDiff / 86400000) + ' days';
-          } else if (2592000000 < timeDiff && timeDiff < 31104000000) {
+          } else if (2592000000 <= timeDiff && timeDiff < 31104000000) {
             this.tableData[i].timeDiff =
               this.toDecimal(timeDiff / 2592000000) + ' months';
           } else {
@@ -416,7 +416,7 @@
         }
       },
       toDecimal(x) {
-        var f = parseFloat(x);
+        let f = parseFloat(x);
         if (isNaN(f)) {
           return;
         }

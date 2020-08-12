@@ -179,7 +179,7 @@ func (User) UploadImg(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	path := "/img/user/" + strconv.Itoa(int(userId)) + "_" +
+	path := "/img/data/" + strconv.Itoa(int(userId)) + "_" +
 		time.Now().Format("2006_01_02_15_04_05") + "_" + info.Filename
 	err = ioutil.WriteFile("./dist"+path, bytes, 0666)
 	if err != nil {
@@ -389,12 +389,12 @@ func (User) UpdateDetail(c iris.Context) {
 	}
 	s, err := session.GetSessionByInt64("userId", form.Id)
 	if err == nil {
-		if token, ok := s.Get("user").(dto.UserToken); ok {
+		if token, ok := s.Get("data").(dto.UserToken); ok {
 			token.Username = form.Username
-			s.Set("user", token)
+			s.Set("data", token)
 		}
 	}
-	c.JSON(&dto.Res{Error: "", Data: "update user successfully"})
+	c.JSON(&dto.Res{Error: "", Data: "update data successfully"})
 }
 
 func (User) UpdateProfile(c iris.Context) {
@@ -487,7 +487,7 @@ func (User) Enable(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	c.JSON(&dto.Res{Error: "", Data: "update user successfully"})
+	c.JSON(&dto.Res{Error: "", Data: "update data successfully"})
 }
 
 func (User) Disable(c iris.Context) {
@@ -512,7 +512,7 @@ func (User) Disable(c iris.Context) {
 		return
 	}
 	session.DelByInt64("userId", id.Id)
-	c.JSON(&dto.Res{Error: "", Data: "update user successfully"})
+	c.JSON(&dto.Res{Error: "", Data: "update data successfully"})
 }
 
 func getUserId(c iris.Context) (int64, error) {

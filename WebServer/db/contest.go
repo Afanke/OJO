@@ -661,9 +661,16 @@ func (Contest) GetACMRankCount(cid int64) (int, error) {
 	return count, err
 }
 
-func (Contest) GetACMSubmission(cid int64) ([]dto.ACMSubmission, error) {
+func (Contest) GetACMSubByTime(cid int64, after, next time.Time) ([]dto.ACMSubmission, error) {
 	var s []dto.ACMSubmission
-	err := gosql.Select(&s, "select id, uid, cid, pid, submit_time, flag from contest_submission cs where cs.cid=? order by cs.submit_time ", cid)
+	err := gosql.Select(&s,
+		`select id, uid, cid, pid, submit_time, flag
+				from contest_submission cs 
+				where cs.cid=? and submit_time>? and submit_time<?
+				order by cs.submit_time `,
+		cid,
+		after.Format("2006-01-02 15:04:05"),
+		next.Format("2006-01-02 15:04:05"))
 	return s, err
 }
 

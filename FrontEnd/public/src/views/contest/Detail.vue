@@ -370,14 +370,14 @@
                 }
             },
             getDuration() {
-                var timeDiff = this.endTime - this.startTime;
+                let timeDiff = this.endTime - this.startTime;
                 if (timeDiff < 3600000) {
                     this.timeDiff = this.toDecimal(timeDiff / 60000) + ' minutes';
-                } else if (3600000 < timeDiff && timeDiff < 86400000) {
+                } else if (3600000 <= timeDiff && timeDiff < 86400000) {
                     this.timeDiff = this.toDecimal(timeDiff / 3600000) + ' hours';
-                } else if (86400000 < timeDiff && timeDiff < 2592000000) {
+                } else if (86400000 <= timeDiff && timeDiff < 2592000000) {
                     this.timeDiff = this.toDecimal(timeDiff / 86400000) + ' days';
-                } else if (2592000000 < timeDiff && timeDiff < 31104000000) {
+                } else if (2592000000 <= timeDiff && timeDiff < 31104000000) {
                     this.timeDiff = this.toDecimal(timeDiff / 2592000000) + ' months';
                 }
             },

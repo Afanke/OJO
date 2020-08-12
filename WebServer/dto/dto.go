@@ -1,7 +1,5 @@
 package dto
 
-import "time"
-
 type Res struct {
 	Error string      `json:"error"`
 	Data  interface{} `json:"data"`
@@ -189,7 +187,7 @@ type OperationForm struct {
 type SubmitForm struct {
 	Cid  int64  `json:"cid" db:"cid"` // Contest Id
 	Sid  int64  `json:"sid" db:"sid"` // Submission Id
-	Uid  int64  `json:"uid" db:"uid"` // User Id
+	Uid  int64  `json:"uid" db:"uid"` // user Id
 	Pid  int64  `json:"pid" db:"pid"` // Problem Id
 	Lid  int64  `json:"lid" db:"lid"`
 	Code string `json:"code" db:"code"`
@@ -690,10 +688,10 @@ type ContestTime struct {
 }
 
 type ACMSubmission struct {
-	Id         int64     `json:"id" db:"id"`
-	Cid        int64     `json:"cid" db:"cid"`
-	Uid        int64     `json:"uid" db:"uid"`
-	Pid        int64     `json:"pid" db:"pid"`
-	Flag       string    `json:"flag" db:"flag"`
-	SubmitTime time.Time `json:"submitTime" db:"submit_time"`
+	Id         int64  `json:"id" db:"id"`
+	Cid        int64  `json:"cid" db:"cid"`
+	Uid        int64  `json:"uid" db:"uid"`
+	Pid        int64  `json:"pid" db:"pid"`
+	Flag       string `json:"flag" db:"flag"`
+	SubmitTime string `json:"submitTime" db:"submit_time"`
 }

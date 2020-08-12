@@ -9,7 +9,9 @@ import (
 	"github.com/afanke/OJO/utils/session"
 	"github.com/kataras/iris/v12"
 	"net"
+	"sort"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -488,6 +490,142 @@ func (Contest) GetOITop10(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: detail})
 }
 
+//-------------------------------------------------------------
+// ACM Rank
+
+type ACMRankPool map[int64]*ACMRank
+
+var ACMPoolLock sync.Mutex
+
+type ACMRank struct {
+	FirstAC    map[int64]time.Time `json:"firstAC"`
+	Rank       RankList            `json:"rank"`
+	UpdateTime time.Time           `json:"updateTime"`
+	data       map[int64]*ACMData
+	lock       sync.RWMutex
+}
+
+type ACMData struct {
+	Uid       int64                `json:"uid" db:"uid"`
+	Total     int                  `json:"total" db:"total"`
+	AC        int                  `json:"ac" db:"ac"`
+	TotalTime time.Time            `json:"totalTime" db:"total_time"`
+	Username  string               `json:"username" db:"username"`
+	ACMDetail map[int64]*ACMDetail `json:"ACMDetail" db:"acm_detail"`
+}
+
+type ACMDetail struct {
+	Id             int64     `json:"id" db:"id"`
+	Pid            int64     `json:"pid" db:"pid"`
+	LastSubmitTime time.Time `json:"lastSubmitTime" db:"last_submit_time"`
+	Total          int       `json:"total" db:"total"`
+	AC             bool      `json:"ac" db:"ac"`
+}
+
+type RankList []ACMData
+
+func (l RankList) Len() int {
+	return len(l)
+}
+
+func (l RankList) Less(i, j int) bool {
+	return l[i].AC > l[j].AC || (l[i].AC == l[j].AC && l[i].TotalTime.Before(l[j].TotalTime))
+}
+
+func (l RankList) Swap(i, j int) {
+	l[i], l[j] = l[j], l[i]
+}
+
+var acm ACMRankPool = map[int64]*ACMRank{}
+
+func TryUpdateACMRank(cid int64) error {
+	rank, ok := acm[cid]
+	if !ok {
+		ACMPoolLock.Lock()
+		defer ACMPoolLock.Unlock()
+		if _, ok = acm[cid]; !ok {
+			acm[cid] = &ACMRank{
+				FirstAC:    map[int64]time.Time{},
+				data:       map[int64]*ACMData{},
+				Rank:       []ACMData{},
+				UpdateTime: time.Time{},
+				lock:       sync.RWMutex{},
+			}
+		}
+		rank = acm[cid]
+	}
+	rank.lock.RLock()
+	if time.Now().Before(rank.UpdateTime.Add(time.Second * 60)) {
+		rank.lock.RUnlock()
+		return nil
+	}
+	rank.lock.RUnlock()
+	rank.lock.Lock()
+	defer rank.lock.Unlock()
+	if time.Now().Before(rank.UpdateTime.Add(time.Second * 60)) {
+		return nil
+	}
+	next := time.Now()
+	s, err := ctsdb.GetACMSubByTime(1, rank.UpdateTime, next)
+	if err != nil {
+		return err
+	}
+	d, err := ctsdb.GetDetail(1)
+	if err != nil {
+		return err
+	}
+	punishTime := d.Punish
+	for i, j := 0, len(s); i < j; i++ {
+		uid := s[i].Uid
+		pid := s[i].Pid
+		user, ok := rank.data[uid]
+		if !ok {
+			rank.data[uid] = &ACMData{ACMDetail: map[int64]*ACMDetail{}}
+			user = rank.data[uid]
+		}
+		user.Uid = uid
+		detail, ok := user.ACMDetail[pid]
+		if !ok {
+			user.ACMDetail[pid] = &ACMDetail{}
+			detail = user.ACMDetail[pid]
+		}
+		detail.Pid = pid
+		if s[i].Flag == "AC" {
+			detail.AC = true
+			user.AC++
+		}
+		if s[i].Flag != "ISE" {
+			detail.Total++
+			user.Total++
+		}
+		submitTime, err := time.Parse("2006-01-02 15:04:05", s[i].SubmitTime)
+		if err != nil {
+			return err
+		}
+		if submitTime.After(detail.LastSubmitTime) {
+			detail.LastSubmitTime = submitTime
+		}
+		if submitTime.After(user.TotalTime) {
+			user.TotalTime = submitTime
+		}
+		firstAC := rank.FirstAC[pid]
+		if detail.AC && ((detail.LastSubmitTime.Before(firstAC)) || firstAC.Equal(time.Time{})) {
+			rank.FirstAC[pid] = detail.LastSubmitTime
+		}
+	}
+	rank.Rank = []ACMData{}
+	for k := range rank.data {
+		rank.Rank = append(rank.Rank, *rank.data[k])
+		ac := rank.data[k].AC
+		total := rank.data[k].Total
+		totalTime := rank.data[k].TotalTime
+		rank.data[k].TotalTime = totalTime.Add(time.Second * time.Duration((total-ac)*punishTime))
+	}
+	sort.Sort(rank.Rank)
+	rank.UpdateTime = next
+	return nil
+}
+
 func (Contest) GetACMTop10(c iris.Context) {
 	var id dto.Id
 	err := c.ReadJSON(&id)
@@ -528,12 +666,15 @@ func (Contest) GetACMRank(c iris.Context) {
 		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
 		return
 	}
-	detail, err := ctsdb.GetACMRank(form)
+	err = TryUpdateACMRank(form.Cid)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	c.JSON(&dto.Res{Error: "", Data: detail})
+	acm[form.Cid].lock.RLock()
+	defer acm[form.Cid].lock.RUnlock()
+	data := acm[form.Cid]
+	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
 func (Contest) GetACMRankCount(c iris.Context) {
@@ -552,13 +693,18 @@ func (Contest) GetACMRankCount(c iris.Context) {
 		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
 		return
 	}
-	detail, err := ctsdb.GetACMRankCount(id.Id)
+	err = TryUpdateACMRank(id.Id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	c.JSON(&dto.Res{Error: "", Data: detail})
+	acm[id.Id].lock.RLock()
+	defer acm[id.Id].lock.RUnlock()
+	data := len(acm[id.Id].Rank)
+	c.JSON(&dto.Res{Error: "", Data: data})
 }
+
+//-------------------------------------------------------------
 
 // -------------------------------------------------------------
 // 提交代码
