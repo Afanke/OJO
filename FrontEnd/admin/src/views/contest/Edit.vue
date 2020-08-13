@@ -85,7 +85,7 @@
                             <span style="color:red">*</span>
                             <span>&nbsp;Show Output</span>
                             <el-row style="margin-top:29px;margin-left:10px">
-                                <el-switch :disabled="isStarted" v-model="showOutput" active-color="#13ce66" inactive-color="#ff4949">
+                                <el-switch v-model="showOutput" active-color="#13ce66" inactive-color="#ff4949">
                                 </el-switch>
                             </el-row>
                         </el-col>

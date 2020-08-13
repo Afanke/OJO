@@ -5,16 +5,17 @@
                 <div class="left-box">
                     <el-row class="problem-box">
                         <el-row style="height:60px;line-height:60px">
-              <span style="font-size:22px;margin-left:2%">
-                {{ detail.title }}
-              </span>
+                            <span style="font-size:22px;margin-left:2%">
+                                {{ detail.title }}
+                            </span>
                             <div style="float:right;margin-right:30px">
                                 <el-button plain size="small">
                                     <div :style="statusStyle">
                                         &nbsp;
                                     </div>
                                     <span style="margin-left:5px;margin-right:-8px">
-                    {{ countDown }}</span>
+                                    {{ countDown }}
+                                    </span>
                                 </el-button>
                             </div>
                         </el-row>
@@ -142,7 +143,7 @@
                             <el-button style="margin-left:15px" type="primary" plain v-if="flag === 'Sending'"
                                        @click="goStatusDetail">Sending
                             </el-button>
-                            <el-button type="primary" :disabled="over"  style="float:right;" @click="submit"
+                            <el-button type="primary" :disabled="over" style="float:right;" @click="submit"
                                        :loading="isJudging"
                                        class="el-icon-s-promotion">&nbsp;&nbsp;Submit
                             </el-button>
@@ -819,20 +820,20 @@
                 }
             },
             CountDuration(start, end) {
-                var s = start.getTime();
-                var e = end.getTime();
-                var d = (e - s) / 1000;
-                var hour = Math.floor(d / 3600);
+                let s = start.getTime();
+                let e = end.getTime();
+                let d = (e - s) / 1000;
+                let hour = Math.floor(d / 3600);
                 d = d % 3600;
                 if (hour < 10) {
                     hour = "0" + hour;
                 }
-                var minute = Math.floor(d / 60);
+                let minute = Math.floor(d / 60);
                 if (minute < 10) {
                     minute = "0" + minute;
                 }
                 d = d % 60;
-                var second = d;
+                let second = d;
                 if (second < 10) {
                     second = "0" + second;
                 }

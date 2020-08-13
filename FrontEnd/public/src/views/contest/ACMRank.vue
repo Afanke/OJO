@@ -2,6 +2,17 @@
     <div class="box" v-if="show" v-loading="loading">
         <el-row style="height:60px">
             <span style="float:left;font-size:20px;margin-left:20px;margin-top:15px">Rank</span>
+            <div style="float:right;margin-right:30px;margin-top:15px">
+                <span style="font-size: 12px;color: gray;padding-right: 10px">Auto Refresh:</span>
+                <el-button plain size="small">
+                    <div :style="statusStyle">
+                        &nbsp;
+                    </div>
+                    <span style="margin-left:5px;margin-right:-8px">
+                        {{ countDown }}
+                    </span>
+                </el-button>
+            </div>
         </el-row>
         <div style="width:85%;float:left;margin-left:7.5%">
             <ve-line style="width:100%" :settings="chartSettings" :legend-visible="true" :extend="chartExtend">
@@ -35,7 +46,7 @@
                     </template>
                 </el-table-column>
             </el-table>
-            <el-pagination style="float:right;margin-top:20px" background layout="prev, pager, next" :page-size="10"
+            <el-pagination style="float:right;margin-top:20px" background layout="prev, pager, next" :page-size="pageSize"
                            @current-change="handlePageChange" :current-page="page" :total="count">
             </el-pagination>
         </div>
@@ -56,9 +67,14 @@
                 problemList: [],
                 startTime: "",
                 page: 1,
+                pageSize:5,
+                statusStyle:"",
+                countDown:"",
                 count: 5,
+                updateTime:new Date(),
                 loading: true,
                 rankLoading: true,
+                timeout:null,
                 top10: {},
                 chartExtend: {
                     title: {
@@ -116,17 +132,6 @@
                 },
                 chartSettings: {
                     xAxisType: "time"
-                    // dimension:['1','2'],
-                    // metrics:['date']
-                    // itemStyle: {
-                    //   color: '#409EFF'
-                    // },
-                    // labelMap: {
-                    //   totalScore: 'Score'
-                    // },
-                    // legendName: {
-                    //   totalScore: 'Score'
-                    // }
                 }
             };
         },
@@ -137,14 +142,6 @@
         async mounted() {
             this.show = true;
             try {
-                const {data: res0} = await this.$http.post("/contest/getACMTop10", {
-                    id: Number(this.$route.query.id)
-                });
-                if (res0.error) {
-                    this.$message.error(res0.error);
-                    return;
-                }
-                this.top10 = res0.data.rank;
                 const {data: res1} = await this.$http.post(
                     "/contest/getAllProblemName", {
                         id: Number(this.$route.query.id)
@@ -163,8 +160,7 @@
                 }
                 this.startTime = res2.data.startTime;
                 this.startTime = new Date(this.startTime.replace(/-/g, "/"));
-                this.processData(this.top10)
-                this.prepareChart()
+                await this.getTop10()
                 await this.getCount()
                 await this.getRank()
                 this.rankLoading = false;
@@ -175,8 +171,24 @@
             }
         },
         methods: {
+            async getTop10(){
+                try {
+                    const {data: res0} = await this.$http.post("/contest/getACMTop10", {
+                        id: Number(this.$route.query.id)
+                    });
+                    if (res0.error) {
+                        this.$message.error(res0.error);
+                        return;
+                    }
+                    this.top10 = res0.data.rank;
+                    this.processData(this.top10)
+                    this.prepareChart()
+                } catch (err) {
+                    console.log(err);
+                    alert(err);
+                }
+            },
             cellStyle(tb) {
-                console.log(tb)
                 if (tb.columnIndex > 3) {
                     if (!tb.row.detail[tb.columnIndex - 4]) {
                         return 'height:57px'
@@ -199,19 +211,15 @@
                     }
                 }
             },
-            processFirstAC(obj){
-                for (let i = 0; i < obj.length; i++) {
-                    for (let j = 0; j < obj[i].detail.length; j++) {
-                        obj[i].detail[j].lastSubmitTime=this.stringToDate(obj[i].detail[j].lastSubmitTime)
-                    }
-                }
-            },
             prepareChart() {
                 if (!this.top10) {
                     return
                 }
+                this.chartExtend.legend.data=[]
+                this.chartExtend.series=[]
                 for (let i = 0; i < this.top10.length; i++) {
                     let name = this.top10[i].username;
+
                     this.chartExtend.legend.data.push(name);
                     let ac = 0;
                     let obj = {
@@ -232,6 +240,7 @@
                             ]);
                         }
                     }
+
                     this.chartExtend.series.push(obj);
                 }
             },
@@ -298,6 +307,9 @@
                     }
                     this.processData(res.data.rank)
                     this.prepareTable(res.data)
+                    this.updateTime=new Date(new Date(res.data.updateTime).getTime()+60000)
+                    clearTimeout(this.timeout)
+                    this.startCountDown()
                     this.rankLoading = false;
                 } catch (err) {
                     console.log(err);
@@ -312,6 +324,21 @@
                         pid: val
                     }
                 });
+            },
+            startCountDown() {
+                let now = new Date();
+                if (now < this.updateTime) {
+                    let temp=((this.updateTime.getTime()-now.getTime())/1000).toFixed(0)
+                    this.countDown = temp>9?temp:"0"+temp;
+                    this.statusStyle = "float:left;margin-left:-10px;width:12px;height:12px;border-radius:6px;background:#67C23A";
+                    this.timeout = setTimeout(this.startCountDown, 1000);
+                } else  {
+                    this.countDown = "- -";
+                    this.statusStyle = "float:left;margin-left:-10px;width:12px;height:12px;border-radius:6px;background:#409EFF";
+                    this.getTop10()
+                    this.getCount()
+                    this.getRank()
+                }
             },
             countDuration(t1,t2) {
                 let d = (t2.getTime()/1000-t1.getTime()/1000)
@@ -363,7 +390,7 @@
                 }
             },
             indexMethod(index) {
-                return 1 + index + (this.page - 1) * 10;
+                return 1 + index + (this.page - 1) * this.pageSize;
             },
             stringToDate(str) {
                 str=str.replace("T", " ").replace("C", "")

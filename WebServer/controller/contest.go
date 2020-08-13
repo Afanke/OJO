@@ -692,7 +692,7 @@ func (Contest) GetACMTop10(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
-var ACMRankPageSize = 10
+var ACMRankPageSize = 5
 
 func (Contest) GetACMRank(c iris.Context) {
 	var form dto.ContestForm
@@ -1074,7 +1074,6 @@ func (Contest) UpdateContest(c iris.Context) {
 		}
 		contest.StartTime = data.StartTime
 		contest.Rule = data.Rule
-		contest.ShowOutput = data.ShowOutput
 		contest.Punish = data.Punish
 		contest.SubmitLimit = data.SubmitLimit
 	}
