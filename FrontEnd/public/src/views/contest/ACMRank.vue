@@ -1,8 +1,8 @@
 <template>
     <div class="box" v-if="show" v-loading="loading">
-        <el-row style="height:60px">
+        <el-row v-if="showRank" style="height:60px">
             <span style="float:left;font-size:20px;margin-left:20px;margin-top:15px">Rank</span>
-            <div style="float:right;margin-right:30px;margin-top:15px">
+            <div  style="float:right;margin-right:30px;margin-top:15px">
                 <span style="font-size: 12px;color: gray;padding-right: 10px">Auto Refresh:</span>
                 <el-button plain size="small">
                     <div :style="statusStyle">
@@ -14,13 +14,15 @@
                 </el-button>
             </div>
         </el-row>
-        <div style="width:85%;float:left;margin-left:7.5%">
+        <el-row v-if="!showRank">
+         <p style="color: gray;font-size: 30px;text-align:center;line-height:144px">Rank Closed</p>
+        </el-row>
+        <div v-if="showRank" style="width:85%;float:left;margin-left:7.5%">
             <ve-line style="width:100%" :settings="chartSettings" :legend-visible="true" :extend="chartExtend">
             </ve-line>
         </div>
-        <div style="width:100%">
+        <div v-if="showRank" style="width:100%">
             <el-table :data="tableData" style="width: 100%" v-loading="rankLoading" :cell-style="cellStyle"  size="mini">
-
                 <el-table-column type="index" label="#" min-width="10" align="center" :index="indexMethod">
                 </el-table-column>
                 <el-table-column prop="username" label="Username" align="center" min-width="10">
@@ -50,6 +52,7 @@
                            @current-change="handlePageChange" :current-page="page" :total="count">
             </el-pagination>
         </div>
+
     </div>
 </template>
 <script>
@@ -61,6 +64,7 @@
         data() {
             return {
                 show: false,
+                showRank:true,
                 res: {},
                 res1: {},
                 tableData: [],
@@ -173,14 +177,18 @@
         methods: {
             async getTop10(){
                 try {
-                    const {data: res0} = await this.$http.post("/contest/getACMTop10", {
+                    const {data: res} = await this.$http.post("/contest/getACMTop10", {
                         id: Number(this.$route.query.id)
                     });
-                    if (res0.error) {
-                        this.$message.error(res0.error);
+                    if (res.error) {
+                        if (res.error==="rank closed"){
+                            this.showRank=false
+                            return
+                        }
+                        this.$message.error(res.error);
                         return;
                     }
-                    this.top10 = res0.data.rank;
+                    this.top10 = res.data.rank;
                     this.processData(this.top10)
                     this.prepareChart()
                 } catch (err) {
@@ -219,7 +227,6 @@
                 this.chartExtend.series=[]
                 for (let i = 0; i < this.top10.length; i++) {
                     let name = this.top10[i].username;
-
                     this.chartExtend.legend.data.push(name);
                     let ac = 0;
                     let obj = {
@@ -285,7 +292,11 @@
                     id: Number(this.$route.query.id)
                 });
                 if (res.error) {
-                    this.$message.error(res3.error);
+                    if (res.error==="rank closed"){
+                        this.showRank=false
+                        return
+                    }
+                    this.$message.error(res.error);
                     return;
                 }
                 this.count = Number(res.data);
@@ -302,6 +313,10 @@
                         page: this.page
                     });
                     if (res.error) {
+                        if (res.error==="rank closed"){
+                            this.showRank=false
+                            return
+                        }
                         this.$message.error(res.error);
                         return;
                     }

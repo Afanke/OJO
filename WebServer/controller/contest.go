@@ -412,6 +412,20 @@ func (Contest) GetStatusDetail(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
+	showOutput, err := ctsdb.GetShowOutput(csmid.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	log.Debug("%v", showOutput)
+	if !showOutput {
+		for i, j := 0, len(data); i < j; i++ {
+			data[i].RealOutput = ""
+			data[i].ErrorOutput = ""
+			data[i].SPJOutput = ""
+			data[i].SPJErrorOutput = ""
+		}
+	}
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
@@ -657,6 +671,8 @@ func TryUpdateACMRank(cid int64) error {
 	return nil
 }
 
+var ACMRankPageSize = 5
+
 func (Contest) GetACMTop10(c iris.Context) {
 	var id dto.Id
 	err := c.ReadJSON(&id)
@@ -671,6 +687,15 @@ func (Contest) GetACMTop10(c iris.Context) {
 	}
 	if !qualified {
 		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
+		return
+	}
+	showRank, err := ctsdb.GetShowRank(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	if !showRank {
+		c.JSON(&dto.Res{Error: errors.New("rank closed").Error(), Data: nil})
 		return
 	}
 	err = TryUpdateACMRank(id.Id)
@@ -692,8 +717,6 @@ func (Contest) GetACMTop10(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
-var ACMRankPageSize = 5
-
 func (Contest) GetACMRank(c iris.Context) {
 	var form dto.ContestForm
 	err := c.ReadJSON(&form)
@@ -709,6 +732,15 @@ func (Contest) GetACMRank(c iris.Context) {
 	}
 	if !qualified {
 		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
+		return
+	}
+	showRank, err := ctsdb.GetShowRank(cid)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	if !showRank {
+		c.JSON(&dto.Res{Error: errors.New("rank closed").Error(), Data: nil})
 		return
 	}
 	page := form.Page
@@ -755,6 +787,15 @@ func (Contest) GetACMRankCount(c iris.Context) {
 	}
 	if !qualified {
 		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
+		return
+	}
+	showRank, err := ctsdb.GetShowRank(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	if !showRank {
+		c.JSON(&dto.Res{Error: errors.New("rank closed").Error(), Data: nil})
 		return
 	}
 	err = TryUpdateACMRank(id.Id)

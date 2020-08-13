@@ -53,7 +53,7 @@
                   <el-form-item label="Score:">
                     <span>{{ props.row.score }}</span>
                   </el-form-item>
-                  <el-form-item label="Output:">
+                  <el-form-item label="Output:" v-if="props.row.realOutput">
                     <span  v-html="props.row.realOutput.replaceAll('\n','<br>')"></span>
                   </el-form-item>
                   <el-form-item v-if="props.row.errorOutput" label="ErrorOutput:" >

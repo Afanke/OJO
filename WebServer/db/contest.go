@@ -515,6 +515,23 @@ func (Contest) GetCaseRes(csmid int64) ([]dto.ContestCaseResult, error) {
 	return res, err
 }
 
+func (Contest) GetShowOutput(csmid int64) (bool, error) {
+	var cid int64
+	err := gosql.Get(&cid, "select cid from ojo.contest_submission where id=? limit 1", csmid)
+	if err != nil {
+		return false, err
+	}
+	var res bool
+	err = gosql.Get(&res, "select show_output from ojo.contest where id=? limit 1", cid)
+	return res, err
+}
+
+func (Contest) GetShowRank(cid int64) (bool, error) {
+	var res bool
+	err := gosql.Get(&res, "select show_rank from ojo.contest where id=? limit 1", cid)
+	return res, err
+}
+
 func (Contest) GetAllStat(cid, uid int64, offset, limit int) ([]dto.ContestSubStat, error) {
 	var res []dto.ContestSubStat
 	err := gosql.Select(&res, "select cs.id,cs.uid,cs.cid,cs.pid,cs.total_score,cs.lid,cs.flag,cs.submit_time from contest_submission cs where cs.cid=? and cs.uid=? order by cs.submit_time desc limit ?,?", cid, uid, offset, limit)
