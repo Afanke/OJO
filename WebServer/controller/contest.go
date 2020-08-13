@@ -446,6 +446,15 @@ func (Contest) GetOIRank(c iris.Context) {
 		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
 		return
 	}
+	showRank, err := ctsdb.GetShowRank(form.Cid)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	if !showRank {
+		c.JSON(&dto.Res{Error: errors.New("rank closed").Error(), Data: nil})
+		return
+	}
 	detail, err := ctsdb.GetOIRank(form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -471,6 +480,15 @@ func (Contest) GetOIRankCount(c iris.Context) {
 		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
 		return
 	}
+	showRank, err := ctsdb.GetShowRank(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	if !showRank {
+		c.JSON(&dto.Res{Error: errors.New("rank closed").Error(), Data: nil})
+		return
+	}
 	detail, err := ctsdb.GetOIRankCount(id.Id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -494,6 +512,15 @@ func (Contest) GetOITop10(c iris.Context) {
 	}
 	if !qualified {
 		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
+		return
+	}
+	showRank, err := ctsdb.GetShowRank(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	if !showRank {
+		c.JSON(&dto.Res{Error: errors.New("rank closed").Error(), Data: nil})
 		return
 	}
 	detail, err := ctsdb.GetOITop10(id.Id)
