@@ -54,7 +54,7 @@
                             </el-link>
                         </template>
                     </el-table-column>
-                    <el-table-column align="center" prop="language" label="Language" min-width="80">
+                    <el-table-column align="center" label="Language" min-width="80">
                         <template slot-scope="scope">
                             <span>
                                 {{getLang(scope.row.lid) }}
