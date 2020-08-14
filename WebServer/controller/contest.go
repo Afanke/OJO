@@ -222,6 +222,8 @@ func (Contest) isQualified(cid int64, c iris.Context) (bool, int64, error) {
 	return qualified, userId, err
 }
 
+var statusPageSize = 15
+
 // 获得用户在cid对应Contest的所有提交记录
 func (Contest) GetAllStatus(c iris.Context) {
 	var form dto.ContestForm
@@ -242,10 +244,19 @@ func (Contest) GetAllStatus(c iris.Context) {
 	if form.Page < 1 {
 		form.Offset = 0
 	} else {
-		form.Offset = (form.Page - 1) * 10
+		form.Offset = (form.Page - 1) * statusPageSize
 	}
-	form.Limit = 10
+	form.Limit = statusPageSize
 	data, err := ctsdb.GetAllStat(form.Cid, userId, form.Offset, form.Limit)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = BatchEncrypt(len(data), func(i int) *int64 {
+		return &data[i].Id
+	}, func(i int) *string {
+		return &data[i].Eid
+	})
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -375,49 +386,68 @@ func (Contest) GetCurrentStatus(c iris.Context) {
 		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
 		return
 	}
-	detail, err := ctsdb.GetSubmission(userId, form.Pid, form.Cid)
+	data, err := ctsdb.GetSubmission(userId, form.Pid, form.Cid)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	c.JSON(&dto.Res{Error: "", Data: detail})
+	err = BatchEncrypt(1, func(i int) *int64 {
+		return &data.Id
+	}, func(i int) *string {
+		return &data.Eid
+	})
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
 // 根据csmid获得Contest提交记录的总体信息
 func (Contest) GetStatus(c iris.Context) {
-	var csmid dto.Id
+	var csmid dto.Eid
 	err := c.ReadJSON(&csmid)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	detail, err := ctsdb.GetStatus(csmid.Id)
+	id, err := DecryptId(csmid.Id)
+	data, err := ctsdb.GetStatus(id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	c.JSON(&dto.Res{Error: "", Data: detail})
+	err = BatchEncrypt(1, func(i int) *int64 {
+		return &data.Id
+	}, func(i int) *string {
+		return &data.Eid
+	})
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
 // 根据csmid获得Contest提交记录的具体各个判题点信息
 func (Contest) GetStatusDetail(c iris.Context) {
-	var csmid dto.Id
+	var csmid dto.Eid
 	err := c.ReadJSON(&csmid)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	data, err := ctsdb.GetCaseRes(csmid.Id)
+	id, err := DecryptId(csmid.Id)
+	data, err := ctsdb.GetCaseRes(id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	showOutput, err := ctsdb.GetShowOutput(csmid.Id)
+	showOutput, err := ctsdb.GetShowOutput(id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	log.Debug("%v", showOutput)
 	if !showOutput {
 		for i, j := 0, len(data); i < j; i++ {
 			data[i].RealOutput = ""
@@ -425,6 +455,15 @@ func (Contest) GetStatusDetail(c iris.Context) {
 			data[i].SPJOutput = ""
 			data[i].SPJErrorOutput = ""
 		}
+	}
+	err = BatchEncrypt(len(data), func(i int) *int64 {
+		return &data[i].Csmid
+	}, func(i int) *string {
+		return &data[i].Ecsmid
+	})
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
 	}
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
@@ -698,7 +737,7 @@ func TryUpdateACMRank(cid int64) error {
 	return nil
 }
 
-var ACMRankPageSize = 5
+var ACMRankPageSize = 20
 
 func (Contest) GetACMTop10(c iris.Context) {
 	var id dto.Id
@@ -873,6 +912,15 @@ func (Contest) Submit(c iris.Context) {
 	}
 	form.Sid = data.Id
 	go cts.handleSubmit(&form)
+	err = BatchEncrypt(1, func(i int) *int64 {
+		return &data.Id
+	}, func(i int) *string {
+		return &data.Eid
+	})
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 

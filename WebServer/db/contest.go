@@ -14,6 +14,8 @@ var cts Contest
 
 var ContestPageSize = 10
 
+var OIRankPageSize = 20
+
 func (Contest) GetAll(form *dto.ContestForm) ([]dto.Contest, error) {
 	if form.Page < 1 {
 		form.Page = 1
@@ -381,8 +383,8 @@ func (Contest) GetOIRank(form dto.ContestForm) ([]dto.OIRank, error) {
 		form.Page = 1
 	}
 	form.Page -= 1
-	form.Limit = 10
-	form.Offset = form.Page * 10
+	form.Limit = OIRankPageSize
+	form.Offset = form.Page * OIRankPageSize
 	// When I wrote this code, only God and I understand what it did
 	// Now only God knows
 	sql := `select a.uid,sum(a.max_score) total_score,max(a.submit_time) last_submit_time

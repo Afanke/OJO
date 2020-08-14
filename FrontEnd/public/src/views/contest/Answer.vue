@@ -562,8 +562,8 @@
                         this.code[this.getLang(data.lid)] = data.code;
                     }
                     this.currentLanguage = this.getLang(data.lid)
-                    if (data.id) {
-                        this.csmid = data.id;
+                    if (data.eid) {
+                        this.csmid = data.eid;
                     }
                     this.langOptions.mode = this.getMIMEType(this.currentLanguage)
                 } catch (err) {
@@ -740,7 +740,7 @@
                     const {
                         data: res
                     } = await this.$http.post("/contest/getStatus", {
-                        id: Number(this.csmid)
+                        id: this.csmid
                     });
                     if (res.error) {
                         this.$message.error(res.error);
@@ -783,7 +783,7 @@
                         this.$message.error(res.error);
                         return;
                     }
-                    this.csmid = res.data.id;
+                    this.csmid = res.data.eid;
                     this.flag = res.data.flag;
                     setTimeout(this.getStatus, 500);
                 } catch (err) {

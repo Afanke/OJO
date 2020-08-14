@@ -57,7 +57,7 @@
                     style="float:right;margin-top:20px"
                     background
                     layout="prev, pager, next"
-                    :page-size="10"
+                    :page-size="pageSize"
                     @current-change="handlePageChange"
                     :current-page="page"
                     :total="count">
@@ -75,6 +75,7 @@
             return {
                 show: false,
                 showRank: true,
+                pageSize:20,
                 res: {},
                 res1: {},
                 tableData: [],
@@ -276,7 +277,7 @@
                 }
             },
             indexMethod(index) {
-                return 1 + index + (this.page - 1) * 10;
+                return 1 + index + (this.page - 1) * this.pageSize;
             }
         },
         components: {

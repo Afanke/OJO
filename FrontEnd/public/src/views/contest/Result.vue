@@ -117,7 +117,7 @@
         show: false,
         option: 0,
         waitTimes: 0,
-        csmid: 0,
+        csmid: -1,
         bigFlag: {
           show: false,
           bgCss: '',
@@ -151,11 +151,11 @@
     },
     async beforeCreate() {
       try {
-        let psmid = this.$route.query.id;
+        let csmid = this.$route.query.id;
         let {
           data: res0
         } = await this.$http.post('/contest/getStatus', {
-          id: Number(psmid)
+          id: csmid
         });
         if (res0.error) {
           this.$message.error(res0.error);
@@ -287,7 +287,7 @@
           const {
             data: res
           } = await this.$http.post('/contest/getStatus', {
-            id: Number(this.$route.query.id)
+            id: this.$route.query.id
           });
           if (res.error) {
             this.$message.error(res.error);
@@ -312,7 +312,7 @@
         const {
           data: res
         } = await this.$http.post('/contest/getStatusDetail', {
-          id: Number(this.$route.query.id)
+          id: this.$route.query.id
         });
         if (res.error) {
           this.$message.error(res.error);

@@ -122,6 +122,13 @@ func BindRoute(app *iris.Application) {
 				Data:  c.Request().RemoteAddr,
 			})
 		})
+		app.Get("/encrypt", func(c iris.Context) {
+			id, _ := ctrl.EncryptId(100)
+			c.JSON(&dto.Res{
+				Error: "",
+				Data:  id,
+			})
+		})
 	}
 	user := app.Party("/user")
 	{

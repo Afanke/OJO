@@ -71,7 +71,7 @@
                 problemList: [],
                 startTime: "",
                 page: 1,
-                pageSize:5,
+                pageSize:20,
                 statusStyle:"",
                 countDown:"",
                 count: 5,

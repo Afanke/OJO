@@ -138,6 +138,11 @@ type Practice struct {
 type Id struct {
 	Id int64 `json:"id"`
 }
+
+type Eid struct {
+	Id string `json:"id"`
+}
+
 type Id2 struct {
 	Cid int64 `json:"cid"`
 	Pid int64 `json:"pid"`
@@ -258,7 +263,7 @@ type ContestProblem struct {
 type ContestCaseResult struct {
 	//Id          int64  `json:"id" db:"id"`
 	Csmid          int64  `json:"csmid" db:"csmid"`
-	Psmid          int64  `json:"psmid" db:"psmid"`
+	Ecsmid         string `json:"ecsmid" db:"csmid"`
 	Pcaseid        int64  `json:"pcaseid" db:"pcaseid"`
 	Uid            int64  `json:"uid" db:"uid"`
 	CpuTime        int    `json:"cpuTime" db:"cpu_time"`
@@ -273,6 +278,7 @@ type ContestCaseResult struct {
 }
 type ContestSubStat struct {
 	Id          int64  `json:"id" db:"id"`
+	Eid         string `json:"eid"`
 	Uid         int64  `json:"uid" db:"uid"`
 	Cid         int64  `json:"cid" db:"cid"`
 	Pid         int64  `json:"pid" db:"pid"`
@@ -337,6 +343,7 @@ type UserStatistic struct {
 // ------------------------------------------------------------------------------
 type ContestSubmission struct {
 	Id         int64  `json:"id" db:"id"`
+	Eid        string `json:"eid"`
 	Cid        int64  `json:"cid" db:"cid"`
 	Uid        int64  `json:"uid" db:"uid"`
 	Pid        int64  `json:"pid" db:"pid"`
