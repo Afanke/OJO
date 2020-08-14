@@ -175,7 +175,7 @@
                 this.loading = true;
                 this.paramsInit();
                 try {
-                    const {data: res} = await this.$http.post('/contest/getAllStatus', {
+                    const {data: res} = await this.$http.post('/contest/getStatusByCid', {
                         page: this.page,
                         cid: Number(this.$route.query.id)
                     });
@@ -186,7 +186,7 @@
                         this.status = res.data;
                         this.loading = false;
                     }
-                    const {data: res1} = await this.$http.post('/contest/getAllStatusCount', {
+                    const {data: res1} = await this.$http.post('/contest/getStatusCountByCid', {
                         cid: Number(this.$route.query.id)
                     });
                     if (res1.error) {
@@ -210,8 +210,7 @@
         filters: {
             formatDateTime: function (value) {
                 let d = new Date(value);
-                let a =
-                    d.getFullYear() +
+                return d.getFullYear() +
                     '-' +
                     (d.getMonth() + 1 < 10 ? '0' + (d.getMonth() + 1) : d.getMonth() + 1) +
                     '-' +
@@ -222,7 +221,6 @@
                     (d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes()) +
                     ':' +
                     (d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds());
-                return a;
             },
             formatFlags: function (value) {
                 switch (value) {

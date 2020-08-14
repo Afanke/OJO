@@ -502,8 +502,8 @@
                         this.code[this.getLang(data.lid)] = data.code;
                     }
                     this.currentLanguage=this.getLang(data.lid)
-                    if (data.id) {
-                        this.psmid = res1.data.id;
+                    if (data.eid) {
+                        this.psmid = res1.data.eid;
                     }
                     this.langOptions.mode = this.getMIMEType(this.currentLanguage)
                 } catch (err) {
@@ -680,7 +680,7 @@
                     const {
                         data: res
                     } = await this.$http.post('/practice/getStatus', {
-                        id: Number(this.psmid)
+                        id: this.psmid
                     });
                     if (res.error) {
                         this.$message.error(res.error);
@@ -715,7 +715,7 @@
                         this.$message.error(res.error);
                         return;
                     }
-                    this.psmid = res.data.id;
+                    this.psmid = res.data.eid;
                     this.flag = res.data.flag;
                     setTimeout(this.getStatus, 500)
                 } catch (err) {

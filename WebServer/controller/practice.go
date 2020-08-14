@@ -14,7 +14,6 @@ import (
 	"time"
 )
 
-// Practice 为show=true 的Problem
 type Practice struct{}
 
 var pctdb db.Practice
@@ -92,39 +91,59 @@ func (Practice) GetCurrentStatus(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	detail, err := pctdb.GetSubmission(userId, ptid.Id)
+	data, err := pctdb.GetSubmission(userId, ptid.Id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	c.JSON(&dto.Res{Error: "", Data: detail})
+	err = BatchEncrypt(1, func(i int) *int64 {
+		return &data.Id
+	}, func(i int) *string {
+		return &data.Eid
+	})
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
 // 根据psmid获得对应Practice提交的总体信息
 func (Practice) GetStatus(c iris.Context) {
-	var psmid dto.Id
+	var psmid dto.Eid
 	err := c.ReadJSON(&psmid)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	detail, err := pctdb.GetStatus(psmid.Id)
+	id, err := DecryptId(psmid.Id)
+	data, err := pctdb.GetStatus(id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	c.JSON(&dto.Res{Error: "", Data: detail})
+	err = BatchEncrypt(1, func(i int) *int64 {
+		return &data.Id
+	}, func(i int) *string {
+		return &data.Eid
+	})
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
 // 根据pcmid获得对应Practice提交的各个判题点信息
 func (Practice) GetStatusDetail(c iris.Context) {
-	var psmid dto.Id
+	var psmid dto.Eid
 	err := c.ReadJSON(&psmid)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	data, err := pctdb.GetCaseRes(psmid.Id)
+	id, err := DecryptId(psmid.Id)
+	data, err := pctdb.GetCaseRes(id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -222,6 +241,15 @@ func (Practice) Submit(c iris.Context) {
 	}
 	form.Sid = data.Id
 	go pt.handleSubmit(&form)
+	err = BatchEncrypt(1, func(i int) *int64 {
+		return &data.Id
+	}, func(i int) *string {
+		return &data.Eid
+	})
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 

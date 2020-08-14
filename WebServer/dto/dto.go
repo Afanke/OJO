@@ -160,34 +160,13 @@ type PracticeSubStat struct {
 	Pid         int64  `json:"pid" db:"pid"`
 	Lid         int64  `json:"lid" db:"lid"`
 	TotalScore  int    `json:"totalScore" db:"total_score"`
+	Eid         string `json:"eid"`
 	Flag        string `json:"flag" db:"flag"`
 	SubmitTime  string `json:"submitTime" db:"submit_time"`
 	Code        string `json:"code" db:"code"`
 	ProblemName string `json:"problemName" db:"problem_name"`
 	Username    string `json:"username" db:"username"`
 	ErrorMsg    string `json:"errorMsg" db:"error_msg"`
-}
-type OperationForm struct {
-	MaxCpuTime     int // 2 seconds
-	ActualCpuTime  int
-	MaxRealTime    int // 4 seconds
-	ActualRealTime int
-	MaxMemory      int // 2097152 bytes
-	RealMemory     int
-	Score          int
-	// Mode           int // 1:OI 2:ACM
-	PcId int64 // Problem case Id
-	// SmId           int // Submission Id
-	// Cid            int // Contest Id
-	Language     string
-	FilePath     string
-	CmdLine      string // use to start program or see version
-	Code         string
-	Input        string
-	ExpectOutput string
-	RealOutput   string
-	ErrorOutput  string
-	Flag         string
 }
 type SubmitForm struct {
 	Cid  int64  `json:"cid" db:"cid"` // Contest Id
@@ -262,8 +241,8 @@ type ContestProblem struct {
 
 type ContestCaseResult struct {
 	//Id          int64  `json:"id" db:"id"`
-	Csmid          int64  `json:"csmid" db:"csmid"`
-	Ecsmid         string `json:"ecsmid" db:"csmid"`
+	//Csmid          int64  `json:"csmid" db:"csmid"`
+	//Ecsmid         string `json:"ecsmid" db:"csmid"`
 	Pcaseid        int64  `json:"pcaseid" db:"pcaseid"`
 	Uid            int64  `json:"uid" db:"uid"`
 	CpuTime        int    `json:"cpuTime" db:"cpu_time"`
@@ -408,7 +387,6 @@ type Language struct {
 }
 type PracticeCaseResult struct {
 	//Id             int64  `json:"id" db:"id"`
-	Psmid          int64  `json:"psmid" db:"psmid"`
 	Pcaseid        int64  `json:"pcaseid" db:"pcaseid"`
 	Uid            int64  `json:"uid" db:"uid"`
 	Flag           string `json:"flag" db:"flag"`
@@ -435,6 +413,8 @@ type PracticeStatistic struct {
 }
 type PracticeSubmission struct {
 	Id         int64  `json:"id" db:"id"`
+	Eid        string `json:"eid"`
+	Cid        int64  `json:"cid" db:"cid"`
 	Uid        int64  `json:"uid" db:"uid"`
 	Pid        int64  `json:"pid" db:"pid"`
 	Lid        int64  `json:"lid" db:"lid"`

@@ -135,14 +135,12 @@
         },
         resultDetail: [],
         cmOptions: {
-          // codemirror options
           tabSize: 4,
           readOnly: true,
           mode: 'python',
           theme: 'idea',
           lineNumbers: false,
           line: true
-          // more codemirror options, 更多 codemirror 的高级配置...
         }
       };
     },
@@ -155,7 +153,7 @@
         let {
           data: res0
         } = await this.$http.post('/practice/getStatus', {
-          id: Number(psmid)
+          id: psmid
         });
         if (res0.error) {
           this.$message.error(res0.error);
@@ -287,7 +285,7 @@
           const {
             data: res
           } = await this.$http.post('/practice/getStatus', {
-            id: Number(this.$route.query.id)
+            id: this.$route.query.id
           });
           if (res.error) {
             this.$message.error(res.error);
@@ -312,7 +310,7 @@
         const {
           data: res
         } = await this.$http.post('/practice/getStatusDetail', {
-          id: Number(this.$route.query.id)
+          id: this.$route.query.id
         });
         if (res.error) {
           this.$message.error(res.error);

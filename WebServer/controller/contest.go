@@ -225,7 +225,7 @@ func (Contest) isQualified(cid int64, c iris.Context) (bool, int64, error) {
 var statusPageSize = 15
 
 // 获得用户在cid对应Contest的所有提交记录
-func (Contest) GetAllStatus(c iris.Context) {
+func (Contest) GetStatusByCid(c iris.Context) {
 	var form dto.ContestForm
 	err := c.ReadJSON(&form)
 	if err != nil {
@@ -265,7 +265,7 @@ func (Contest) GetAllStatus(c iris.Context) {
 }
 
 // 获得用户在cid对应Contest的所有提交记录数目
-func (Contest) GetAllStatusCount(c iris.Context) {
+func (Contest) GetStatusCountByCid(c iris.Context) {
 	var form dto.ContestForm
 	err := c.ReadJSON(&form)
 	if err != nil {
@@ -455,15 +455,6 @@ func (Contest) GetStatusDetail(c iris.Context) {
 			data[i].SPJOutput = ""
 			data[i].SPJErrorOutput = ""
 		}
-	}
-	err = BatchEncrypt(len(data), func(i int) *int64 {
-		return &data[i].Csmid
-	}, func(i int) *string {
-		return &data[i].Ecsmid
-	})
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
 	}
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
