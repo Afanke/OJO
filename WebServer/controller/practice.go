@@ -151,6 +151,8 @@ func (Practice) GetStatusDetail(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
+var PtStatPageSize = 12
+
 // 获得当前用户的所有Practice提交的记录
 func (Practice) GetAllStatus(c iris.Context) {
 	var form dto.PracticeForm
@@ -162,15 +164,24 @@ func (Practice) GetAllStatus(c iris.Context) {
 	if form.Page < 1 {
 		form.Offset = 0
 	} else {
-		form.Offset = (form.Page - 1) * 10
+		form.Offset = (form.Page - 1) * PtStatPageSize
 	}
-	form.Limit = 10
+	form.Limit = PtStatPageSize
 	userId, err := getUserId(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
 	data, err := pctdb.GetAllStat(userId, form.Offset, form.Limit)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = BatchEncrypt(len(data), func(i int) *int64 {
+		return &data[i].Id
+	}, func(i int) *string {
+		return &data[i].Eid
+	})
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -194,6 +205,11 @@ func (Practice) GetAllStatusCount(c iris.Context) {
 }
 
 func (Practice) GetTodayCount(c iris.Context) {
+	_, err := isAdmin(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
 	res, err := pctdb.GetTodayCount()
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -203,6 +219,11 @@ func (Practice) GetTodayCount(c iris.Context) {
 }
 
 func (Practice) GetWeekCount(c iris.Context) {
+	_, err := isAdmin(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
 	res, err := pctdb.GetWeekCount()
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -212,6 +233,11 @@ func (Practice) GetWeekCount(c iris.Context) {
 }
 
 func (Practice) GetMonthCount(c iris.Context) {
+	_, err := isAdmin(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
 	res, err := pctdb.GetMonthCount()
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -425,4 +451,38 @@ func (Practice) InsertCaseRes(form *dto.JudgeForm) error {
 		}
 	}
 	return nil
+}
+
+//---------------------------------------------------------
+func (Practice) GetPctTop10(c iris.Context) {
+	detail, err := pctdb.GetPctTop10()
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: detail})
+}
+
+func (Practice) GetPctRank(c iris.Context) {
+	var form dto.RankForm
+	err := c.ReadJSON(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	detail, err := pctdb.GetPctRank(form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: detail})
+}
+
+func (Practice) GetPctRankCount(c iris.Context) {
+	detail, err := pctdb.GetPctRankCount()
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: detail})
 }

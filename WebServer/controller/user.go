@@ -361,12 +361,14 @@ func (User) GetStatistic(c iris.Context) {
 		return
 	}
 	res.Score = data
-	sl, err := pctdb.GetUserSolvedList(id.Id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
+	if res.AC > 0 {
+		sl, err := pctdb.GetUserSolvedList(id.Id)
+		if err != nil {
+			c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+			return
+		}
+		res.SolvedList = sl
 	}
-	res.SolvedList = sl
 	c.JSON(&dto.Res{Error: "", Data: res})
 }
 

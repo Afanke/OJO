@@ -4,7 +4,7 @@
       <div v-loading="loading">
         <div class="content">
           <el-row style="height:60px">
-            <span style="float:left;font-size:20px;margin-left:20px;margin-top:15px">ACM Rank</span>
+            <span style="float:left;font-size:20px;margin-left:20px;margin-top:15px">Practice Rank</span>
           </el-row>
           <div style="width:90%;float:left;margin-left:5%">
             <ve-histogram :data="chartData" style="width:100%" :settings="chartSettings" :extend="chartExtend"
@@ -19,14 +19,10 @@
             </el-table-column>
             <el-table-column prop="ac" label="AC" align="center" min-width="10">
             </el-table-column>
-            <el-table-column prop="total" label="Total" align="center" min-width="10">
-            </el-table-column>
-            <el-table-column prop="rate" label="Rate" align="center" min-width="10">
-            </el-table-column>
           </el-table>
         </div>
         <el-row>
-            <el-pagination style="float:right;margin-top:20px" background layout="prev, pager, next" :page-size="10"
+            <el-pagination style="float:right;margin-top:20px" background layout="prev, pager, next" :page-size="pageSize"
           @current-change="handlePageChange" :current-page="page" :total="count">
         </el-pagination>
         </el-row>
@@ -41,6 +37,7 @@
     data() {
       return {
         show: false,
+        pageSize:30,
         markPoint: {
           data: [{
             name: 'max',
@@ -53,23 +50,21 @@
         loading: true,
         rankLoading: true,
         chartData: {
-          columns: ['username', 'ac', 'total'],
+          columns: ['username', 'ac'],
           rows: []
         },
         chartSettings: {
           labelMap: {
             username: 'Username',
             ac: "AC",
-            total: "Total"
           },
           legendName: {
             username: 'Username',
             ac: "AC",
-            total: "Total"
           }
         },
         chartExtend: {
-          color: ["#67C23A", "#E6A23C"],
+          color: ["#67C23A"],
           xAxis: {
             show: true,
             value: "value",
@@ -93,7 +88,7 @@
       try {
         const {
           data: res0
-        } = await this.$http.post("/rank/getACMTop10", {
+        } = await this.$http.post("/rank/getPctTop10", {
           id: Number(this.$route.query.id)
         });
         if (res0.error) {
@@ -103,7 +98,7 @@
         this.chartData.rows = res0.data;
         const {
           data: res1
-        } = await this.$http.post("/rank/getACMRankCount", {
+        } = await this.$http.post("/rank/getPctRankCount", {
           id: Number(this.$route.query.id)
         });
         if (res1.error) {
@@ -125,7 +120,7 @@
           this.paramsInit();
           const {
             data: res
-          } = await this.$http.post("/rank/getACMRank", {
+          } = await this.$http.post("/rank/getPctRank", {
             page: this.page
           });
           if (res.error) {
@@ -133,11 +128,6 @@
             return;
           }
           this.tableData = res.data
-          if(this.tableData){
-            this.tableData.forEach(e => {
-              e.rate = this.getRate(e.ac, e.total)
-            })
-          }
           this.rankLoading = false;
         } catch (err) {
           console.log(err);
@@ -170,16 +160,8 @@
         }
       },
       indexMethod(index) {
-        return 1 + index + (this.page - 1) * 10;
+        return 1 + index + (this.page - 1) * this.pageSize;
       },
-      getRate(ac, total) {
-        let rate = ac / total;
-        if (isNaN(rate)) {
-          return '--';
-        } else {
-          return (rate * 100).toFixed(2) + '%';
-        }
-      }
     },
     components: {
       VeHistogram
@@ -195,8 +177,7 @@
 <style scoped>
   .center-box {
     min-width: 600px;
-    margin-top: 20px !important;
-    margin: 0 auto;
+    margin: 20px auto 0;
     width: 90%;
   }
 

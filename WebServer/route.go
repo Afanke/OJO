@@ -196,10 +196,10 @@ func BindRoute(app *iris.Application) {
 	}
 	rank := app.Party("/rank")
 	{
-		var rk ctrl.Rank
-		rank.Post("/getACMTop10", rk.GetACMTop10)
-		rank.Post("/getACMRank", rk.GetACMRank)
-		rank.Post("/getACMRankCount", rk.GetACMRankCount)
+		var p ctrl.Practice
+		rank.Post("/getPctTop10", p.GetPctTop10)
+		rank.Post("/getPctRank", p.GetPctRank)
+		rank.Post("/getPctRankCount", p.GetPctRankCount)
 	}
 	admin := app.Party("/admin")
 	{

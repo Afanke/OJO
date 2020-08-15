@@ -16,7 +16,7 @@ const PracticeAnswer  = () => import('@/views/practice/Answer.vue');
 const ContestAnswer   = () => import('@/views/contest/Answer.vue');
 const ContestDetail   = () => import('@/views/contest/Detail.vue');
 const Announcement    = () => import('@/views/Announcement.vue');
-const ACMRank    = () => import('@/views/rank/ACMRank.vue');
+const PracticeRank    = () => import('@/views/rank/PracticeRank.vue');
 const Carton   = () => import('@/views/Carton.vue');
 const UserHome   = () => import('@/views/user/Home.vue');
 const UserSettings   = () => import('@/views/user/Settings.vue');
@@ -38,7 +38,7 @@ const routes = [
   { path: '/contest/result', component: ContestResult },
   { path: '/contest/detail', component: ContestDetail },
   { path: '/contest/answer', component: ContestAnswer },
-  { path: '/rank/ACMRank', component: ACMRank },
+  { path: '/rank/PracticeRank', component: PracticeRank },
   // { path: '/test', component: Test },
   { path: '/user/home', component: UserHome },
   { path: '/user/settings', component: UserSettings },

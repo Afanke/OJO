@@ -25,20 +25,19 @@
             <p class="el-icon-s-data"></p>
             Rank
           </template>
-          <el-menu-item index="5-1" class="emi">ACM Rank</el-menu-item>
-          <el-menu-item index="5-2" class="emi">OI Rank</el-menu-item>
+          <el-menu-item index="5-1" class="emi">Practice Rank</el-menu-item>
         </el-submenu>
         <el-menu-item index="6" class="emi emiw">
           <p class="el-icon-info"></p>
           About
         </el-menu-item>
-        <el-menu-item v-if="!isLogined" style="float:right">
+        <el-menu-item v-if="!isLogin" style="float:right">
           <el-button round @click="registerDrawer = true">Register</el-button>
         </el-menu-item>
-        <el-menu-item v-if="!isLogined" class="emib">
+        <el-menu-item v-if="!isLogin" class="emib">
           <el-button round @click="loginDrawer = true">Login</el-button>
         </el-menu-item>
-        <el-menu-item v-if="isLogined" style="float:right;margin-top:-3px">
+        <el-menu-item v-if="isLogin" style="float:right;margin-top:-3px">
           <el-dropdown @command="handleCommand">
             <el-button size="mini" style="font-size:16px">
               {{ username }}
@@ -47,11 +46,12 @@
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item command="home">Home</el-dropdown-item>
               <el-dropdown-item command="settings">Settings</el-dropdown-item>
+              <el-dropdown-item v-if="isAdmin" command="management">Management</el-dropdown-item>
               <el-dropdown-item command="logout" divided>Logout</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </el-menu-item>
-        <el-menu-item v-if="isLogined" class="emib" style="margin-top:-1px">
+        <el-menu-item v-if="isLogin" class="emib" style="margin-top:-1px">
           <div class="block">
             <el-avatar shape="square" :size="40" :src="squareUrl"></el-avatar>
           </div>
@@ -144,15 +144,15 @@
 <script>
   export default {
     data() {
-      var checkPasswordAgain = (rule, value, callback) => {
-        if (value != this.registerForm.password) {
+      let checkPasswordAgain = (rule, value, callback) => {
+        if (value !== this.registerForm.password) {
           callback(new Error("Password does not match"));
         } else {
           callback();
         }
       };
-      var checkEmail = (rule, value, callback) => {
-        var reg = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
+      let checkEmail = (rule, value, callback) => {
+        let reg = /^([a-zA-Z]|[0-9])(\w|-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
         if (reg.test(value)) {
           callback();
         } else {
@@ -164,11 +164,12 @@
         squareUrl: "https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png",
         fit: "contain",
         captchaUrl: this.$url + "/user/captcha",
-        isLogined: false,
+        isLogin: false,
         activeIndex: "0",
         activeIndex2: "1",
         loginDrawer: false,
         username: "",
+        isAdmin:false,
         registerDrawer: false,
         loginLoading: false,
         registerLoading: false,
@@ -294,18 +295,14 @@
       },
       async getDetail() {
         try {
-          const {
-            data: res
-          } = await this.$http.post("/user/getDetail", {
+          const {data: res} = await this.$http.post("/user/getDetail", {
             id: this.userId
           });
           if (res.error) {
             return
           }
-          if(res.type<2){
-            return
-          }
-          this.isLogined = true;
+          this.isAdmin=res.data.type>1
+          this.isLogin = true;
           this.username = res.data.username;
           this.userId = res.data.id
           this.squareUrl = this.$http.defaults.baseURL + res.data.iconPath
@@ -336,10 +333,7 @@
             this.$router.push("/status");
             break;
           case "5-1":
-            this.$router.push("/rank/ACMRank");
-            break;
-          case "5-2":
-            this.$router.push("/rank/OIRank");
+            this.$router.push("/rank/PracticeRank");
             break;
           case "6":
             this.$router.push("/about");
@@ -354,7 +348,6 @@
             const {
               data: res
             } = await this.$http.post("/user/login", this.loginForm);
-            // console.log(res)
             this.loginLoading = false;
             if (res.error) {
               this.$message.error(res.error);
@@ -363,7 +356,7 @@
             this.loginDrawer = false;
             this.username = res.data.username;
             this.userId=res.data.id;
-            this.isLogined = true;
+            this.isLogin = true;
             await this.getDetail()
             this.$message.success("Welcome " + this.username + " !");
           } catch (err) {
@@ -380,8 +373,6 @@
       register() {
         this.$refs.registerFormRef.validate(async valid => {
           if (!valid) return;
-          // eslint-disable-next-line no-unused-vars
-          // const { data: res } = await this.$http.post('login', this.loginForm)
           try {
             this.registerLoading = true;
             const {
@@ -390,7 +381,6 @@
               "/user/register",
               this.registerForm
             );
-            // console.log(res)
             this.registerLoading = false;
             if (res.error) {
               this.$message.error(res.error);
@@ -407,7 +397,6 @@
             this.registerForm.password = "";
             this.changeCaptcha();
           }
-          // this.$router.push('/home')
         });
       },
       async logout() {
@@ -420,8 +409,8 @@
             return;
           }
           this.username = "";
-          this.isLogined = false;
-          this.$router.push("/home")
+          this.isLogin = false;
+          await this.$router.push("/home")
         } catch (err) {
           console.log(err);
           alert(err);
@@ -443,6 +432,9 @@
           path: "/user/settings",
         });
       },
+      goManagement() {
+        window.open("/admin")
+      },
       handleCommand(command) {
         switch (command) {
           case "logout":
@@ -454,6 +446,9 @@
           case "settings":
             this.goSettings()
             break
+          case "management":
+            this.goManagement()
+            break
         }
 
       }
@@ -463,7 +458,7 @@
 <style scoped>
   .tac {
     width: 100%;
-    min-width: 1200px;
+    min-width: 1250px;
     background-color: #ffffff;
   }
 

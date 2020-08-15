@@ -294,9 +294,8 @@ type ACMRank struct {
 	ACMDetail []ACMDetail `json:"detailData" db:"acm_detail"`
 }
 
-type ACMRank2 struct {
+type PctRank struct {
 	Uid       int64  `json:"uid" db:"uid"`
-	Total     int    `json:"total" db:"total"`
 	AC        int    `json:"ac" db:"ac"`
 	Username  string `json:"username" db:"username"`
 	Signature string `json:"signature" db:"signature"`

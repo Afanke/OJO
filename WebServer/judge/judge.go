@@ -250,6 +250,11 @@ func PrepareForm(subForm *dto.SubmitForm) (*dto.JudgeForm, error) {
 }
 
 func GetAllInfo(c context.Context) {
+	_, err := isSuperAdmin(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
 	lock.RLock()
 	newJsp := make([]dto.JudgeServer, len(jsp))
 	copy(newJsp, jsp)

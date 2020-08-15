@@ -410,3 +410,68 @@ func (Practice) GetUserSolvedList(uid int64) ([]int, error) {
 	err := gosql.Select(&data, s, uid)
 	return data, err
 }
+
+var PctRankPageSize = 30
+
+func (Practice) GetPctTop10() ([]dto.PctRank, error) {
+	sql := `select count(*) as ac,uid
+			from (
+				select pid,uid
+				from ojo.practice_submission
+				where flag='AC'
+				group by pid,uid
+				) as p group by p.uid
+			order by ac desc
+			limit 10`
+	var data []dto.PctRank
+	err := gosql.Select(&data, sql)
+	if err != nil {
+		log.Warn("error:%v\n", err)
+		return nil, err
+	}
+	err = user.SelectUserName(len(data), func(i int) (target int64) {
+		return data[i].Uid
+	}, func(i int, res string) {
+		data[i].Username = res
+	})
+	return data, err
+}
+
+func (Practice) GetPctRank(form dto.RankForm) ([]dto.PctRank, error) {
+	if form.Page < 1 {
+		form.Page = 1
+	}
+	form.Page -= 1
+	form.Limit = PctRankPageSize
+	form.Offset = form.Page * PctRankPageSize
+	sql := `select count(*) as ac,uid
+			from (
+				select pid,uid
+				from ojo.practice_submission
+				where flag='AC'
+				group by pid,uid
+				) as p group by p.uid
+			order by ac desc 
+			limit ?,?`
+	var data []dto.PctRank
+	err := gosql.Select(&data, sql, form.Offset, form.Limit)
+	if err != nil {
+		log.Warn("error:%v\n", err)
+		return nil, err
+	}
+	err = user.SelectUserNameAndSig(len(data), func(i int) (target int64) {
+		return data[i].Uid
+	}, func(i int, res *dto.UsernameAndSig) {
+		data[i].Username = res.Username
+		data[i].Signature = res.Signature
+	})
+	return data, err
+}
+
+func (Practice) GetPctRankCount() (int, error) {
+	sql := `select count(distinct uid) as total
+			from ojo.practice_submission`
+	var count int
+	err := gosql.Get(&count, sql)
+	return count, err
+}

@@ -1,8 +1,5 @@
 <template>
     <div>
-        <!-- <button @click="show = !show">
-        Toggle render
-      </button> -->
         <transition name="slide-fade">
             <div v-if="show">
                 <div class="center-box">
@@ -13,10 +10,9 @@
                                 class="el-icon-refresh"
                                 type="primary"
                                 size="small"
-                                @click="reset"
-                        >&nbsp;Reset
-                        </el-button
-                        >
+                                @click="reset">
+                            &nbsp;Reset
+                        </el-button>
                     </el-row>
                     <el-row>
                         <el-table stripe size="small" :data="status" style="width:100%;border-radius:10px"
@@ -24,9 +20,8 @@
                             <el-table-column align="center" label="Submit Time" width="180">
                                 <template slot-scope="scope">
                                     <i class="el-icon-time"></i>
-                                    <span style="margin-left: 10px">{{
-                    scope.row.submitTime | formatDateTime
-                  }}</span>
+                                    <span style="margin-left: 10px">
+                                        {{scope.row.submitTime | formatDateTime}}</span>
                                 </template>
                             </el-table-column>
                             <el-table-column align="center" label="Id" width="180">
@@ -34,57 +29,51 @@
                                     <el-link
                                             type="primary"
                                             :underline="false"
-                                            @click="gotoResult(scope.row.id)"
-                                    >{{ scope.row.id }}
-                                    </el-link
-                                    >
+                                            @click="gotoResult(scope.row.eid)">
+                                        {{ scope.row.eid.slice(0,16) }}
+                                    </el-link>
                                 </template>
                             </el-table-column>
                             <el-table-column align="center" label="Status" width="240">
                                 <template slot-scope="scope">
                                     <el-button
                                             size="mini"
-                                            :type="scope.row.status | formatType "
-                                    >{{scope.row.status |formatFlags}}
-                                    </el-button
-                                    >
-
+                                            :type="scope.row.flag | formatType ">
+                                        {{scope.row.flag |formatFlags}}
+                                    </el-button>
                                 </template>
                             </el-table-column>
                             <el-table-column align="center" label="Problem">
                                 <template slot-scope="scope">
                                     <el-link
                                             :underline="false"
-                                            @click="gotoAnswer(scope.row.pid)"
-                                    >{{ scope.row.problemName }}
-                                    </el-link
-                                    >
+                                            @click="gotoAnswer(scope.row.pid)">
+                                        {{ scope.row.problemName }}
+                                    </el-link>
                                 </template>
                             </el-table-column>
                             <el-table-column align="center" label="Language" min-width="80">
                                 <template slot-scope="scope">
-                            <span>
-                                {{getLang(scope.row.lid) }}
-                            </span>
+                                    <span>
+                                        {{getLang(scope.row.lid) }}
+                                    </span>
                                 </template>
-                                getLang
                             </el-table-column>
                             <el-table-column align="center" prop="totalScore" label="Score">
                             </el-table-column>
                         </el-table>
                     </el-row>
                 </div>
-                <el-row style="width:80%;margin:20px auto 0px">
+                <el-row style="width:80%;margin:20px auto 0">
                     <el-pagination
                             style="float:right;"
                             hide-on-single-page
                             background=""
                             layout="prev, pager, next"
-                            :page-size="10"
+                            :page-size="pageSize"
                             @current-change="handlePageChange"
                             :current-page="page"
-                            :total="count"
-                    >
+                            :total="count">
                     </el-pagination>
                 </el-row>
             </div>
@@ -95,17 +84,17 @@
     export default {
         created() {
             this.$bus.emit('changeHeader', '4');
-            // this.practiseListLoading=true
         },
         async mounted() {
             this.show = false;
             this.show = true;
             this.loading = true
-            this.queryList()
+            await this.queryList()
 
         },
         data() {
             return {
+                pageSize:12,
                 loading: false,
                 count: 0,
                 page: 1,
@@ -131,14 +120,14 @@
                         throw "no such language id"
                 }
             },
-            params_init() {
+            paramsInit() {
                 if (this.$route.query.page) {
                     this.page = Number(this.$route.query.page);
                 } else {
                     this.page = 1;
                 }
             },
-            params_query() {
+            paramsQuery() {
                 let obj = {};
                 if (this.$route.query.page) {
                     obj.page = Number(this.$route.query.page);
@@ -165,44 +154,36 @@
             gotoResult(val) {
                 this.$router.push({
                     path: '/practice/result',
-                    query: {id: Number(val)}
+                    query: {id: val}
                 });
             },
             handlePageChange(val) {
-                let obj = this.params_query();
+                let obj = this.paramsQuery();
                 obj.page = Number(val);
                 this.fresh(obj);
             },
             async queryList() {
                 this.loading = true
-                this.params_init();
+                this.paramsInit();
                 try {
                     const {data: res} = await this.$http.post('/practice/getAllStatus', {
                         page: this.page
                     });
-                    // console.log(res);
                     if (res.error) {
                         this.$message.error(res.error);
                     } else {
                         this.status = res.data;
                         this.loading = false
                     }
-                } catch (err) {
-                    console.log(err);
-                    // alert(err)
-                }
-                try {
                     const {data: res1} = await this.$http.post('/practice/getAllStatusCount');
-                    // console.log(res1);
                     if (res1.error) {
                         // this.$message.error(res1.error);
-                        return
                     } else {
                         this.count = res1.data;
                     }
                 } catch (err) {
                     console.log(err);
-                    // alert(err)
+                    alert(err)
                 }
             }
         },
@@ -215,8 +196,7 @@
         filters: {
             formatDateTime: function (value) {
                 let d = new Date(value);
-                let a =
-                    d.getFullYear() +
+                return d.getFullYear() +
                     '-' +
                     (d.getMonth() + 1 < 10 ? '0' + (d.getMonth() + 1) : d.getMonth() + 1) +
                     '-' +
@@ -227,43 +207,31 @@
                     (d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes()) +
                     ':' +
                     (d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds());
-                return a;
             },
             formatFlags: function (value) {
                 switch (value) {
                     case "RE":
                         return "Runtime Error"
-                        break
                     case "CE":
                         return "Compile Error"
-                        break
                     case "WA":
                         return "Wrong Answer"
-                        break;
                     case "ISE":
                         return "Internal Server Error"
-                        break;
                     case "TLE":
                         return "Time Limit Exceeded"
-                        break
                     case "MLE":
                         return "Memory Limit Exceeded"
-                        break
                     case "OLE":
                         return "Output Limit Exceeded"
-                        break
                     case "PA":
                         return "Partial Accepted"
-                        break
                     case "Judging":
                         return "Judging"
-                        break
                     case "Pending":
                         return "Pending"
-                        break
                     case "AC":
                         return "Accepted"
-                        break
                     default:
                         return "Internal Server Error"
                 }
@@ -274,22 +242,17 @@
                     case "WA":
                     case "ISE":
                         return "danger"
-
-                        break;
                     case "TLE":
                     case "MLE":
                     case "OLE":
                     case "CE":
                         return "warning"
-                        break
                     case "PA":
                     case "Judging":
                     case "Pending":
                         return "primary"
-                        break
                     case "AC":
                         return "success"
-                        break
                     default:
                         return "danger"
                 }
@@ -300,9 +263,8 @@
 
 <style scoped>
     .center-box {
-        min-width: 600px;
-        margin-top: 20px !important;
-        margin: 0 auto;
+        min-width: 1000px;
+        margin: 20px auto 0 ;
         width: 80%;
         background-color: #ffffff;
         border-radius: 10px;
