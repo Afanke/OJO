@@ -385,9 +385,13 @@ func (Practice) GetUserSubmissionCount(uid int64) (int, error) {
 
 func (Practice) GetUserACCount(uid int64) (int, error) {
 	var count int
-	s := `select count(*)
-			from ojo.practice_submission ps
-			where ps.uid=? and ps.flag='AC' group by ps.pid`
+	s := `select count(*) as ac
+			from (
+			 select pid
+			 from ojo.practice_submission
+			 where flag='AC' and uid=?
+			 group by pid
+     		) as p`
 	err := gosql.Get(&count, s, uid)
 	return count, err
 }
