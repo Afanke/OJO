@@ -289,6 +289,57 @@ func (Contest) GetStatusCountByCid(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
+var allStatusPageSize = 12
+
+func (Contest) GetAllStatus(c iris.Context) {
+	var form dto.ContestForm
+	err := c.ReadJSON(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	if form.Page < 1 {
+		form.Offset = 0
+	} else {
+		form.Offset = (form.Page - 1) * allStatusPageSize
+	}
+	form.Limit = allStatusPageSize
+	userId, err := getUserId(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	data, err := ctsdb.GetAllStatus(userId, form.Offset, form.Limit)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = BatchEncrypt(len(data), func(i int) *int64 {
+		return &data[i].Id
+	}, func(i int) *string {
+		return &data[i].Eid
+	})
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: data})
+}
+
+func (Contest) GetAllStatusCount(c iris.Context) {
+	userId, err := getUserId(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	data, err := ctsdb.GetAllStatusCount(userId)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: data})
+}
+
 // 获得Contest下的所有Problem
 func (Contest) GetAllProblem(c iris.Context) {
 	var id dto.Id

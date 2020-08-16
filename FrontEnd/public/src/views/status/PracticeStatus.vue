@@ -4,7 +4,7 @@
             <div v-if="show">
                 <div class="center-box">
                     <el-row style="height:60px">
-                        <span style="float:left;font-size:20px;margin-left:20px;margin-top:15px">Status</span>
+                        <span style="float:left;font-size:20px;margin-left:20px;margin-top:15px">Practice Status</span>
                         <el-button
                                 style="float:right;margin-top:15px;margin-right:20px;"
                                 class="el-icon-refresh"
@@ -83,7 +83,7 @@
 <script>
     export default {
         created() {
-            this.$bus.emit('changeHeader', '4');
+            this.$bus.emit('changeHeader', '4-1');
         },
         async mounted() {
             this.show = false;
@@ -136,13 +136,13 @@
             },
             fresh(obj) {
                 this.$router.push({
-                    path: '/status',
+                    path: '/status/practice',
                     query: obj
                 })
             },
             reset() {
                 this.$router.push({
-                    path: '/status'
+                    path: '/status/practice'
                 });
             },
             gotoAnswer(val) {
@@ -271,27 +271,6 @@
         box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
     }
 
-    .el-col {
-        text-align: center;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    img {
-        /* margin: 0 auto; */
-        margin-top: 100px;
-        width: 300px;
-        height: 300px;
-        /* margin: 0 auto; */
-        /* border-radius: 50%;  */
-        /* left: 50%; */
-        /* transform: translate(-5%, 0); */
-        background-color: #ffffff;
-        /* display: flex;
-        justify-content: center;
-        align-items: center; */
-    }
 
     .slide-fade-enter-active {
         transition: all 0.8s ease;

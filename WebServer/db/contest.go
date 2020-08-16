@@ -350,6 +350,52 @@ func (Contest) IsMatched(cid, pid int64) (bool, error) {
 	return ok == 1, err
 }
 
+func (Contest) GetAllStatus(uid int64, offset, limit int) ([]dto.ContestSubStat, error) {
+	var res []dto.ContestSubStat
+	err := gosql.Select(&res,
+		`select id,uid,cid,pid,total_score,lid,flag,submit_time 
+				from contest_submission  
+				where uid=? 
+				order by submit_time desc 
+				limit ?,?`,
+		uid, offset, limit)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return nil, err
+	}
+	for i := 0; i < len(res); i++ {
+		ptName, err := pb.GetName(res[i].Pid)
+		if err != nil {
+			log.Warn("error:%v", err)
+			return nil, err
+		}
+		ctsName, err := cts.GetName(res[i].Cid)
+		if err != nil {
+			log.Warn("error:%v", err)
+			return nil, err
+		}
+		res[i].ProblemName = ptName
+		res[i].ContestName = ctsName
+	}
+	return res, nil
+}
+
+func (Contest) GetName(uid int64) (string, error) {
+	var name string
+	err := gosql.Get(&name, `select title from ojo.contest where id=?`, uid)
+	return name, err
+}
+
+func (Contest) GetAllStatusCount(uid int64) (int, error) {
+	var count int
+	err := gosql.Get(&count, "select count(*) from contest_submission ps where uid=?", uid)
+	if err != nil {
+		log.Warn("error:%v", err)
+		return 0, err
+	}
+	return count, nil
+}
+
 func (Contest) GetStatus(csmid int64) (*dto.ContestSubStat, error) {
 	var s dto.ContestSubStat
 	err := gosql.Get(&s, "select * from contest_submission cs where cs.id=? limit 1", csmid)

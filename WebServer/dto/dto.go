@@ -266,6 +266,7 @@ type ContestSubStat struct {
 	SubmitTime  string `json:"submitTime" db:"submit_time"`
 	Code        string `json:"code" db:"code"`
 	ProblemName string `json:"problemName" db:"problem_name"`
+	ContestName string `json:"contestName" db:"contest_name"`
 	Username    string `json:"username" db:"username"`
 	Flag        string `json:"flag" db:"flag"`
 	ErrorMsg    string `json:"errorMsg" db:"error_msg"`

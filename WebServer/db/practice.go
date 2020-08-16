@@ -186,7 +186,7 @@ func (Practice) GetSubmission(uid, pid int64) (*dto.PracticeSubmission, error) {
 	return &s, err
 }
 
-func (Practice) GetAllStat(uid int64, offset, limit int) ([]dto.PracticeSubStat, error) {
+func (Practice) GetAllStatus(uid int64, offset, limit int) ([]dto.PracticeSubStat, error) {
 	var res []dto.PracticeSubStat
 	err := gosql.Select(&res, "select ps.id,ps.uid,ps.pid,ps.total_score,ps.lid,ps.flag,ps.submit_time from practice_submission ps where ps.uid=? order by ps.submit_time desc limit ?,?", uid, offset, limit)
 	if err != nil {
@@ -204,7 +204,7 @@ func (Practice) GetAllStat(uid int64, offset, limit int) ([]dto.PracticeSubStat,
 	return res, nil
 }
 
-func (Practice) GetAllStatCount(uid int64) (int, error) {
+func (Practice) GetAllStatusCount(uid int64) (int, error) {
 	var count int
 	err := gosql.Get(&count, "select count(*) from practice_submission ps where ps.uid=?", uid)
 	if err != nil {

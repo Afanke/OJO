@@ -145,7 +145,7 @@
       };
     },
     created() {
-      this.$bus.emit('changeHeader', '4');
+      this.$bus.emit('changeHeader', '2');
     },
     async beforeCreate() {
       try {

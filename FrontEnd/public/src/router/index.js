@@ -6,7 +6,8 @@ Vue.use(VueRouter);
 const Home            = () => import('@/views/Home.vue');
 const Practice        = () => import('@/views/practice/Practice.vue');
 const Contest         = () => import('@/views/contest/Contest.vue');
-const PracticeStatus  = () => import('@/views/practice/Status.vue');
+const PracticeStatus  = () => import('@/views/status/PracticeStatus.vue');
+const ContestStatus  = () => import('@/views/status/ContestStatus.vue');
 const Rank            = () => import('@/views/Rank.vue');
 const About           = () => import('@/views/About.vue');
 const PracticeResult  = () => import('@/views/practice/Result.vue');
@@ -31,7 +32,8 @@ const routes = [
   { path: '/practice', component: Practice },
   { path: '/practice/answer', component: PracticeAnswer},
   { path: '/contest', component: Contest },
-  { path: '/status', component: PracticeStatus },
+  { path: '/status/practice', component: PracticeStatus },
+  { path: '/status/contest', component: ContestStatus },
   { path: '/rank', component: Rank },
   { path: '/about', component: About },
   { path: '/practice/result', component: PracticeResult },

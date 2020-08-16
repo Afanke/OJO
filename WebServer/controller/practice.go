@@ -172,7 +172,7 @@ func (Practice) GetAllStatus(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	data, err := pctdb.GetAllStat(userId, form.Offset, form.Limit)
+	data, err := pctdb.GetAllStatus(userId, form.Offset, form.Limit)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -196,7 +196,7 @@ func (Practice) GetAllStatusCount(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	data, err := pctdb.GetAllStatCount(userId)
+	data, err := pctdb.GetAllStatusCount(userId)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return

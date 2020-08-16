@@ -16,10 +16,14 @@
           <p class="el-icon-trophy"></p>
           Contests
         </el-menu-item>
-        <el-menu-item index="4" class="emi emiw">
-          <p class="el-icon-data-line"></p>
-          Status
-        </el-menu-item>
+        <el-submenu index="4">
+          <template slot="title">
+            <p class="el-icon-data-line"></p>
+            Status
+          </template>
+          <el-menu-item index="4-1" class="emi">Practice Status</el-menu-item>
+          <el-menu-item index="4-2" class="emi">Contest Status</el-menu-item>
+        </el-submenu>
         <el-submenu index="5">
           <template slot="title">
             <p class="el-icon-s-data"></p>
@@ -104,7 +108,7 @@
       <el-form label-width="20%" :model="registerForm" v-loading="registerLoading" ref="registerFormRef"
         :rules="registerRule" status-icon>
         <div style="text-align:center;margin-top:20%">
-          <span style="width:100%;font-size:50px">Welcom to OJO</span>
+          <span style="width:100%;font-size:50px">Welcome to OJO</span>
         </div>
         <el-divider></el-divider>
         <el-form-item prop="username">
@@ -329,8 +333,11 @@
           case "3":
             this.$router.push("/contest");
             break;
-          case "4":
-            this.$router.push("/status");
+          case "4-1":
+            this.$router.push("/status/practice");
+            break;
+          case "4-2":
+            this.$router.push("/status/contest");
             break;
           case "5-1":
             this.$router.push("/rank/PracticeRank");

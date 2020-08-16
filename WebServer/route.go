@@ -122,13 +122,6 @@ func BindRoute(app *iris.Application) {
 				Data:  c.Request().RemoteAddr,
 			})
 		})
-		app.Get("/encrypt", func(c iris.Context) {
-			id, _ := ctrl.EncryptId(100)
-			c.JSON(&dto.Res{
-				Error: "",
-				Data:  id,
-			})
-		})
 	}
 	user := app.Party("/user")
 	{
@@ -179,6 +172,8 @@ func BindRoute(app *iris.Application) {
 		contest.Post("/getStatusDetail", c.GetStatusDetail)
 		contest.Post("/getStatusByCid", c.GetStatusByCid)
 		contest.Post("/getStatusCountByCid", c.GetStatusCountByCid)
+		contest.Post("/getAllStatus", c.GetAllStatus)
+		contest.Post("/getAllStatusCount", c.GetAllStatusCount)
 		contest.Post("/getTime", c.GetTime)
 		contest.Post("/getOIRank", c.GetOIRank)
 		contest.Post("/getOITop10", c.GetOITop10)
