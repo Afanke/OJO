@@ -8,7 +8,6 @@
         <div class="btn" @click="login">Login</div>
       </div>
       <div class="msg">
-        <!-- Don't have account?<a href="#">Sign up</a> -->
       </div>
     </div>
 
@@ -63,7 +62,7 @@
 
   @keyframes bganimation {
     0% {
-      background-position: 0% 50%;
+      background-position: 0 50%;
     }
 
     50% {
@@ -71,7 +70,7 @@
     }
 
     100% {
-      background-position: 0% 50%;
+      background-position: 0 50%;
     }
 
   }

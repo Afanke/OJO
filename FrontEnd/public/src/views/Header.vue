@@ -31,10 +31,10 @@
           </template>
           <el-menu-item index="5-1" class="emi">Practice Rank</el-menu-item>
         </el-submenu>
-        <el-menu-item index="6" class="emi emiw">
-          <p class="el-icon-info"></p>
-          About
-        </el-menu-item>
+<!--        <el-menu-item index="6" class="emi emiw">-->
+<!--          <p class="el-icon-info"></p>-->
+<!--          About-->
+<!--        </el-menu-item>-->
         <el-menu-item v-if="!isLogin" style="float:right">
           <el-button round @click="registerDrawer = true">Register</el-button>
         </el-menu-item>
@@ -394,7 +394,7 @@
               return;
             }
             this.registerDrawer = false;
-            this.$message.success("Register successfully,now you can log in");
+            this.$message.success("register successfully!");
           } catch (err) {
             console.log(err);
             alert(err);

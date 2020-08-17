@@ -76,6 +76,10 @@
             this.isAdmin = false
             return
           }
+          if (res0.data.type<2){
+            this.isAdmin=false
+            return
+          }
           this.isAdmin = true
           this.username = res0.data.username
         } catch (err) {
@@ -110,25 +114,25 @@
         this.fullScreen()
       },
       fullScreen() {
-        var el = document.documentElement;
-        var rfs = el.requestFullScreen || el.webkitRequestFullScreen || el.mozRequestFullScreen || el
-          .msRequestFullScreen;
+        const el = document.documentElement;
+        const rfs = el.requestFullScreen || el.webkitRequestFullScreen || el.mozRequestFullScreen || el
+                .msRequestFullScreen;
         if (rfs) {
           rfs.call(el);
         } else if (typeof window.ActiveXObject !== "undefined") {
-          var wscript = new ActiveXObject("WScript.Shell");
+          const wscript = new ActiveXObject("WScript.Shell");
           if (wscript != null) {
             wscript.SendKeys("{F11}");
           }
         }
       },
       exitScreen() {
-        var el = document;
-        var cfs = el.cancelFullScreen || el.webkitCancelFullScreen || el.mozCancelFullScreen || el.exitFullScreen;
+        const el = document;
+        const cfs = el.cancelFullScreen || el.webkitCancelFullScreen || el.mozCancelFullScreen || el.exitFullScreen;
         if (cfs) {
           cfs.call(el);
         } else if (typeof window.ActiveXObject !== "undefined") {
-          var wscript = new ActiveXObject("WScript.Shell");
+          const wscript = new ActiveXObject("WScript.Shell");
           if (wscript != null) {
             wscript.SendKeys("{F11}");
           }

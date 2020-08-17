@@ -470,7 +470,7 @@
                     if (res.error) {
                         if (res.error === "sql: no rows in result set")
                             this.$message.error("the problem has benn hidden or deleted");
-                        this.$router.push("/practice")
+                        await this.$router.push("/practice")
                         return;
                     }
                     this.statistic = res.data.statistic;
@@ -494,14 +494,14 @@
                         this.$message.error(res1.error);
                         return;
                     }
-                    let data=res1.data
+                    let data = res1.data
                     if (data.flag) {
                         this.flag = data.flag;
                     }
                     if (data.code) {
                         this.code[this.getLang(data.lid)] = data.code;
                     }
-                    this.currentLanguage=this.getLang(data.lid)
+                    this.currentLanguage = this.getLang(data.lid)
                     if (data.eid) {
                         this.psmid = res1.data.eid;
                     }
@@ -600,7 +600,7 @@
             },
             copyToClipBoard(id) { //复制到剪切板
                 if (document.execCommand) {
-                    var e = document.getElementById(id);
+                    let e = document.getElementById(id);
                     console.log(e)
                     e.select();
                     document.execCommand("Copy");
@@ -672,7 +672,7 @@
                 })
             },
             goStatus() {
-                this.$router.push('/status');
+                this.$router.push('/status/practice');
             },
             async getStatus() {
                 if (this.flag === "JUG" && this.waitTimes < 50) {
@@ -713,6 +713,8 @@
                     });
                     if (res.error) {
                         this.$message.error(res.error);
+                        this.isJudging=false
+                        this.flag = '';
                         return;
                     }
                     this.psmid = res.data.eid;

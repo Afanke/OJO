@@ -4,7 +4,6 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"errors"
-	"github.com/afanke/OJO/WebServer/dto"
 	"github.com/afanke/OJO/utils/log"
 	"github.com/kataras/iris/v12"
 	"io/ioutil"
@@ -15,7 +14,6 @@ import (
 
 type Session struct {
 	Data map[string]interface{}
-	lock sync.RWMutex
 	Time int64
 }
 
@@ -34,7 +32,6 @@ var Pool = map[string]Session{}
 var PoolLock sync.RWMutex
 
 func init() {
-	gob.Register(dto.UserToken{})
 	gob.Register(sync.RWMutex{})
 	LoadSession()
 	err := LoadConfig()
@@ -80,7 +77,7 @@ func GetSession(c iris.Context) (s *Session, err error) {
 	if s, ok := Pool[cookie+addr]; ok {
 		return &s, nil
 	} else {
-		s = Session{Data: map[string]interface{}{}, Time: time.Now().Unix(), lock: sync.RWMutex{}}
+		s = Session{Data: map[string]interface{}{}, Time: time.Now().Unix()}
 		Pool[cookie+addr] = s
 		return &s, nil
 	}
@@ -159,21 +156,15 @@ func GetInt64(c iris.Context, key string) (int64, error) {
 }
 
 func (s Session) Get(str string) interface{} {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
 	return s.Data[str]
 }
 
 func (s Session) Set(str string, i interface{}) {
-	s.lock.Lock()
-	defer s.lock.Unlock()
 	s.Time = time.Now().Unix()
 	s.Data[str] = i
 }
 
 func (s Session) Remove(str string) {
-	s.lock.Lock()
-	defer s.lock.Unlock()
 	delete(s.Data, str)
 }
 

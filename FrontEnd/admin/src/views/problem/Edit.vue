@@ -1285,21 +1285,23 @@ func main(){
                     for (let i = 0; i < res.data.language.length; i++) {
                         this.useLang[this.getLang(res.data.language[i].id)] = true
                     }
-                    for (let i = 0; i < res.data.template.length; i++) {
-                        let tm = res.data.template[i]
-                        let lang = this.getLang(tm.lid)
-                        let sign = this.getTmplSign(lang)
-                        this.useTmpl[lang] = true
-                        this.tmpl[lang] =
-                            sign + " PREPEND BEGIN\n" +
-                            tm.prepend +
-                            sign + " PREPEND END\n\n" +
-                            sign + " TEMPLATE BEGIN\n" +
-                            tm.content +
-                            sign + " TEMPLATE END\n\n" +
-                            sign + " APPEND BEGIN" +
-                            tm.append +
-                            sign + " APPEND END\n"
+                    if (res.data.template){
+                        for (let i = 0; i < res.data.template.length; i++) {
+                            let tm = res.data.template[i]
+                            let lang = this.getLang(tm.lid)
+                            let sign = this.getTmplSign(lang)
+                            this.useTmpl[lang] = true
+                            this.tmpl[lang] =
+                                sign + " PREPEND BEGIN\n" +
+                                tm.prepend +
+                                sign + " PREPEND END\n\n" +
+                                sign + " TEMPLATE BEGIN\n" +
+                                tm.content +
+                                sign + " TEMPLATE END\n\n" +
+                                sign + " APPEND BEGIN" +
+                                tm.append +
+                                sign + " APPEND END\n"
+                        }
                     }
                     for (let i = 0; i < res.data.limit.length; i++) {
                         let lm = res.data.limit[i]

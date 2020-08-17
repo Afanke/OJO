@@ -24,7 +24,7 @@
                 :show-file-list="false" :on-change="changeUpload">
                 <i class="el-icon-upload"></i>
                 <div class="el-upload__text">Drop Here, or <em>click to select</em></div>
-                <div class="el-upload__tip" slot="tip">Only JPG / PNG files available, and no more than 500kb</div>
+                <div class="el-upload__tip" slot="tip">Only JPG / PNG files available, and no more than 2 MB</div>
               </el-upload>
               <el-row v-if="showCropper" style="margin-top:20px">
                 <el-col :span="12" class="cropper-content">
@@ -187,8 +187,6 @@
         loading: false,
         showCropper: false,
         img: '',
-        detail: {
-        },
         option: {
           img: '', // 裁剪图片的地址
           info: true, // 裁剪框的大小信息
@@ -227,8 +225,8 @@
         this.previews = data
       },
       changeUpload(file, fileList) {
-        const isLt1M = file.size / 1024 / 1024 < 2
-        if (!isLt1M) {
+        const isLt2M = file.size / 1024 / 1024 < 2
+        if (!isLt2M) {
           this.$message.error('上传文件大小不能超过 2MB!')
           return false
         }
@@ -293,7 +291,7 @@
               return;
             }
             this.showCropper = false
-            this.getDetail()
+            await this.getDetail()
             this.$bus.emit("changeUserIcon")
           } catch (err) {
             console.log(err);
@@ -329,7 +327,7 @@
             return;
           }
           this.$message.success(res.data);
-          this.getDetail()
+          await this.getDetail()
         } catch (err) {
           console.log(err);
           alert(err);
@@ -359,7 +357,7 @@
           this.newPassword=""
           this.newPassword1=""
           this.$message.success(res.data);
-          this.getDetail()
+          await this.getDetail()
         } catch (err) {
           console.log(err);
           alert(err);
@@ -384,9 +382,9 @@
             return;
           }
           this.$message.success(res.data);
-          this.newEmail="",
+          this.newEmail=""
           this.curPassword1=""
-          this.getDetail()
+          await this.getDetail()
         } catch (err) {
           console.log(err);
           alert(err);

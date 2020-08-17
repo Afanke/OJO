@@ -11,19 +11,14 @@ import (
 	"strconv"
 )
 
-func SHA256(str string, salt string) (result string) {
-	return fmt.Sprintf("%x", sha256.Sum256([]byte(salt+str+salt)))
+func SHA256(str string) (result string) {
+	return fmt.Sprintf("%x", sha256.Sum256([]byte("ojo"+str+"ojo")))
 }
 
-func Encrypt(str string) (result string) {
-	return SHA256(str, "ojo")
+func EqualIfSHA256(before, after string) bool {
+	return SHA256(before) == after
 }
 
-func EqualIfEncrypt(before, after string) bool {
-	return Encrypt(before) == after
-}
-
-//输入明文，得到密文
 func DESEncrypt(p []byte, key string) ([]byte, error) {
 	k := []byte(key)
 	block, err := des.NewCipher(k)
@@ -41,7 +36,6 @@ func DESEncrypt(p []byte, key string) ([]byte, error) {
 	return p, nil
 }
 
-//输入密文，得到明文
 func DESDecrypt(d []byte, key string) ([]byte, error) {
 	k := []byte(key)
 	block, err := des.NewCipher(k)
@@ -111,7 +105,7 @@ func DecryptId(s string) (int64, error) {
 	return i, nil
 }
 
-func BatchEncrypt(lens int, getInt func(i int) *int64, retStr func(i int) *string) error {
+func BatchDES(lens int, getInt func(i int) *int64, retStr func(i int) *string) error {
 	for i := 0; i < lens; i++ {
 		encryptedId, err := EncryptId(*getInt(i))
 		if err != nil {

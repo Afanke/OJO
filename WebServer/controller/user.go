@@ -39,10 +39,12 @@ func (User) Login(c iris.Context) {
 		c.JSON(&dto.Res{Error: errors.New("please refresh your captcha").Error(), Data: nil})
 		return
 	}
+	loginForm.Captcha = strings.ToLower(loginForm.Captcha)
 	if cp != loginForm.Captcha {
 		c.JSON(&dto.Res{Error: errors.New("captcha is not correct").Error(), Data: nil})
 		return
 	}
+	loginForm.Password = SHA256(loginForm.Password)
 	res, err := userdb.Query(loginForm.Username, loginForm.Password)
 	if err != nil {
 		c.JSON(&dto.Res{Error: errors.New("username or password not correct").Error(), Data: nil})
@@ -77,7 +79,7 @@ func (User) AdminLogin(c iris.Context) {
 	// 	c.JSON(&dto.Res{Error: errors.New("captcha is not correct").Error(), Data: nil})
 	// 	return
 	// }
-	fmt.Println(loginForm)
+	loginForm.Password = SHA256(loginForm.Password)
 	res, err := userdb.Query(loginForm.Username, loginForm.Password)
 	if err != nil {
 		c.JSON(&dto.Res{Error: errors.New("username or password not correct").Error(), Data: nil})
@@ -102,60 +104,6 @@ func (User) AdminLogin(c iris.Context) {
 		return
 	}
 	c.JSON(&dto.Res{Error: "", Data: res})
-}
-
-func (User) Login1(c iris.Context) {
-	var loginForm dto.LoginForm
-	err := c.ReadJSON(&loginForm)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	s, err := session.GetSession(c)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	// cp, ok := s.Get("captcha").(string)
-	// if !ok {
-	// 	c.JSON(&dto.Res{Error: errors.New("please refresh your captcha").Error(), Data: nil})
-	// 	return
-	// }
-	// if cp != loginForm.Captcha {
-	// 	c.JSON(&dto.Res{Error: errors.New("captcha is not correct").Error(), Data: nil})
-	// 	return
-	// }
-	res, err := userdb.Query(loginForm.Username, loginForm.Password)
-	if err != nil {
-		c.JSON(&dto.Res{Error: errors.New("username or password not correct").Error(), Data: nil})
-		return
-	}
-	if !res.Enabled {
-		c.JSON(&dto.Res{Error: errors.New("you are not allowed to login").Error(), Data: nil})
-		return
-	}
-	err = userdb.UpdateLoginTime(res.Id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	s.Set("userId", res.Id)
-	c.JSON(&dto.Res{Error: "", Data: res})
-}
-
-func (User) GetInfo(c iris.Context) {
-	s, err := session.GetSession(c)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	res := s.Get("userId")
-	if res == nil {
-		c.JSON(&dto.Res{Error: errors.New("not log in").Error(), Data: nil})
-		return
-	}
-	user := res.(dto.UserToken)
-	c.JSON(&dto.Res{Error: "", Data: user})
 }
 
 func (User) UploadImg(c iris.Context) {
@@ -192,24 +140,6 @@ func (User) UploadImg(c iris.Context) {
 		return
 	}
 	c.JSON(&dto.Res{Error: "", Data: "upload icon successfully"})
-}
-
-func (User) GetAdminInfo(c iris.Context) {
-	s, err := session.GetSession(c)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	res := s.Get("userId")
-	if res == nil {
-		c.JSON(&dto.Res{Error: errors.New("not log in").Error(), Data: nil})
-		return
-	}
-	user := res.(dto.UserToken)
-	if user.Type < 2 {
-		c.JSON(&dto.Res{Error: errors.New("you are not admin").Error(), Data: nil})
-	}
-	c.JSON(&dto.Res{Error: "", Data: user})
 }
 
 func (User) Captcha(c iris.Context) {
@@ -250,6 +180,15 @@ func (User) Register(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
+	allowRegister, err := sysdb.GetAllowRegister()
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	if !allowRegister {
+		c.JSON(&dto.Res{Error: "not allowed to register", Data: nil})
+		return
+	}
 	s, err := session.GetSession(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -260,10 +199,12 @@ func (User) Register(c iris.Context) {
 		c.JSON(&dto.Res{Error: errors.New("please refresh your captcha").Error(), Data: nil})
 		return
 	}
+	regForm.Captcha = strings.ToLower(regForm.Captcha)
 	if cp != regForm.Captcha {
 		c.JSON(&dto.Res{Error: errors.New("captcha is not correct").Error(), Data: nil})
 		return
 	}
+	regForm.Password = SHA256(regForm.Password)
 	err = userdb.Insert(&regForm)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -384,17 +325,13 @@ func (User) UpdateDetail(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
+	if form.Password != "" {
+		form.Password = SHA256(form.Password)
+	}
 	err = userdb.UpdateDetail(&form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
-	}
-	s, err := session.GetSessionByInt64("userId", form.Id)
-	if err == nil {
-		if token, ok := s.Get("data").(dto.UserToken); ok {
-			token.Username = form.Username
-			s.Set("data", token)
-		}
 	}
 	c.JSON(&dto.Res{Error: "", Data: "update data successfully"})
 }
@@ -433,11 +370,13 @@ func (User) UpdatePassword(c iris.Context) {
 		return
 	}
 	form.Id = id
+	form.Password = SHA256(form.Password)
 	err = userdb.CheckPassword(form.Id, form.Password)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
+	form.New = SHA256(form.New)
 	err = userdb.UpdatePassword(&form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -520,7 +459,7 @@ func (User) Disable(c iris.Context) {
 func getUserId(c iris.Context) (int64, error) {
 	id, err := session.GetInt64(c, "userId")
 	if err != nil {
-		return 0, errors.New("please login ")
+		return 0, errors.New("please login")
 	}
 	return id, nil
 }

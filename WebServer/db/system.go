@@ -20,6 +20,12 @@ func (System) GetWebConfig() (*dto.SystemConfig, error) {
 	return &data, err
 }
 
+func (System) GetAllowRegister() (bool, error) {
+	var data bool
+	err := gosql.Get(&data, "select allow_register from ojo.system_config limit 1")
+	return data, err
+}
+
 func (System) UpdateSMTP(cfg *dto.SystemConfig) error {
 	_, err := gosql.Exec(`update ojo.system_config
 					set server=?,

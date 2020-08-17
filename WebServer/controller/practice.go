@@ -96,7 +96,7 @@ func (Practice) GetCurrentStatus(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	err = BatchEncrypt(1, func(i int) *int64 {
+	err = BatchDES(1, func(i int) *int64 {
 		return &data.Id
 	}, func(i int) *string {
 		return &data.Eid
@@ -122,7 +122,7 @@ func (Practice) GetStatus(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	err = BatchEncrypt(1, func(i int) *int64 {
+	err = BatchDES(1, func(i int) *int64 {
 		return &data.Id
 	}, func(i int) *string {
 		return &data.Eid
@@ -177,7 +177,7 @@ func (Practice) GetAllStatus(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	err = BatchEncrypt(len(data), func(i int) *int64 {
+	err = BatchDES(len(data), func(i int) *int64 {
 		return &data[i].Id
 	}, func(i int) *string {
 		return &data[i].Eid
@@ -267,7 +267,7 @@ func (Practice) Submit(c iris.Context) {
 	}
 	form.Sid = data.Id
 	go pt.handleSubmit(&form)
-	err = BatchEncrypt(1, func(i int) *int64 {
+	err = BatchDES(1, func(i int) *int64 {
 		return &data.Id
 	}, func(i int) *string {
 		return &data.Eid

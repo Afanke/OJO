@@ -200,9 +200,11 @@ func (Contest) Qualify(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	if form.Password != password {
-		c.JSON(&dto.Res{Error: errors.New("the password is not correct").Error(), Data: nil})
-		return
+	if password != "" {
+		if !EqualIfSHA256(form.Password, password) {
+			c.JSON(&dto.Res{Error: errors.New("wrong password").Error(), Data: nil})
+			return
+		}
 	}
 	err = ctsdb.AddQualification(userId, form.Id)
 	if err != nil {
@@ -252,7 +254,7 @@ func (Contest) GetStatusByCid(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	err = BatchEncrypt(len(data), func(i int) *int64 {
+	err = BatchDES(len(data), func(i int) *int64 {
 		return &data[i].Id
 	}, func(i int) *string {
 		return &data[i].Eid
@@ -314,7 +316,7 @@ func (Contest) GetAllStatus(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	err = BatchEncrypt(len(data), func(i int) *int64 {
+	err = BatchDES(len(data), func(i int) *int64 {
 		return &data[i].Id
 	}, func(i int) *string {
 		return &data[i].Eid
@@ -442,7 +444,7 @@ func (Contest) GetCurrentStatus(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	err = BatchEncrypt(1, func(i int) *int64 {
+	err = BatchDES(1, func(i int) *int64 {
 		return &data.Id
 	}, func(i int) *string {
 		return &data.Eid
@@ -468,7 +470,7 @@ func (Contest) GetStatus(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	err = BatchEncrypt(1, func(i int) *int64 {
+	err = BatchDES(1, func(i int) *int64 {
 		return &data.Id
 	}, func(i int) *string {
 		return &data.Eid
@@ -954,7 +956,7 @@ func (Contest) Submit(c iris.Context) {
 	}
 	form.Sid = data.Id
 	go cts.handleSubmit(&form)
-	err = BatchEncrypt(1, func(i int) *int64 {
+	err = BatchDES(1, func(i int) *int64 {
 		return &data.Id
 	}, func(i int) *string {
 		return &data.Eid
@@ -1058,7 +1060,7 @@ func (Contest) AddContest(c iris.Context) {
 	}
 	contest.Cid = userId
 	if contest.Password != "" {
-		contest.Password = Encrypt(contest.Password)
+		contest.Password = SHA256(contest.Password)
 	}
 	err = ctsdb.InsertContest(&contest)
 	if err != nil {
@@ -1236,7 +1238,7 @@ func (Contest) UpdateContest(c iris.Context) {
 		contest.SubmitLimit = data.SubmitLimit
 	}
 	if contest.Password != "" {
-		contest.Password = Encrypt(contest.Password)
+		contest.Password = SHA256(contest.Password)
 	}
 	err = ctsdb.UpdateContest(&contest)
 	if err != nil {

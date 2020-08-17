@@ -170,7 +170,11 @@
                         page: this.page
                     });
                     if (res.error) {
-                        this.$message.error(res.error);
+                        if(res.error!=="please login"){
+                            this.$message.error(res.error);
+                        }
+                        this.loading = false
+                        return
                     } else {
                         this.status = res.data;
                         this.loading = false
