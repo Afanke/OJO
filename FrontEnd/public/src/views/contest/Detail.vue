@@ -100,6 +100,12 @@
                                             </el-link>
                                         </template>
                                     </el-table-column>
+                                    <el-table-column label="Submit / Limit" align="center" min-width="80">
+                                        <template slot-scope="scope">
+                                            <span>{{scope.row.submitNumber }} / {{scope.row.submitLimit |zeroToInfinity}}</span>
+
+                                        </template>
+                                    </el-table-column>
                                     <el-table-column label="Total" align="center" min-width="80">
                                         <template slot-scope="scope">
                                           <span style="line-height:30px;height:30px">
@@ -488,6 +494,12 @@
             status: Status,
             oiRank: OIRank,
             acmRank: ACMRank
+        },
+        filters: {
+            zeroToInfinity: function (value) {
+                if (value===0) return '∞'
+                return value
+            }
         }
     };
 </script>

@@ -74,7 +74,7 @@
           </el-row>
           <el-row :gutter="20" style="margin-top:40px">
 
-            <el-col :span="2" style="padding-top:3px">
+            <el-col :span="3" style="padding-top:3px">
               <span style="color:red">*</span>
               <span>&nbsp;Show Rank</span>
               <el-row style="margin-top:29px;margin-left:10px">
@@ -90,7 +90,7 @@
                 </el-switch>
               </el-row>
             </el-col>
-            <el-col :span="3" :offset="3" style="padding-top:3px">
+            <el-col :span="3" :offset="2" style="padding-top:3px">
               <span style="color:red">*</span>
               <span>&nbsp;Visible</span>
               <el-row style="margin-top:29px;margin-left:10px">

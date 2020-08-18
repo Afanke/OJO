@@ -166,6 +166,7 @@ func BindRoute(app *iris.Application) {
 		contest.Post("/getProblemDetail", c.GetProblemDetail)
 		contest.Post("/submit", c.Submit)
 		contest.Post("/getStatus", c.GetStatus)
+		contest.Post("/getSubNumAndLimit", c.GetSubNumAndLimit)
 		contest.Post("/getCurrentStatus", c.GetCurrentStatus)
 		contest.Post("/getStatusDetail", c.GetStatusDetail)
 		contest.Post("/getStatusByCid", c.GetStatusByCid)

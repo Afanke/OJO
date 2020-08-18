@@ -260,6 +260,11 @@ func (Contest) GetAllProblem(uid, cid int64) ([]dto.CtsPbBrief, error) {
 		log.Warn("error:%v\n", err)
 		return nil, err
 	}
+	submitLimit, err := cts.GetSubmitLimit(cid)
+	if err != nil {
+		log.Warn("error:%v\n", err)
+		return nil, err
+	}
 	for i, l := 0, len(data); i < l; i++ {
 		stat, err := cts.GetStatistic(cid, data[i].Id)
 		if err != nil {
@@ -271,8 +276,15 @@ func (Contest) GetAllProblem(uid, cid int64) ([]dto.CtsPbBrief, error) {
 			log.Warn("error:%v\n", err)
 			return nil, err
 		}
+		submitNumber, err := cts.GetSubmitNumber(uid, cid, data[i].Id)
+		if err != nil {
+			log.Warn("error:%v\n", err)
+			return nil, err
+		}
+		data[i].SubmitLimit = submitLimit
 		data[i].Statistic = stat
 		data[i].Flag = flag
+		data[i].SubmitNumber = submitNumber
 	}
 	return data, nil
 }
@@ -293,7 +305,7 @@ func (Contest) GetSubmitNumber(uid, cid, pid int64) (int, error) {
 func (Contest) GetSubmitLimit(cid int64) (int, error) {
 	var sql = `select submit_limit
 				from ojo.contest
-				where cid=?`
+				where id=? limit 1`
 	var data int
 	err := gosql.Get(&data, sql, cid)
 	if err != nil {

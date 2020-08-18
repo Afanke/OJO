@@ -108,7 +108,7 @@ func (Contest) GetCount(c iris.Context) {
 }
 
 func (Contest) GetCtsProblem(c iris.Context) {
-	var id dto.Id3
+	var id dto.Id
 	err := c.ReadJSON(&id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -415,6 +415,39 @@ func (Contest) GetProblemDetail(c iris.Context) {
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: data})
+}
+
+func (Contest) GetSubNumAndLimit(c iris.Context) {
+	var id dto.Id3
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	qualified, userId, err := cts.isQualified(id.Cid, c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	if !qualified {
+		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
+		return
+	}
+	number, err := ctsdb.GetSubmitNumber(userId, id.Cid, id.Pid)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	limit, err := ctsdb.GetSubmitLimit(id.Cid)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	data := dto.SubNumAndLimit{
+		Number: number,
+		Limit:  limit,
 	}
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
@@ -943,6 +976,20 @@ func (Contest) Submit(c iris.Context) {
 	}
 	if !qualified {
 		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
+		return
+	}
+	number, err := ctsdb.GetSubmitNumber(userId, form.Cid, form.Pid)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	limit, err := ctsdb.GetSubmitLimit(form.Cid)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	if number >= limit {
+		c.JSON(&dto.Res{Error: "submit limit exceeded", Data: nil})
 		return
 	}
 	form.Uid = userId

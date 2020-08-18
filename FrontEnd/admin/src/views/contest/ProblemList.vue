@@ -5,9 +5,6 @@
         <el-page-header style="height:60px;line-height:60px;margin-left:20px" title="Back" @back="goBack"
           content="Contest Problem List">
         </el-page-header>
-        <!-- <el-row style="height:60px;line-height:60px">
-          <span style="font-size:20px;margin-left:20px">Contest Problem List</span>
-        </el-row> -->
         <el-row style="height:1px;float:top;border-top:1px solid #EBEEF5;"></el-row>
         <el-table :data="tableData" style="width: 100%" v-loading="loading" size="small">
           <el-table-column label="ID" prop="id" align="center" min-width="30">
@@ -25,7 +22,7 @@
           <el-table-column prop="difficulty" align="center" label="Level" min-width="60">
             <template slot-scope="scope">
               <el-button size="mini" type="info" v-if="scope.row.difficulty === 'Casual'">Casual</el-button>
-              <el-button size="mini" type="success" v-if="scope.row.difficulty === 'Eazy'">Eazy</el-button>
+              <el-button size="mini" type="success" v-if="scope.row.difficulty === 'Easy'">Easy</el-button>
               <el-button size="mini" type="primary" v-if="scope.row.difficulty === 'Normal'">Normal</el-button>
               <el-button size="mini" type="warning" v-if="scope.row.difficulty === 'Hard'">Hard</el-button>
               <el-button size="mini" type="danger" v-if="scope.row.difficulty === 'Crazy'">Crazy</el-button>
@@ -60,7 +57,7 @@
             <el-table-column prop="difficulty" align="center" label="Level" min-width="60">
               <template slot-scope="scope">
                 <el-button size="mini" type="info" v-if="scope.row.difficulty === 'Casual'">Casual</el-button>
-                <el-button size="mini" type="success" v-if="scope.row.difficulty === 'Eazy'">Eazy</el-button>
+                <el-button size="mini" type="success" v-if="scope.row.difficulty === 'Easy'">Easy</el-button>
                 <el-button size="mini" type="primary" v-if="scope.row.difficulty === 'Normal'">Normal</el-button>
                 <el-button size="mini" type="warning" v-if="scope.row.difficulty === 'Hard'">Hard</el-button>
                 <el-button size="mini" type="danger" v-if="scope.row.difficulty === 'Crazy'">Crazy</el-button>

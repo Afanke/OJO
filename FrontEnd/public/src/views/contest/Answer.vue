@@ -147,8 +147,7 @@
                                        :loading="isJudging"
                                        class="el-icon-s-promotion">&nbsp;&nbsp;Submit
                             </el-button>
-
-                            <!-- <el-progress :text-inside="true" :stroke-width="20" :percentage="70"></el-progress> -->
+                            <span style="float: right;margin:10px 20px 0 0;font-size:14px;color:gray" v-if="submitLimit">Submit Limit:&nbsp;{{submitNumber}} / {{submitLimit}}</span>
                         </el-row>
                     </el-row>
                 </div>
@@ -210,7 +209,8 @@
                                 </el-row>
                                 <el-row style="margin-bottom: 14px;">
                                     <span style="float:left">Level</span>
-                                    <span style="float:right">{{
+                                    <span style="float:right">
+                                        {{
                     detail.difficulty
                   }}</span>
                                 </el-row>
@@ -330,6 +330,8 @@
                 currentTheme: "",
                 theme: ['idea', 'darcula'],
                 waitTimes: 0,
+                submitNumber:0,
+                submitLimit:0,
                 currentLanguage: '',
                 DetailChartVisible: false,
                 langOptions: {
@@ -505,6 +507,7 @@
         },
         async created() {
             await this.getDetail()
+            await this.getSubNumAndLimit()
         },
         methods: {
             async getDetail() {
@@ -780,12 +783,37 @@
                         pid: Number(this.$route.query.pid)
                     });
                     if (res.error) {
+                        this.flag = ''
+                        this.isJudging=false
                         this.$message.error(res.error);
                         return;
                     }
                     this.csmid = res.data.eid;
                     this.flag = res.data.flag;
                     setTimeout(this.getStatus, 500);
+                    await this.getSubNumAndLimit()
+                } catch (err) {
+                    console.log(err);
+                    alert(err);
+                }
+            },
+            async getSubNumAndLimit() {
+                try {
+                    const {
+                        data: res
+                    } = await this.$http.post("/contest/getSubNumAndLimit", {
+                        cid: Number(this.$route.query.cid),
+                        pid: Number(this.$route.query.pid)
+                    });
+                    if (res.error) {
+                        this.$message.error(res.error);
+                        return;
+                    }
+                    this.submitNumber = res.data.number;
+                    this.submitLimit = res.data.limit;
+                    if (this.submitLimit!==0 && this.submitNumber>= this.submitLimit){
+                        this.over=true
+                    }
                 } catch (err) {
                     console.log(err);
                     alert(err);

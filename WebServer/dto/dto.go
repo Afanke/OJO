@@ -149,12 +149,20 @@ type Id2 struct {
 	Pid int64 `json:"pid"`
 }
 type Id3 struct {
-	Id int64 `json:"id"`
+	Cid int64 `json:"cid"`
+	Pid int64 `json:"pid"`
+	Uid int64 `json:"uid"`
 }
 type Id4 struct {
 	Cid int64 `json:"cid"`
 	Pid int64 `json:"pid"`
 }
+
+type SubNumAndLimit struct {
+	Number int `json:"number"`
+	Limit  int `json:"limit"`
+}
+
 type PracticeSubStat struct {
 	Id          int64  `json:"id" db:"id"`
 	Uid         int64  `json:"uid" db:"uid"`
@@ -212,12 +220,14 @@ type ContestQualifyForm struct {
 	Password string `json:"password"`
 }
 type CtsPbBrief struct {
-	Id         int64             `json:"id" db:"id"`
-	Ref        string            `json:"ref" db:"ref"`
-	Title      string            `json:"title" db:"title"`
-	Difficulty string            `json:"difficulty" db:"difficulty"`
-	Flag       string            `json:"flag" db:"flag"`
-	Statistic  *ContestStatistic `json:"statistic"`
+	Id           int64             `json:"id" db:"id"`
+	SubmitNumber int               `json:"submitNumber"`
+	SubmitLimit  int               `json:"submitLimit"`
+	Ref          string            `json:"ref" db:"ref"`
+	Title        string            `json:"title" db:"title"`
+	Difficulty   string            `json:"difficulty" db:"difficulty"`
+	Flag         string            `json:"flag" db:"flag"`
+	Statistic    *ContestStatistic `json:"statistic"`
 }
 type ContestProblem struct {
 	Id                int64  `json:"id" db:"id"`
