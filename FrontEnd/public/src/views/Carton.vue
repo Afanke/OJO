@@ -79,8 +79,7 @@ export default {
 <style scoped>
 .center-box {
   /* min-width:1100px; */
-  margin-top: 20px !important;
-  margin: 0 auto;
+  margin: 20px auto 0;
   width: 80%;
   background-color: #ffffff;
   border-radius: 10px;

@@ -8,6 +8,7 @@ import (
 	"github.com/afanke/OJO/WebServer/dto"
 	jsp "github.com/afanke/OJO/WebServer/judge"
 	"github.com/afanke/OJO/utils/log"
+	"github.com/afanke/OJO/utils/session"
 	"github.com/kataras/iris/v12"
 	"io/ioutil"
 	"net/http"
@@ -28,6 +29,11 @@ func (Practice) GetAll(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
+	uid, err := session.GetInt64(c, "userId")
+	if err != nil {
+		uid = 0
+	}
+	form.Uid = uid
 	res, err := pctdb.GetAll(&form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})

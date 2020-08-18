@@ -29,28 +29,32 @@
                   <el-switch @change="switchTags"  v-model="showTags" >
                 </el-switch>
                 </div>
-                
               </el-row>
               <el-row>
                 <el-table :highlight-current-row="true" size="small" :data="problemList"
                   style="width: 100%;margin-top:-20px;border-radius:6px" v-loading="practiseListLoading">
+                  <el-table-column v-if="hasFlag" align="center" label="" width="50">
+                    <template slot-scope="scope">
+                      <i class="el-icon-check" style="color:#67C23A;font-size:20px;margin-top:2px" v-if="scope.row.flag === 'AC'"></i>
+                      <i class="el-icon-minus" style="color:#F56C6C;font-size:20px;margin-top:2px" v-if="scope.row.flag !== 'AC' && scope.row.flag !== ''"></i>
+                    </template>
+                  </el-table-column>
                   <el-table-column prop="ref" label="#" min-width="80">
                   </el-table-column>
                   <el-table-column prop="title" label="Title" min-width="150">
                     <template slot-scope="scope">
                       <el-link :underline="false" style="font-size:18px" @click="goto(scope.row.id)">
-                        {{ scope.row.title }}</el-link>
+                        {{ scope.row.title }}
+                      </el-link>
                     </template>
                   </el-table-column>
                   <el-table-column prop="difficulty" align="center" label="Level" min-width="80">
                     <template slot-scope="scope">
                       <el-button size="mini" type="info" v-if="scope.row.difficulty === 'Casual'">Casual</el-button>
-                      <el-button size="mini" type="success" v-if="scope.row.difficulty === 'Eazy'">Eazy</el-button>
+                      <el-button size="mini" type="success" v-if="scope.row.difficulty === 'Easy'">Easy</el-button>
                       <el-button size="mini" type="primary" v-if="scope.row.difficulty === 'Normal'">Normal</el-button>
                       <el-button size="mini" type="warning" v-if="scope.row.difficulty === 'Hard'">Hard</el-button>
                       <el-button size="mini" type="danger" v-if="scope.row.difficulty === 'Crazy'">Crazy</el-button>
-                      <!-- <el-button
-          size="mini" type="primary">{{scope.row.difficulty}}</el-button> -->
                     </template>
                   </el-table-column>
                   <el-table-column prop="statistic.total" label="Total" min-width="80" align="center">
@@ -105,6 +109,7 @@
     data() {
       return {
         tags: [],
+        hasFlag:false,
         showTags:false,
         realShowTags:false,
         tagsLoading: false,
@@ -126,8 +131,8 @@
             label: 'Casual'
           },
           {
-            value: 'Eazy',
-            label: 'Eazy'
+            value: 'Easy',
+            label: 'Easy'
           },
           {
             value: 'Normal',
@@ -146,15 +151,12 @@
     },
     created() {
       this.$bus.emit('changeHeader', '2');
-      // this.practiseListLoading=true
       this.show = false;
     },
     async mounted() {
-      // console.log(this)
-      // console.log(this.$refs)
       this.show = true;
       this.tagsLoading = true;
-      this.queryList();
+      await this.queryList();
       try {
         const {
           data: res
@@ -164,7 +166,6 @@
           this.$message.error(res.error)
         } else {
           this.tags = res.data;
-          console.log(this.tags)
           this.tagsLoading = false;
         }
       } catch (err) {
@@ -182,10 +183,7 @@
           this.practiseListLoading=false
         },500)
       },
-      logout() {
-        this.$router.push('/login');
-      },
-      params_init() {
+      paramsInit() {
         if (this.$route.query.page) {
           this.page = Number(this.$route.query.page);
         } else {
@@ -207,7 +205,7 @@
           this.keywords = '';
         }
       },
-      params_query() {
+      paramsQuery() {
         let obj = {};
         if (this.$route.query.page) {
           obj.page = Number(this.$route.query.page);
@@ -233,7 +231,7 @@
       },
       async queryList() {
         this.practiseListLoading = true;
-        this.params_init();
+        this.paramsInit();
         try {
           const {
             data: res1
@@ -261,8 +259,9 @@
           }
           this.problemList = res.data;
           this.count = res1.data;
-          let i = 0;
-          for (; i < this.problemList.length; i++) {
+
+          this.hasFlag=false
+          for (let i = 0; i < this.problemList.length; i++) {
             let rate =
               this.problemList[i].statistic.ac /
               this.problemList[i].statistic.total;
@@ -272,6 +271,9 @@
             } else {
               this.problemList[i].ac_rate = (rate * 100).toFixed(2) + '%';
             }
+            if (this.problemList[i].flag!==""){
+              this.hasFlag=true
+            }
           }
           this.practiseListLoading = false;
         } catch (err) {
@@ -280,25 +282,24 @@
         }
       },
       handlePageChange(val) {
-        // console.log(`当前页: ${val}`);
-        let obj = this.params_query();
+        let obj = this.paramsQuery();
         obj.page = Number(val);
         this.fresh(obj);
       },
       handleTagChange(val) {
-        let obj = this.params_query();
+        let obj = this.paramsQuery();
         obj.tid = Number(val);
         obj.page = 1;
         this.fresh(obj);
       },
       handleDifficultChange(val) {
-        let obj = this.params_query();
+        let obj = this.paramsQuery();
         obj.difficulty = val;
         obj.page = 1;
         this.fresh(obj);
       },
       handleKeywordsChange() {
-        let obj = this.params_query();
+        let obj = this.paramsQuery();
         obj.keywords = this.keywords;
         obj.page = 1;
         this.fresh(obj);
@@ -326,10 +327,9 @@
 
 <style scoped>
   .center-box {
-    margin-top: 20px !important;
-    margin: 0 auto;
+    margin: 20px auto 0;
     width: 95%;
-    min-width: 800px;
+    min-width: 1200px;
   }
 
   .left-box {

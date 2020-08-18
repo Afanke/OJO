@@ -20,7 +20,6 @@ type Contest struct{}
 var ctsdb db.Contest
 var cts Contest
 
-// 获得所有的Contest
 func (Contest) GetAllVisible(c iris.Context) {
 	var form dto.ContestForm
 	err := c.ReadJSON(&form)
@@ -29,6 +28,36 @@ func (Contest) GetAllVisible(c iris.Context) {
 		return
 	}
 	res, err := ctsdb.GetAllVisible(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: res})
+}
+
+func (Contest) GetVisibleCount(c iris.Context) {
+	var form dto.ContestForm
+	err := c.ReadJSON(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	res, err := ctsdb.GetVisibleCount(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: res})
+}
+
+func (Contest) GetVisibleDetail(c iris.Context) {
+	var id dto.Id
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	res, err := ctsdb.GetVisibleDetail(id.Id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -57,23 +86,6 @@ func (Contest) GetAll(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
-func (Contest) GetCtsProblem(c iris.Context) {
-	var id dto.Id3
-	err := c.ReadJSON(&id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	err = cts.isPermitted(c, id.Id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	data, err := ctsdb.GetCtsProblem(id.Id)
-	c.JSON(&dto.Res{Error: "", Data: data})
-}
-
-// 获得所有的Contest的数量
 func (Contest) GetCount(c iris.Context) {
 	var form dto.ContestForm
 	err := c.ReadJSON(&form)
@@ -95,35 +107,20 @@ func (Contest) GetCount(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: res})
 }
 
-func (Contest) GetVisibleCount(c iris.Context) {
-	var form dto.ContestForm
-	err := c.ReadJSON(&form)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	res, err := ctsdb.GetVisibleCount(&form)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	c.JSON(&dto.Res{Error: "", Data: res})
-}
-
-// 获得对应id的Contest的详细信息
-func (Contest) GetVisibleDetail(c iris.Context) {
-	var id dto.Id
+func (Contest) GetCtsProblem(c iris.Context) {
+	var id dto.Id3
 	err := c.ReadJSON(&id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	res, err := ctsdb.GetVisibleDetail(id.Id)
+	err = cts.isPermitted(c, id.Id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	c.JSON(&dto.Res{Error: "", Data: res})
+	data, err := ctsdb.GetCtsProblem(id.Id)
+	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
 func (Contest) HasPassword(c iris.Context) {
@@ -249,7 +246,7 @@ func (Contest) GetStatusByCid(c iris.Context) {
 		form.Offset = (form.Page - 1) * statusPageSize
 	}
 	form.Limit = statusPageSize
-	data, err := ctsdb.GetAllStat(form.Cid, userId, form.Offset, form.Limit)
+	data, err := ctsdb.GetStatusById(form.Cid, userId, form.Offset, form.Limit)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -283,7 +280,7 @@ func (Contest) GetStatusCountByCid(c iris.Context) {
 		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
 		return
 	}
-	data, err := ctsdb.GetAllStatCount(form.Cid, userId)
+	data, err := ctsdb.GetStatusCountById(form.Cid, userId)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -350,7 +347,7 @@ func (Contest) GetAllProblem(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	qualified, _, err := cts.isQualified(id.Id, c)
+	qualified, userId, err := cts.isQualified(id.Id, c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
@@ -359,7 +356,7 @@ func (Contest) GetAllProblem(c iris.Context) {
 		c.JSON(&dto.Res{Error: errors.New("you are not qualified").Error(), Data: nil})
 		return
 	}
-	data, err := ctsdb.GetAllProblem(id.Id)
+	data, err := ctsdb.GetAllProblem(userId, id.Id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return

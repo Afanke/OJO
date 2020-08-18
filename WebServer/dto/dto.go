@@ -97,17 +97,18 @@ type JudgeServer struct {
 type PracticeForm struct {
 	Page       int    `json:"page" db:"page"`
 	Tid        int64  ` json:"tid" db:"tid"`
+	Uid        int64  `json:"uid" db:"uid"`
 	Offset     int    `json:"offset" db:"offset"`
 	Limit      int    `json:"limit" db:"limit"`
 	Difficulty string `json:"difficulty" db:"difficulty"`
 	Keywords   string `json:"keywords" db:"keywords"`
 }
 type PracticeBrief struct {
-	Id    int64  `json:"id" db:"id"`
-	Cid   int64  `json:"cid" db:"cid"`
-	Ref   string `json:"ref" db:"ref"`
-	Title string `json:"title" db:"title"`
-	// Description string             `json:"description" db:"description"`
+	Id         int64              `json:"id" db:"id"`
+	Cid        int64              `json:"cid" db:"cid"`
+	Ref        string             `json:"ref" db:"ref"`
+	Title      string             `json:"title" db:"title"`
+	Flag       string             `json:"flag" db:"flag"`
 	Difficulty string             `json:"difficulty" db:"difficulty"`
 	Tags       []TagBrief         `json:"tags"`
 	Statistic  *PracticeStatistic `json:"statistic"`
@@ -211,10 +212,12 @@ type ContestQualifyForm struct {
 	Password string `json:"password"`
 }
 type CtsPbBrief struct {
-	Id        int64             `json:"id" db:"id"`
-	Ref       string            `json:"ref" db:"ref"`
-	Title     string            `json:"title" db:"title"`
-	Statistic *ContestStatistic `json:"statistic"`
+	Id         int64             `json:"id" db:"id"`
+	Ref        string            `json:"ref" db:"ref"`
+	Title      string            `json:"title" db:"title"`
+	Difficulty string            `json:"difficulty" db:"difficulty"`
+	Flag       string            `json:"flag" db:"flag"`
+	Statistic  *ContestStatistic `json:"statistic"`
 }
 type ContestProblem struct {
 	Id                int64  `json:"id" db:"id"`

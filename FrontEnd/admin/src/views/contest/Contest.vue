@@ -1,8 +1,6 @@
 <template>
-
   <div>
     <transition name="slide-fade">
-
       <div class="center-box" v-if="show">
         <el-row style="height:60px;line-height:60px">
           <span style="font-size:20px;margin-left:20px">Contest List</span>

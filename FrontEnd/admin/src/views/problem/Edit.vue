@@ -961,8 +961,8 @@ func main(){
                         value: 'Casual',
                         label: 'Casual'
                     }, {
-                        value: 'Eazy',
-                        label: 'Eazy'
+                        value: 'Easy',
+                        label: 'Easy'
                     }, {
                         value: 'Normal',
                         label: 'Normal'

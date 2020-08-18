@@ -72,7 +72,7 @@
                         <div v-if="c === 2">
                             <div class="inner-box" v-loading="loading">
                                 <el-row style="height:70px;line-height:70px;font-size:21px">
-                                    <span style="margin-left:30px">Problems List</span>
+                                    <span style="margin-left:30px">Problem List</span>
                                     <div style="float:right;margin-right:30px">
                                         <el-button plain size="small">
                                             <div :style="statusStyle">&nbsp;
@@ -86,6 +86,12 @@
                                         style="width: 100%"
                                         size="small"
                                         @row-click="handleClick">
+                                    <el-table-column v-if="hasFlag" align="center" label="" width="50">
+                                        <template slot-scope="scope">
+                                            <i class="el-icon-check" style="color:#67C23A;font-size:20px;margin-top:2px" v-if="scope.row.flag === 'AC'"></i>
+                                            <i class="el-icon-minus" style="color:#F56C6C;font-size:20px;margin-top:2px" v-if="scope.row.flag !== 'AC' && scope.row.flag !== ''"></i>
+                                        </template>
+                                    </el-table-column>
                                     <el-table-column type="index" label="#" width="180">
                                     </el-table-column>
                                     <el-table-column label="Title" min-width="80">
@@ -172,6 +178,7 @@
             return {
                 show: false,
                 c: 1,
+                hasFlag:false,
                 contestData: [],
                 id: 0,
                 showPasswordInput:true,
@@ -289,7 +296,6 @@
                         break;
                     default:
                         this.getOverview();
-
                         break;
                 }
             },
@@ -352,6 +358,9 @@
                                 this.problemList[i].ac_rate = '--';
                             } else {
                                 this.problemList[i].ac_rate = (rate * 100).toFixed(2) + '%';
+                            }
+                            if (this.problemList[i].flag!==""){
+                                this.hasFlag=true
                             }
                         }
                     }

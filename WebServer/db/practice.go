@@ -69,6 +69,14 @@ func (Practice) GetAll(form *dto.PracticeForm) ([]dto.PracticeBrief, error) {
 			log.Warn("error:%v", err)
 			return nil, err
 		}
+		if form.Uid != 0 {
+			flag, err := pt.GetFlagByUidPid(form.Uid, res.Id)
+			if err != nil {
+				log.Warn("error:%v", err)
+				return nil, err
+			}
+			res.Flag = flag
+		}
 		res.Tags = tag
 		res.Statistic = stat
 		rest = append(rest, res)
@@ -242,6 +250,24 @@ func (Practice) GetCaseRes(psmid int64) ([]dto.PracticeCaseResult, error) {
 	return res, err
 }
 
+func (Practice) GetFlagByUidPid(uid, pid int64) (string, error) {
+	var res string
+	err := gosql.Get(&res,
+		`select flag
+				from ojo.practice_submission
+				where uid=? and pid=?
+				order by submit_time desc limit 1`,
+		uid, pid)
+	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			return "", nil
+		}
+	}
+	return res, err
+}
+
+// -------------------Practice Submit-------------------------
+
 func (Practice) Submit(form *dto.SubmitForm) (*dto.PracticeSubmission, error) {
 	var sql = `insert into ojo.practice_submission
 			(uid,pid,lid,code,submit_time,total_score,flag,error_msg)
@@ -310,6 +336,10 @@ func (Practice) InsertStatistic(tx *gosql.DB, pbid int64) error {
 	return err
 }
 
+// -------------------Practice Submit-------------------------
+
+// -------------------Practice Sub Count-------------------------
+
 func (Practice) GetTodayCount() ([]dto.TodayCount, error) {
 	var data []dto.TodayCount
 	err := gosql.Select(&data, `SELECT
@@ -374,6 +404,10 @@ ORDER BY
 	return res, err
 }
 
+// -------------------Practice Sub Count-------------------------
+
+// -------------------Practice User Info-------------------------
+
 func (Practice) GetUserSubmissionCount(uid int64) (int, error) {
 	var count int
 	s := `select count(*) 
@@ -414,6 +448,10 @@ func (Practice) GetUserSolvedList(uid int64) ([]int, error) {
 	err := gosql.Select(&data, s, uid)
 	return data, err
 }
+
+// -------------------Practice User Info-------------------------
+
+// ----------------------Practice Rank---------------------------
 
 var PctRankPageSize = 30
 
@@ -479,3 +517,5 @@ func (Practice) GetPctRankCount() (int, error) {
 	err := gosql.Get(&count, sql)
 	return count, err
 }
+
+// ----------------------Practice Rank---------------------------

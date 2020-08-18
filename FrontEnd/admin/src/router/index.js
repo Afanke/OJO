@@ -10,7 +10,6 @@ const Contest = () => import('@/views/contest/Contest.vue');
 const ContestCreate = () => import('@/views/contest/Create.vue');
 const ContestEdit = () => import('@/views/contest/Edit.vue');
 const ContestProblemList = () => import('@/views/contest/ProblemList.vue');
-const Carton = () => import('@/views/problem/Carton.vue');
 const User = () => import('@/views/general/User.vue');
 const JudgeServer = () => import('@/views/general/JudgeServer.vue');
 const System = () => import('@/views/general/System.vue');
@@ -35,7 +34,6 @@ const routes = [
   { path: '/contest/create', component: ContestCreate },
   { path: '/contest/edit', component: ContestEdit },
   { path: '/contest/problem', component: ContestProblemList },
-  { path: '/carton', component: Carton },
   { path: '/general/user', component: User },
   { path: '/general/judgeServer', component: JudgeServer },
   { path: '/general/system', component: System },

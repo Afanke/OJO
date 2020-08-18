@@ -233,7 +233,7 @@ func (Contest) GetStartTime(cid int64) (time.Time, error) {
 
 func (Contest) GetCtsProblem(cid int64) ([]dto.ProblemBrief, error) {
 	var data []dto.ProblemBrief
-	s := `select p.id,p.ref,p.cid,p.title, p.difficulty,p.create_time,p.last_update_time,p.visible
+	s := `select p.id,p.ref,p.cid,p.title,p.difficulty,p.create_time,p.last_update_time,p.visible
 			from ojo.contest_problem cp,ojo.problem p  where cp.pid=p.id and cp.cid=?`
 	err := gosql.Select(&data, s, cid)
 	if err != nil {
@@ -252,8 +252,8 @@ func (Contest) GetCtsProblem(cid int64) ([]dto.ProblemBrief, error) {
 	return data, nil
 }
 
-func (Contest) GetAllProblem(cid int64) ([]dto.CtsPbBrief, error) {
-	var sql = `select p.id,p.title,p.ref from contest_problem cp,problem p where cp.pid=p.id and cp.cid=?`
+func (Contest) GetAllProblem(uid, cid int64) ([]dto.CtsPbBrief, error) {
+	var sql = `select p.id,p.title,p.ref,p.difficulty from contest_problem cp,problem p where cp.pid=p.id and cp.cid=?`
 	var data []dto.CtsPbBrief
 	err := gosql.Select(&data, sql, cid)
 	if err != nil {
@@ -266,7 +266,39 @@ func (Contest) GetAllProblem(cid int64) ([]dto.CtsPbBrief, error) {
 			log.Warn("error:%v\n", err)
 			return nil, err
 		}
+		flag, err := cts.GetFlagById(uid, data[i].Id, cid)
+		if err != nil {
+			log.Warn("error:%v\n", err)
+			return nil, err
+		}
 		data[i].Statistic = stat
+		data[i].Flag = flag
+	}
+	return data, nil
+}
+
+func (Contest) GetSubmitNumber(uid, cid, pid int64) (int, error) {
+	var sql = `select count(*)
+				from ojo.contest_submission
+				where uid=? and cid=? and pid=? and flag!='ISE'`
+	var data int
+	err := gosql.Get(&data, sql, uid, cid, pid)
+	if err != nil {
+		log.Warn("error:%v\n", err)
+		return 0, err
+	}
+	return data, nil
+}
+
+func (Contest) GetSubmitLimit(cid int64) (int, error) {
+	var sql = `select submit_limit
+				from ojo.contest
+				where cid=?`
+	var data int
+	err := gosql.Get(&data, sql, cid)
+	if err != nil {
+		log.Warn("error:%v\n", err)
+		return 0, err
 	}
 	return data, nil
 }
@@ -422,6 +454,22 @@ func (Contest) GetSubmission(uid, pid, cid int64) (*dto.ContestSubmission, error
 	var s dto.ContestSubmission
 	err := gosql.Get(&s, "select * from contest_submission cs where cs.uid=? and cs.pid=? and cs.cid=? order by cs.submit_time desc limit 1", uid, pid, cid)
 	return &s, err
+}
+
+func (Contest) GetFlagById(uid, pid, cid int64) (string, error) {
+	var res string
+	err := gosql.Get(&res,
+		`select flag
+				from ojo.contest_submission
+				where uid=? and pid=? and cid=?
+				order by submit_time desc limit 1`,
+		uid, pid, cid)
+	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			return "", nil
+		}
+	}
+	return res, err
 }
 
 func (Contest) GetOIRank(form dto.ContestForm) ([]dto.OIRank, error) {
@@ -580,7 +628,7 @@ func (Contest) GetShowRank(cid int64) (bool, error) {
 	return res, err
 }
 
-func (Contest) GetAllStat(cid, uid int64, offset, limit int) ([]dto.ContestSubStat, error) {
+func (Contest) GetStatusById(cid, uid int64, offset, limit int) ([]dto.ContestSubStat, error) {
 	var res []dto.ContestSubStat
 	err := gosql.Select(&res, "select cs.id,cs.uid,cs.cid,cs.pid,cs.total_score,cs.lid,cs.flag,cs.submit_time from contest_submission cs where cs.cid=? and cs.uid=? order by cs.submit_time desc limit ?,?", cid, uid, offset, limit)
 	if err != nil {
@@ -598,7 +646,7 @@ func (Contest) GetAllStat(cid, uid int64, offset, limit int) ([]dto.ContestSubSt
 	return res, nil
 }
 
-func (Contest) GetAllStatCount(cid, uid int64) (int, error) {
+func (Contest) GetStatusCountById(cid, uid int64) (int, error) {
 	var count int
 	err := gosql.Get(&count, "select count(*) from contest_submission cs where cs.cid=? and cs.uid=?", cid, uid)
 	if err != nil {
@@ -721,14 +769,6 @@ func (Contest) HasACMFirstDetail(form *dto.SubmitForm) (bool, error) {
 	var count int
 	err := gosql.Get(&count, sql, form.Cid, form.Pid)
 	return count == 0, err
-}
-
-// 根据Cid获得ACM提交错误的次数
-func (Contest) GetACMWrong(form *dto.SubmitForm) (int, error) {
-	sql := "select a.total-a.ac from (select total,ac from ojo.contest_acm_overall where cid=? and uid=?) a"
-	var count int
-	err := gosql.Get(&count, sql, form.Cid, form.Uid)
-	return count, err
 }
 
 func (Contest) SelectCreatorName(lens int, getId func(i int) (target int64), setName func(i int, res string)) error {

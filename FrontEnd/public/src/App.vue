@@ -142,10 +142,10 @@
     }
 
     .el-scrollbar__wrap {
-        overflow-x: hidden !important;
+        /*overflow-x: hidden !important;*/
     }
 
     .el-select-dropdown__list {
-        margin: 0 0px 15px 0px !important;
+        margin: 0 0 15px 0 !important;
     }
 </style>
