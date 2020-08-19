@@ -11,5 +11,6 @@ require (
 	github.com/kataras/iris/v12 v12.1.8
 	github.com/labstack/gommon v0.2.8
 	github.com/llgcode/draw2d v0.0.0-20200110163050-b96d8208fcfc
-
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
+	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 )

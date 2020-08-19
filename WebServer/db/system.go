@@ -14,6 +14,12 @@ func (System) GetAll() (*dto.SystemConfig, error) {
 	return &data, err
 }
 
+func (System) GetSMTPConfig() (*dto.SystemConfig, error) {
+	var data dto.SystemConfig
+	err := gosql.Get(&data, "select server, port, email, password from ojo.system_config limit 1")
+	return &data, err
+}
+
 func (System) GetWebConfig() (*dto.SystemConfig, error) {
 	var data dto.SystemConfig
 	err := gosql.Get(&data, "select name, footer, allow_register from ojo.system_config limit 1")

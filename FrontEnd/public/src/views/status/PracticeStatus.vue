@@ -230,7 +230,7 @@
                         return "Output Limit Exceeded"
                     case "PA":
                         return "Partial Accepted"
-                    case "Judging":
+                    case "JUG":
                         return "Judging"
                     case "Pending":
                         return "Pending"
@@ -252,7 +252,7 @@
                     case "CE":
                         return "warning"
                     case "PA":
-                    case "Judging":
+                    case "JUG":
                     case "Pending":
                         return "primary"
                     case "AC":

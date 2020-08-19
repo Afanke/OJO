@@ -6,8 +6,11 @@ import (
 	"github.com/afanke/OJO/WebServer/db"
 	"github.com/afanke/OJO/WebServer/dto"
 	captcha "github.com/afanke/OJO/utils/chapcha"
+	"github.com/afanke/OJO/utils/log"
+	"github.com/afanke/OJO/utils/randstr"
 	"github.com/afanke/OJO/utils/session"
 	"github.com/kataras/iris/v12"
+	"gopkg.in/gomail.v2"
 	"image/png"
 	"io/ioutil"
 	"math/rand"
@@ -487,3 +490,80 @@ func isSuperAdmin(c iris.Context) (int64, error) {
 	}
 	return userId, err
 }
+
+// ---------------------Mail---------------------
+type EmailFrom struct {
+	Server   string
+	Port     int
+	Email    string
+	Password string
+}
+
+func SendMail(mailFrom EmailFrom, mailTo string, subject string, body string) error {
+	m := gomail.NewMessage()
+	m.SetAddressHeader("From", mailFrom.Email, "")
+	m.SetHeader("To", mailTo)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", body)
+	d := gomail.NewDialer(mailFrom.Server, mailFrom.Port, mailFrom.Email, mailFrom.Password)
+	err := d.DialAndSend(m)
+	return err
+}
+
+func (User) SendRPEmail(c iris.Context) {
+	var email dto.Email
+	err := c.ReadJSON(&email)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	s, err := session.GetSession(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	cp, ok := s.Get("captcha").(string)
+	if !ok {
+		c.JSON(&dto.Res{Error: errors.New("please refresh your captcha").Error(), Data: nil})
+		return
+	}
+	email.Captcha = strings.ToLower(email.Captcha)
+	if cp != email.Captcha {
+		c.JSON(&dto.Res{Error: errors.New("captcha is not correct").Error(), Data: nil})
+		return
+	}
+	mailTo := email.Email
+	cfg, err := sysdb.GetSMTPConfig()
+	if err != nil {
+		log.Warn("%v", err)
+		c.JSON(&dto.Res{Error: "failed to send email, please try again later", Data: nil})
+		return
+	}
+	e := EmailFrom{
+		Server:   cfg.Server,
+		Port:     cfg.Port,
+		Email:    cfg.Email,
+		Password: cfg.Password,
+	}
+	subject := "Reset your password"
+
+	body := `<p>Hi! You are trying to reset your password.</p>
+<p>The verification code is as follows, valid for 15 minutes.</p>
+<strong>`
+	body += randstr.RandInt(6) +
+		`</strong>
+<p>If this is not your behavior, please ignore it and thank you for your support.</p>
+<p>Wish you a good day.</p>`
+
+	err = SendMail(e, mailTo, subject, body)
+	if err != nil {
+		log.Warn("%v", err)
+		log.Warn("failed to send email to %s", mailTo)
+		c.JSON(&dto.Res{Error: "failed to send email, please try again later", Data: nil})
+		return
+	}
+	log.Info("send email to %s successfully", mailTo)
+
+}
+
+// ---------------------Mail---------------------

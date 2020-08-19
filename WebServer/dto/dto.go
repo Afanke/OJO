@@ -158,6 +158,11 @@ type Id4 struct {
 	Pid int64 `json:"pid"`
 }
 
+type Email struct {
+	Email   string `json:"email"`
+	Captcha string `json:"captcha"`
+}
+
 type SubNumAndLimit struct {
 	Number int `json:"number"`
 	Limit  int `json:"limit"`
