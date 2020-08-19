@@ -131,22 +131,30 @@ func (User) UpdateProfile(form *dto.UserDetail) error {
 func (User) UpdatePassword(form *dto.UpdateForm) error {
 	s := `update ojo.user set 
 			password=?
-			where id=?`
+			where id=? limit 1`
 	_, err := gosql.Exec(s, form.New, form.Id)
+	return err
+}
+
+func (User) ResetPassword(password, email string) error {
+	s := `update ojo.user set 
+			password=?
+			where email=? limit 1`
+	_, err := gosql.Exec(s, password, email)
 	return err
 }
 
 func (User) UpdateEmail(form *dto.UpdateForm) error {
 	s := `update ojo.user set 
 			email=?
-			where id=?`
+			where id=? limit 1`
 	_, err := gosql.Exec(s, form.New, form.Id)
 	return err
 }
 
 func (User) CheckPassword(id int64, password string) error {
 	var count int
-	s := `select count(*) from ojo.user where id=? and password=?`
+	s := `select count(*) from ojo.user where id=? and password=? limit 1`
 	err := gosql.Get(&count, s, id, password)
 	if err != nil {
 		return err
@@ -158,20 +166,20 @@ func (User) CheckPassword(id int64, password string) error {
 }
 
 func (User) Enable(id int64) error {
-	s := `update ojo.user set enabled=1 where id=?`
+	s := `update ojo.user set enabled=1 where id=? limit 1`
 	_, err := gosql.Exec(s, id)
 	return err
 }
 
 func (User) Disable(id int64) error {
-	s := `update ojo.user set enabled=0 where id=?`
+	s := `update ojo.user set enabled=0 where id=? limit 1`
 	_, err := gosql.Exec(s, id)
 	return err
 }
 
 func (User) GetUserType(id int64) (int, error) {
 	var userType int
-	s := `select type from ojo.user where id=?`
+	s := `select type from ojo.user where id=? limit 1`
 	err := gosql.Get(&userType, s, id)
 	return userType, err
 }

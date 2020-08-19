@@ -499,6 +499,12 @@ type EmailFrom struct {
 	Password string
 }
 
+type RSTForm struct {
+	Time  time.Time
+	Email string
+	VCode string
+}
+
 func SendMail(mailFrom EmailFrom, mailTo string, subject string, body string) error {
 	m := gomail.NewMessage()
 	m.SetAddressHeader("From", mailFrom.Email, "")
@@ -532,6 +538,12 @@ func (User) SendRPEmail(c iris.Context) {
 		c.JSON(&dto.Res{Error: errors.New("captcha is not correct").Error(), Data: nil})
 		return
 	}
+	vcode := randstr.RandInt(6)
+	s.Set("rstpwd", RSTForm{
+		Email: email.Email,
+		Time:  time.Now(),
+		VCode: vcode,
+	})
 	mailTo := email.Email
 	cfg, err := sysdb.GetSMTPConfig()
 	if err != nil {
@@ -550,7 +562,7 @@ func (User) SendRPEmail(c iris.Context) {
 	body := `<p>Hi! You are trying to reset your password.</p>
 <p>The verification code is as follows, valid for 15 minutes.</p>
 <strong>`
-	body += randstr.RandInt(6) +
+	body += vcode +
 		`</strong>
 <p>If this is not your behavior, please ignore it and thank you for your support.</p>
 <p>Wish you a good day.</p>`
@@ -563,7 +575,60 @@ func (User) SendRPEmail(c iris.Context) {
 		return
 	}
 	log.Info("send email to %s successfully", mailTo)
+	c.JSON(&dto.Res{Error: nil, Data: "send email successfully"})
+}
 
+func (User) CheckVCode(c iris.Context) {
+	var capt dto.Captcha
+	err := c.ReadJSON(&capt)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	s, err := session.GetSession(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	form, ok := s.Get("rstpwd").(RSTForm)
+	if !ok {
+		c.JSON(&dto.Res{Error: errors.New("please restart").Error(), Data: nil})
+		return
+	}
+	if form.VCode != capt.Captcha {
+		c.JSON(&dto.Res{Error: errors.New("the verification code is not correct").Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: nil, Data: "right"})
+}
+
+func (User) ResetPassword(c iris.Context) {
+	var cp dto.CaptAndPassword
+	err := c.ReadJSON(&cp)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	s, err := session.GetSession(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	form, ok := s.Get("rstpwd").(RSTForm)
+	if !ok {
+		c.JSON(&dto.Res{Error: errors.New("please restart").Error(), Data: nil})
+		return
+	}
+	if form.VCode != cp.Captcha {
+		c.JSON(&dto.Res{Error: errors.New("the verification code is not correct").Error(), Data: nil})
+		return
+	}
+	err = userdb.ResetPassword(SHA256(cp.Password), form.Email)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: nil, Data: "ok"})
 }
 
 // ---------------------Mail---------------------

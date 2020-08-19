@@ -163,6 +163,15 @@ type Email struct {
 	Captcha string `json:"captcha"`
 }
 
+type Captcha struct {
+	Captcha string `json:"captcha"`
+}
+
+type CaptAndPassword struct {
+	Captcha  string `json:"captcha"`
+	Password string `json:"password"`
+}
+
 type SubNumAndLimit struct {
 	Number int `json:"number"`
 	Limit  int `json:"limit"`
