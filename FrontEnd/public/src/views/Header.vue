@@ -67,7 +67,7 @@
       <el-form label-width="20%" :model="loginForm" v-loading="loginLoading" ref="loginFormRef" :rules="loginRules"
         status-icon>
         <div style="text-align:center;margin-top:20%">
-          <span style="width:100%;font-size:50px">Welcom to OJO</span>
+          <span style="width:100%;font-size:50px">Welcome to OJO</span>
         </div>
         <el-divider></el-divider>
         <el-form-item prop="username">
@@ -80,7 +80,6 @@
         </el-form-item>
         <el-form-item prop="captcha">
           <el-col :span="11">
-            <!-- <el-input v-model="loginForm.captcha" prefix-icon="el-icon-view" style="width:45%"></el-input> -->
             <el-input v-model="loginForm.captcha" prefix-icon="el-icon-view" clearable placeholder="Captcha"></el-input>
           </el-col>
           <el-col class="line" :span="7">

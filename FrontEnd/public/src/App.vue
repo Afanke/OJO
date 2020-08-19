@@ -80,13 +80,13 @@
         margin: 0;
         border: 0;
         background-color: rgb(244, 244, 245);
-        font-family: "微软雅黑",
+        font-family: Arial,
+        "微软雅黑",
         "Microsoft YaHei",
         "PingFang SC",
         "Hiragino Sans GB",
         "Helvetica Neue",
         Helvetica,
-        Arial,
         sans-serif;
     }
 
