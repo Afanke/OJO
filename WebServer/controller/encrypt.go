@@ -55,7 +55,7 @@ func DESDecrypt(d []byte, key string) ([]byte, error) {
 //填充数据
 func paddingNumber(src []byte, blockSize int) ([]byte, error) {
 	if src == nil {
-		return nil, errors.New("src长度不能小于0")
+		return nil, errors.New("src length can less than 0")
 	}
 	leftNumber := len(src) % blockSize
 	needNumber := blockSize - leftNumber
@@ -67,8 +67,8 @@ func paddingNumber(src []byte, blockSize int) ([]byte, error) {
 
 //解密后去除填充数据
 func unPaddingNumber(src []byte) ([]byte, error) {
-	lastChar := src[len(src)-1] //byte(3)
-	num := int(lastChar)        //int(3)
+	lastChar := src[len(src)-1]
+	num := int(lastChar)
 	return src[:len(src)-num], nil
 }
 
