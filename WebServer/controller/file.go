@@ -43,7 +43,7 @@ func (File) Index(c iris.Context) {
 	}
 	c.SetLastModified(stat.ModTime())
 	c.Header("Cache-Control", "max-age=64200")
-	_, err = c.WriteGzip(bytes)
+	_, err = c.TryWriteGzip(bytes)
 	if err != nil {
 		log.Error("%v", err)
 		return
@@ -55,7 +55,7 @@ func (File) Admin(c iris.Context) {
 	if err != nil {
 		c.NotFound()
 	}
-	_, err = c.WriteGzip(file)
+	_, err = c.TryWriteGzip(file)
 	if err != nil {
 		log.Error("%v", err)
 		return
@@ -67,7 +67,7 @@ func (File) VDS(c iris.Context) {
 	if err != nil {
 		c.NotFound()
 	}
-	_, err = c.WriteGzip(file)
+	_, err = c.TryWriteGzip(file)
 	if err != nil {
 		log.Error("%v", err)
 		return
@@ -79,11 +79,21 @@ func (File) Favicon(c iris.Context) {
 	if err != nil {
 		c.NotFound()
 	}
-	_, _ = c.WriteGzip(file)
+	_, _ = c.TryWriteGzip(file)
 }
 
 func (File) File(c iris.Context) {
 	path := c.Path()
+	stat, err := os.Stat("./dist" + path)
+	if err != nil {
+		c.NotFound()
+		return
+	}
+	if modified, err := c.CheckIfModifiedSince(stat.ModTime()); !modified && err == nil {
+		c.Header("Cache-Control", "public,max-age=64200")
+		c.WriteNotModified()
+		return
+	}
 	file, err := os.Open("./dist" + path)
 	if err != nil {
 		c.NotFound()
@@ -96,16 +106,6 @@ func (File) File(c iris.Context) {
 			return
 		}
 	}()
-	stat, err := file.Stat()
-	if err != nil {
-		c.NotFound()
-		return
-	}
-	if modified, err := c.CheckIfModifiedSince(stat.ModTime()); !modified && err == nil {
-		c.Header("Cache-Control", "public,max-age=64200")
-		c.WriteNotModified()
-		return
-	}
 	bytes, err := ioutil.ReadAll(file)
 	if err != nil {
 		c.NotFound()
@@ -113,7 +113,7 @@ func (File) File(c iris.Context) {
 	}
 	c.SetLastModified(stat.ModTime())
 	c.Header("Cache-Control", "public,max-age=64200")
-	_, err = c.WriteGzip(bytes)
+	_, err = c.TryWriteGzip(bytes)
 	if err != nil {
 		log.Error("%v", err)
 		return

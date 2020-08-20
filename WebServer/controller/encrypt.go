@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/afanke/OJO/utils/log"
 	"strconv"
 )
 
@@ -107,12 +108,22 @@ func DecryptId(s string) (int64, error) {
 
 func BatchDES(lens int, getInt func(i int) *int64, retStr func(i int) *string) error {
 	for i := 0; i < lens; i++ {
-		encryptedId, err := EncryptId(*getInt(i))
+		id := getInt(i)
+		if id == nil {
+			log.Error("nil pointer error")
+			return errors.New("nil pointer error")
+		}
+		encryptedId, err := EncryptId(*id)
 		if err != nil {
 			return err
 		}
-		*retStr(i) = encryptedId
-		*getInt(i) = 0
+		str := retStr(i)
+		if str == nil {
+			log.Error("nil pointer error")
+			return errors.New("nil pointer error")
+		}
+		*str = encryptedId
+		*id = 0
 	}
 	return nil
 }

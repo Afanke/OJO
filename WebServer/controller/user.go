@@ -575,7 +575,7 @@ func (User) SendRPEmail(c iris.Context) {
 		return
 	}
 	log.Info("send email to %s successfully", mailTo)
-	c.JSON(&dto.Res{Error: nil, Data: "send email successfully"})
+	c.JSON(&dto.Res{Error: "", Data: "send email successfully"})
 }
 
 func (User) CheckVCode(c iris.Context) {
@@ -599,7 +599,7 @@ func (User) CheckVCode(c iris.Context) {
 		c.JSON(&dto.Res{Error: errors.New("the verification code is not correct").Error(), Data: nil})
 		return
 	}
-	c.JSON(&dto.Res{Error: nil, Data: "right"})
+	c.JSON(&dto.Res{Error: "", Data: "right"})
 }
 
 func (User) ResetPassword(c iris.Context) {
@@ -628,7 +628,7 @@ func (User) ResetPassword(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	c.JSON(&dto.Res{Error: nil, Data: "ok"})
+	c.JSON(&dto.Res{Error: "", Data: "ok"})
 }
 
 // ---------------------Mail---------------------
