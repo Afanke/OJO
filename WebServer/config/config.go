@@ -2,7 +2,7 @@ package config
 
 import (
 	"encoding/json"
-	"github.com/afanke/OJO/utils/log"
+	"github.com/gogotime/OJO/utils/log"
 	"io/ioutil"
 	"os"
 )

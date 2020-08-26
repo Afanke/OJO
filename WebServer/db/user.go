@@ -3,8 +3,8 @@ package db
 import (
 	"errors"
 	"fmt"
-	"github.com/afanke/OJO/WebServer/dto"
-	"github.com/afanke/OJO/utils/log"
+	"github.com/gogotime/OJO/WebServer/dto"
+	"github.com/gogotime/OJO/utils/log"
 	"github.com/ilibs/gosql/v2"
 )
 

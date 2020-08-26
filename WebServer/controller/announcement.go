@@ -2,9 +2,9 @@ package ctrl
 
 import (
 	"errors"
-	"github.com/afanke/OJO/WebServer/db"
-	"github.com/afanke/OJO/WebServer/dto"
-	"github.com/afanke/OJO/utils/session"
+	"github.com/gogotime/OJO/WebServer/db"
+	"github.com/gogotime/OJO/WebServer/dto"
+	"github.com/gogotime/OJO/utils/session"
 	"github.com/kataras/iris/v12"
 )
 

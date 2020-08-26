@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/afanke/OJO/WebServer/dto"
+	"github.com/gogotime/OJO/WebServer/dto"
 	"github.com/ilibs/gosql/v2"
 )
 

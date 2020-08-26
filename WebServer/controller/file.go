@@ -1,9 +1,9 @@
 package ctrl
 
 import (
-	"github.com/afanke/OJO/WebServer/db"
-	"github.com/afanke/OJO/WebServer/dto"
-	"github.com/afanke/OJO/utils/log"
+	"github.com/gogotime/OJO/WebServer/db"
+	"github.com/gogotime/OJO/WebServer/dto"
+	"github.com/gogotime/OJO/utils/log"
 	"github.com/kataras/iris/v12"
 	"io"
 	"io/ioutil"

@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	ctrl "github.com/afanke/OJO/WebServer/controller"
-	"github.com/afanke/OJO/WebServer/dto"
-	jsp "github.com/afanke/OJO/WebServer/judge"
-	"github.com/afanke/OJO/utils/log"
-	"github.com/afanke/OJO/utils/randstr"
-	"github.com/afanke/OJO/utils/session"
+	ctrl "github.com/gogotime/OJO/WebServer/controller"
+	"github.com/gogotime/OJO/WebServer/dto"
+	jsp "github.com/gogotime/OJO/WebServer/judge"
+	"github.com/gogotime/OJO/utils/log"
+	"github.com/gogotime/OJO/utils/randstr"
+	"github.com/gogotime/OJO/utils/session"
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"runtime"

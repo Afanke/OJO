@@ -2,11 +2,11 @@ package ctrl
 
 import (
 	"errors"
-	"github.com/afanke/OJO/WebServer/db"
-	"github.com/afanke/OJO/WebServer/dto"
-	jsp "github.com/afanke/OJO/WebServer/judge"
-	"github.com/afanke/OJO/utils/log"
-	"github.com/afanke/OJO/utils/session"
+	"github.com/gogotime/OJO/WebServer/db"
+	"github.com/gogotime/OJO/WebServer/dto"
+	jsp "github.com/gogotime/OJO/WebServer/judge"
+	"github.com/gogotime/OJO/utils/log"
+	"github.com/gogotime/OJO/utils/session"
 	"github.com/kataras/iris/v12"
 	"net"
 	"sort"

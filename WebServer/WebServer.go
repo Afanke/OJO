@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"github.com/afanke/OJO/utils/log"
-	"github.com/afanke/OJO/utils/session"
+	"github.com/gogotime/OJO/utils/log"
+	"github.com/gogotime/OJO/utils/session"
 	"github.com/kataras/iris/v12"
 	"os"
 	"os/signal"
@@ -16,7 +16,7 @@ func main() {
 	log.InitLog()
 	stop := make(chan int, 1)
 	go func() {
-		ch := make(chan os.Signal, 5)
+		ch := make(chan os.Signal, 1)
 		signal.Notify(ch,
 			syscall.SIGQUIT,
 			syscall.SIGINT,

@@ -8,7 +8,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/afanke/OJO/utils/log"
+	"github.com/gogotime/OJO/utils/log"
 	"strconv"
 )
 

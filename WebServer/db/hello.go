@@ -1,10 +1,10 @@
 package db
 
 import (
-	"github.com/afanke/OJO/WebServer/config"
-	"github.com/afanke/OJO/WebServer/dto"
-	"github.com/afanke/OJO/utils/log"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gogotime/OJO/WebServer/config"
+	"github.com/gogotime/OJO/WebServer/dto"
+	"github.com/gogotime/OJO/utils/log"
 	"github.com/ilibs/gosql/v2"
 	"time"
 )

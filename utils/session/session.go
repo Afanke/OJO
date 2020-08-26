@@ -4,7 +4,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"errors"
-	"github.com/afanke/OJO/utils/log"
+	"github.com/gogotime/OJO/utils/log"
 	"github.com/kataras/iris/v12"
 	"io/ioutil"
 	"os"
