@@ -289,31 +289,39 @@ func (Practice) handleSubmit(submitForm *dto.SubmitForm) {
 	form, err := pt.prepareForms(submitForm)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = pctdb.SetISE(submitForm.Sid)
+		_ = pctdb.SetISEAndErrMsg(submitForm.Sid, err.Error())
 		return
 	}
 	form, err = pt.sendToJudge(form)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = pctdb.SetISE(submitForm.Sid)
+		_ = pctdb.SetISEAndErrMsg(submitForm.Sid, err.Error())
 		return
 	}
 	err = pt.updateStatistic(form)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = pctdb.SetISE(submitForm.Sid)
+		_ = pctdb.SetISEAndErrMsg(submitForm.Sid, err.Error())
 		return
 	}
+	if form.Flag == "OLE" {
+		for i, j := 0, len(form.TestCase); i < j; i++ {
+			if len(form.TestCase[i].RealOutput) > 65535 {
+				form.TestCase[i].RealOutput = form.TestCase[i].RealOutput[:65535]
+			}
+		}
+	}
 	err = pt.InsertCaseRes(form)
+	log.Debug("len output:%v", len(form.TestCase[0].RealOutput))
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = pctdb.SetISE(submitForm.Sid)
+		_ = pctdb.SetISEAndErrMsg(submitForm.Sid, err.Error())
 		return
 	}
 	err = pctdb.UpdateFlagScoreMsg(form.Sid, form.TotalScore, form.Flag, form.ErrorMsg)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = pctdb.SetISE(submitForm.Sid)
+		_ = pctdb.SetISEAndErrMsg(submitForm.Sid, err.Error())
 		return
 	}
 }

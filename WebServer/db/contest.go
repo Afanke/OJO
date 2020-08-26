@@ -589,8 +589,8 @@ func (Contest) UpdateStat(cid, pid int64, total, ac, wa, ce, re, tle, mle, ole i
 	return err
 }
 
-func (Contest) SetISE(csmid int64) error {
-	_, err := gosql.Exec("update ojo.contest_submission set flag='ISE' where id=? limit 1", csmid)
+func (Contest) SetISEAndErrMsg(csmid int64, errMsg string) error {
+	_, err := gosql.Exec("update ojo.contest_submission set flag='ISE',error_msg=? where id=? limit 1", errMsg, csmid)
 	if err != nil {
 		log.Warn("error:%v", err)
 	}
@@ -598,7 +598,7 @@ func (Contest) SetISE(csmid int64) error {
 }
 
 func (Contest) UpdateFlagScoreMsg(csmid int64, score int, flag, errorMsg string) error {
-	var sql = ` update ojo.contest_submission set 
+	var sql string = ` update ojo.contest_submission set 
                 flag =?,
                 total_score = ?,
                 error_msg=?

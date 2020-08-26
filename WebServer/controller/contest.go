@@ -1016,31 +1016,38 @@ func (Contest) handleSubmit(submitForm *dto.SubmitForm) {
 	form, err := jsp.PrepareForm(submitForm)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = ctsdb.SetISE(submitForm.Sid)
+		_ = ctsdb.SetISEAndErrMsg(submitForm.Sid, err.Error())
 		return
 	}
 	form, err = jsp.SendToJudge(form)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = pctdb.SetISE(submitForm.Sid)
+		_ = ctsdb.SetISEAndErrMsg(submitForm.Sid, err.Error())
 		return
 	}
 	err = cts.updateStatistic(form)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = pctdb.SetISE(submitForm.Sid)
+		_ = ctsdb.SetISEAndErrMsg(submitForm.Sid, err.Error())
 		return
+	}
+	if form.Flag == "OLE" {
+		for i, j := 0, len(form.TestCase); i < j; i++ {
+			if len(form.TestCase[i].RealOutput) > 65535 {
+				form.TestCase[i].RealOutput = form.TestCase[i].RealOutput[:65535]
+			}
+		}
 	}
 	err = cts.InsertCaseRes(form)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = pctdb.SetISE(submitForm.Sid)
+		_ = ctsdb.SetISEAndErrMsg(submitForm.Sid, err.Error())
 		return
 	}
 	err = ctsdb.UpdateFlagScoreMsg(form.Sid, form.TotalScore, form.Flag, form.ErrorMsg)
 	if err != nil {
 		log.Warn("error:%v", err)
-		_ = pctdb.SetISE(submitForm.Sid)
+		_ = ctsdb.SetISEAndErrMsg(submitForm.Sid, err.Error())
 		return
 	}
 }

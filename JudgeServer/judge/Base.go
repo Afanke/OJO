@@ -3,8 +3,8 @@ package judge
 import (
 	"errors"
 	"fmt"
-	"github.com/afanke/OJO/JudgeServer/dto"
-	"github.com/afanke/OJO/utils/log"
+	"github.com/gogotime/OJO/JudgeServer/dto"
+	"github.com/gogotime/OJO/utils/log"
 	"io/ioutil"
 	"math/rand"
 	"os"

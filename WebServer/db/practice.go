@@ -302,8 +302,8 @@ func (Practice) UpdateStat(pbid int64, total, ac, wa, ce, mle, re, tle, ole int)
 	return err
 }
 
-func (Practice) SetISE(psmid int64) error {
-	_, err := gosql.Exec("update ojo.practice_submission set flag='ISE' where id=? limit 1", psmid)
+func (Practice) SetISEAndErrMsg(psmid int64, errMsg string) error {
+	_, err := gosql.Exec("update ojo.practice_submission set flag='ISE',error_msg=? where id=? limit 1", errMsg, psmid)
 	if err != nil {
 		log.Warn("error:%v", err)
 	}
