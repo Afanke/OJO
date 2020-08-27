@@ -538,6 +538,15 @@ func (User) SendRPEmail(c iris.Context) {
 		c.JSON(&dto.Res{Error: errors.New("captcha is not correct").Error(), Data: nil})
 		return
 	}
+	hasEmail, err := userdb.HasEmail(email.Email)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	if !hasEmail {
+		c.JSON(&dto.Res{Error: errors.New("no such email").Error(), Data: nil})
+		return
+	}
 	vcode := randstr.RandInt(6)
 	s.Set("rstpwd", RSTForm{
 		Email: email.Email,
@@ -592,7 +601,11 @@ func (User) CheckVCode(c iris.Context) {
 	}
 	form, ok := s.Get("rstpwd").(RSTForm)
 	if !ok {
-		c.JSON(&dto.Res{Error: errors.New("please restart").Error(), Data: nil})
+		c.JSON(&dto.Res{Error: errors.New("please reset the password from the beginning").Error(), Data: nil})
+		return
+	}
+	if time.Now().After(form.Time.Add(time.Minute * 15)) {
+		c.JSON(&dto.Res{Error: "The verification code has expired.\nPlease reset the password from the beginning", Data: nil})
 		return
 	}
 	if form.VCode != capt.Captcha {
@@ -616,7 +629,11 @@ func (User) ResetPassword(c iris.Context) {
 	}
 	form, ok := s.Get("rstpwd").(RSTForm)
 	if !ok {
-		c.JSON(&dto.Res{Error: errors.New("please restart").Error(), Data: nil})
+		c.JSON(&dto.Res{Error: errors.New("please reset the password from the beginning").Error(), Data: nil})
+		return
+	}
+	if time.Now().After(form.Time.Add(time.Minute * 15)) {
+		c.JSON(&dto.Res{Error: "The verification code has expired.\nPlease reset the password from the beginning", Data: nil})
 		return
 	}
 	if form.VCode != cp.Captcha {

@@ -169,7 +169,7 @@
     },
     async mounted() {
       this.show = true
-      this.queryList()
+      await this.queryList()
     },
     methods: {
       toggle(checked) {

@@ -136,6 +136,14 @@ func (User) UpdatePassword(form *dto.UpdateForm) error {
 	return err
 }
 
+func (User) UpdateEmail(form *dto.UpdateForm) error {
+	s := `update ojo.user set 
+			email=?
+			where id=? limit 1`
+	_, err := gosql.Exec(s, form.New, form.Id)
+	return err
+}
+
 func (User) ResetPassword(password, email string) error {
 	s := `update ojo.user set 
 			password=?
@@ -144,12 +152,12 @@ func (User) ResetPassword(password, email string) error {
 	return err
 }
 
-func (User) UpdateEmail(form *dto.UpdateForm) error {
-	s := `update ojo.user set 
-			email=?
-			where id=? limit 1`
-	_, err := gosql.Exec(s, form.New, form.Id)
-	return err
+func (User) HasEmail(email string) (bool, error) {
+	count := 0
+	s := `select count(*) from ojo.user
+			where email=? limit 1`
+	err := gosql.Get(&count, s, email)
+	return count > 0, err
 }
 
 func (User) CheckPassword(id int64, password string) error {

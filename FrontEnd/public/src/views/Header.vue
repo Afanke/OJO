@@ -94,8 +94,9 @@
           <div style="width:80%">
             <el-link type="primary" style="float:left;margin-top:-20px" @click="registerDrawer=true">Go to register!
             </el-link>
-            <el-link type="primary" style="float:right;margin-top:-20px" @click="$message('under construction')">Forget
-              password?</el-link>
+            <el-link type="primary" style="float:right;margin-top:-20px" @click="goResetPassword">
+              Forget password?
+            </el-link>
           </div>
 
         </el-form-item>
@@ -170,9 +171,9 @@
         isLogin: false,
         activeIndex: "0",
         activeIndex2: "1",
-        loginDrawer: false,
         username: "",
         isAdmin:false,
+        loginDrawer: false,
         registerDrawer: false,
         loginLoading: false,
         registerLoading: false,
@@ -209,7 +210,7 @@
             {
               min: 8,
               max: 32,
-              message: "The length of email must between 8 and 32 ",
+              message: "The length of password must between 8 and 32 ",
               trigger: "change"
             }
           ],
@@ -440,6 +441,12 @@
       },
       goManagement() {
         window.open("/admin")
+      },
+      goResetPassword(){
+        this.loginDrawer=false
+        this.$router.push({
+          path: "/user/resetPassword",
+        });
       },
       handleCommand(command) {
         switch (command) {

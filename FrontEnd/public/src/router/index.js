@@ -20,7 +20,6 @@ const PracticeRank = () => import('@/views/rank/PracticeRank.vue');
 const UserHome = () => import('@/views/user/Home.vue');
 const UserSettings = () => import('@/views/user/Settings.vue');
 const ResetPassword = () => import('@/views/user/ResetPassword.vue');
-const CaptchaBox = () => import('@/components/CaptchaBox.vue');
 
 const originalPush = VueRouter.prototype.push;
 VueRouter.prototype.push = function push(location) {
@@ -42,10 +41,9 @@ const routes = [
     {path: '/rank/PracticeRank', component: PracticeRank},
     {path: '/user/home', component: UserHome},
     {path: '/user/settings', component: UserSettings},
+    { path: '/user/resetPassword', component:ResetPassword },
+    {path: '/', redirect: '/practice'}
 
-    // {path: '/', redirect: '/practice'}
-    { path: '/', component:ResetPassword }
-    // { path: '/', component:CaptchaBox }
 ];
 
 const router = new VueRouter({
