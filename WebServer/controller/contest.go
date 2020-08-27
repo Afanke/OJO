@@ -192,6 +192,11 @@ func (Contest) Qualify(c iris.Context) {
 		c.JSON(&dto.Res{Error: errors.New("the contest isn't started").Error(), Data: nil})
 		return
 	}
+	err = cts.isIPMatched(c, form.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
 	password, err := ctsdb.GetPassword(form.Id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -213,6 +218,10 @@ func (Contest) Qualify(c iris.Context) {
 
 // 根据Session和cid比对用户是否具有Contest的访问权限
 func (Contest) isQualified(cid int64, c iris.Context) (bool, int64, error) {
+	err := cts.isIPMatched(c, cid)
+	if err != nil {
+		return false, 0, err
+	}
 	userId, err := session.GetInt64(c, "userId")
 	if err != nil {
 		return false, 0, errors.New("please login")
@@ -1407,8 +1416,9 @@ func (Contest) isIPMatched(c iris.Context, id int64) error {
 	split := strings.Split(s, ":")
 	ip := net.ParseIP(split[0])
 	if ip == nil {
-		return errors.New("parse ip error")
+		ip = net.ParseIP("0.0.0.0")
 	}
+	log.Debug("ip:%v", ip.String())
 	limit, err := ctsdb.GetIPLimit(id)
 	if err != nil {
 		return err
@@ -1428,7 +1438,10 @@ func (Contest) isIPMatched(c iris.Context, id int64) error {
 		if rip == nil {
 			return errors.New("illegal ip limit, please contact with admin")
 		}
-		equal := rip.Equal(ip)
+		log.Debug("rlip:%v", rlip.String())
+		log.Debug("rip:%v", rip.String())
+		equal := rip.Equal(rlip)
+		log.Debug("equal:%v", equal)
 		if equal {
 			matched = true
 			break
