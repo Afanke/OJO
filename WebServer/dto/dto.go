@@ -360,6 +360,24 @@ type ContestSubmission struct {
 	SubmitTime string `json:"submitTime" db:"submit_time"`
 	ErrorMsg   string `json:"errorMsg" db:"error_msg"`
 }
+
+type ContestSubmission2 struct {
+	Id          int64 `json:"id" db:"id"`
+	Cid         int64 `json:"cid" db:"cid"`
+	ContestName string
+	UserName    string
+	Language    string
+	ProblemName string
+	Uid         int64  `json:"uid" db:"uid"`
+	Pid         int64  `json:"pid" db:"pid"`
+	Lid         int64  `json:"lid" db:"lid"`
+	Code        string `json:"code" db:"code"`
+	Flag        string `json:"flag" db:"flag"`
+	TotalScore  int    `json:"totalScore" db:"total_score"`
+	SubmitTime  string `json:"submitTime" db:"submit_time"`
+	ErrorMsg    string `json:"errorMsg" db:"error_msg"`
+}
+
 type Administrator struct {
 	Id            int64  `json:"id" db:"id"`
 	Name          string `json:"name" db:"name"`
@@ -487,6 +505,11 @@ type Problem struct {
 	Language          []Language      `json:"language" db:"language"`
 	Sample            []ProblemSample `json:"sample" db:"sample"`
 	Tag               []TagBrief      `json:"tag"`
+}
+
+type ProblemName struct {
+	Id    int64  `json:"id" db:"id"`
+	Title string `json:"title" db:"title"`
 }
 
 type SPJ struct {

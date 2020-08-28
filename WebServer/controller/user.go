@@ -13,7 +13,6 @@ import (
 	"gopkg.in/gomail.v2"
 	"image/png"
 	"io/ioutil"
-	"math/rand"
 	"strconv"
 	"strings"
 	"time"
@@ -152,7 +151,7 @@ func (User) Captcha(c iris.Context) {
 	c.Header("expires", "0")
 	cp := captcha.NewCaptcha(120, 40, 4)
 	cp.SetFontPath("./config/xindexingcao57.ttf")
-	cp.SetMode(rand.Int() & 1) // 设置为数学公式
+	cp.SetMode(1) // 设置为数学公式
 	code, img := cp.OutPut()
 	s, err := session.GetSession(c)
 	if err != nil {

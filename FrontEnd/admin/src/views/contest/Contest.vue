@@ -95,6 +95,9 @@
                 <el-tooltip content="Problem List" placement="top">
                   <el-button size="mini" class="el-icon-notebook-2" @click="editProblem(scope.row.id)"></el-button>
                 </el-tooltip>
+                <el-tooltip content="Download Submissions" placement="top">
+                  <el-button size="mini" class="el-icon-download" @click="getAllSubmission(scope.row.id)"></el-button>
+                </el-tooltip>
                 <el-tooltip content="Delete" placement="top">
                   <el-button size="mini" class="el-icon-delete" style="color:red" @click="deleteContest(scope.row.id)">
                   </el-button>
@@ -179,6 +182,9 @@
         obj.page = 1;
         this.fresh(obj);
       },
+      getAllSubmission(id){
+       window.location.href=this.$http.defaults.baseURL+'/admin/contest/getAllSubByCid?id='+id
+      },
       async editContest(id) {
         try {
           const {
@@ -190,7 +196,7 @@
             this.$message.error(res.error)
             return
           }
-          this.$router.push({
+          await this.$router.push({
             path: "/contest/edit",
             query: {
               id: id

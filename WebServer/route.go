@@ -259,6 +259,7 @@ func BindRoute(app *iris.Application) {
 			admin.Post("/contest/getMonthCount", cts.GetMonthCount)
 			admin.Post("/contest/getRecentCount", cts.GetRecentCount)
 			admin.Post("/contest/getCtsProblem", cts.GetCtsProblem)
+			admin.Get("/contest/getAllSubByCid", cts.GetAllSubByCid)
 			admin.Post("/contest/addProblem", cts.AddProblem)
 			admin.Post("/contest/deleteProblem", cts.DeleteProblem)
 			admin.Post("/contest/deleteContest", cts.DeleteContest)

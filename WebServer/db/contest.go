@@ -424,9 +424,9 @@ func (Contest) GetAllStatus(uid int64, offset, limit int) ([]dto.ContestSubStat,
 	return res, nil
 }
 
-func (Contest) GetName(uid int64) (string, error) {
+func (Contest) GetName(cid int64) (string, error) {
 	var name string
-	err := gosql.Get(&name, `select title from ojo.contest where id=?`, uid)
+	err := gosql.Get(&name, `select title from ojo.contest where id=?`, cid)
 	return name, err
 }
 
@@ -1243,4 +1243,26 @@ func (Contest) GetRecentCount() (int, error) {
 	WHERE
     start_time<= date_sub(now(),interval -6 hour ) and end_time>now()`)
 	return count, err
+}
+
+func (Contest) GetAllSubByCid(cid int64) ([]dto.ContestSubmission2, error) {
+	var data []dto.ContestSubmission2
+	s := "select id, uid, cid, pid, lid, code, submit_time, total_score, flag, error_msg from ojo.contest_submission where cid=? order by id"
+	err := gosql.Select(&data, s, cid)
+	err = user.SelectUserName(len(data), func(i int) (target int64) {
+		return data[i].Uid
+	}, func(i int, res string) {
+		data[i].UserName = res
+	})
+	err = pb.SelectName(len(data), func(i int) (target int64) {
+		return data[i].Pid
+	}, func(i int, res string) {
+		data[i].ProblemName = res
+	})
+	name, err := cts.GetName(cid)
+	for i, j := 0, len(data); i < j; i++ {
+		data[i].ContestName = name
+		data[i].Language = lang.getName(data[i].Lid)
+	}
+	return data, err
 }

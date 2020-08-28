@@ -205,7 +205,6 @@ func (User) SelectUserName(lens int, getId func(i int) (target int64), setName f
 	if err != nil {
 		return err
 	}
-	fmt.Println(s)
 	for i := 0; i < lens; i++ {
 		for j, k := 0, len(s); j < k; j++ {
 			if getId(i) == s[j].Id {

@@ -286,6 +286,30 @@ func (Problem) GetName(pbid int64) (string, error) {
 	return s, err
 }
 
+func (Problem) SelectName(lens int, getId func(i int) (target int64), setName func(i int, res string)) error {
+	if lens == 0 {
+		return nil
+	}
+	ids := make([]int64, 0, lens)
+	for i := 0; i < lens; i++ {
+		ids = append(ids, getId(i))
+	}
+	var s []dto.ProblemName
+	err := gosql.Select(&s, "select id,title from ojo.problem  where id in (?) ", ids)
+	if err != nil {
+		return err
+	}
+	for i := 0; i < lens; i++ {
+		for j, k := 0, len(s); j < k; j++ {
+			if getId(i) == s[j].Id {
+				setName(i, s[j].Title)
+				break
+			}
+		}
+	}
+	return nil
+}
+
 func (Problem) InsertProblem(p *dto.Problem) error {
 	var s = `insert into ojo.problem(cid,
                         ref,

@@ -2,6 +2,8 @@ package ctrl
 
 import (
 	"errors"
+	"fmt"
+	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"github.com/gogotime/OJO/WebServer/db"
 	"github.com/gogotime/OJO/WebServer/dto"
 	jsp "github.com/gogotime/OJO/WebServer/judge"
@@ -9,7 +11,9 @@ import (
 	"github.com/gogotime/OJO/utils/session"
 	"github.com/kataras/iris/v12"
 	"net"
+	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -63,64 +67,6 @@ func (Contest) GetVisibleDetail(c iris.Context) {
 		return
 	}
 	c.JSON(&dto.Res{Error: "", Data: res})
-}
-
-func (Contest) GetAll(c iris.Context) {
-	var form dto.ContestForm
-	err := c.ReadJSON(&form)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	userId, err := isAdmin(c)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	form.Cid = userId
-	data, err := ctsdb.GetAll(&form)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	c.JSON(&dto.Res{Error: "", Data: data})
-}
-
-func (Contest) GetCount(c iris.Context) {
-	var form dto.ContestForm
-	err := c.ReadJSON(&form)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	userId, err := isAdmin(c)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	form.Cid = userId
-	res, err := ctsdb.GetCount(&form)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	c.JSON(&dto.Res{Error: "", Data: res})
-}
-
-func (Contest) GetCtsProblem(c iris.Context) {
-	var id dto.Id
-	err := c.ReadJSON(&id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	err = cts.isPermitted(c, id.Id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	data, err := ctsdb.GetCtsProblem(id.Id)
-	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
 func (Contest) HasPassword(c iris.Context) {
@@ -551,7 +497,10 @@ func (Contest) GetStatusDetail(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
-// 根据cid获得对应Contest的OI排名
+// ---------------------------------------------------------------------
+//                               OI Rank
+// ---------------------------------------------------------------------
+
 func (Contest) GetOIRank(c iris.Context) {
 	var form dto.ContestForm
 	err := c.ReadJSON(&form)
@@ -585,7 +534,6 @@ func (Contest) GetOIRank(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: detail})
 }
 
-// 根据cid获得对应Contest的OI排名总人数
 func (Contest) GetOIRankCount(c iris.Context) {
 	var id dto.Id
 	err := c.ReadJSON(&id)
@@ -619,7 +567,6 @@ func (Contest) GetOIRankCount(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: detail})
 }
 
-// 根据cid获得对应Contest的OI排名前十位
 func (Contest) GetOITop10(c iris.Context) {
 	var id dto.Id
 	err := c.ReadJSON(&id)
@@ -653,8 +600,13 @@ func (Contest) GetOITop10(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: detail})
 }
 
-//-------------------------------------------------------------
-// ACM Rank
+// ---------------------------------------------------------------------
+//                                END
+// ---------------------------------------------------------------------
+
+// ---------------------------------------------------------------------
+//                               ACM Rank
+// ---------------------------------------------------------------------
 
 type ACMRankPool map[int64]*ACMRank
 
@@ -958,10 +910,14 @@ func (Contest) GetACMRankCount(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
-//-------------------------------------------------------------
+// ---------------------------------------------------------------------
+//                                END
+// ---------------------------------------------------------------------
 
-// -------------------------------------------------------------
-// 提交代码
+// ---------------------------------------------------------------------
+//                               Submit
+// ---------------------------------------------------------------------
+
 func (Contest) Submit(c iris.Context) {
 	var form dto.SubmitForm
 	err := c.ReadJSON(&form)
@@ -1022,6 +978,22 @@ func (Contest) Submit(c iris.Context) {
 }
 
 func (Contest) handleSubmit(submitForm *dto.SubmitForm) {
+	defer func() {
+		if err := recover(); err != nil {
+			var stacktrace string
+			for i := 1; ; i++ {
+				_, f, l, got := runtime.Caller(i)
+				if !got {
+					break
+				}
+				stacktrace += fmt.Sprintf("%s:%d\n", f, l)
+			}
+			// when stack finishes
+			log.Error("Trace: %s", err)
+			log.Error("%s", stacktrace)
+			_ = ctsdb.SetISEAndErrMsg(submitForm.Sid, fmt.Sprintf("Trace: %s", err)+stacktrace)
+		}
+	}()
 	form, err := jsp.PrepareForm(submitForm)
 	if err != nil {
 		log.Warn("error:%v", err)
@@ -1103,7 +1075,203 @@ func (Contest) InsertCaseRes(form *dto.JudgeForm) error {
 	return nil
 }
 
-// -------------------------------------------------------------
+// ---------------------------------------------------------------------
+//                                END
+// ---------------------------------------------------------------------
+
+// ---------------------------------------------------------------------
+//                      Administrator Operation
+// ---------------------------------------------------------------------
+
+func (Contest) GetAll(c iris.Context) {
+	var form dto.ContestForm
+	err := c.ReadJSON(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	userId, err := isAdmin(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	form.Cid = userId
+	data, err := ctsdb.GetAll(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: data})
+}
+
+func (Contest) GetCount(c iris.Context) {
+	var form dto.ContestForm
+	err := c.ReadJSON(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	userId, err := isAdmin(c)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	form.Cid = userId
+	res, err := ctsdb.GetCount(&form)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: res})
+}
+
+func (Contest) GetCtsProblem(c iris.Context) {
+	var id dto.Id
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = cts.isPermitted(c, id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	data, err := ctsdb.GetCtsProblem(id.Id)
+	c.JSON(&dto.Res{Error: "", Data: data})
+}
+
+func (Contest) GetAllSubByCid(c iris.Context) {
+	param := c.URLParam("id")
+	id, err := strconv.Atoi(param)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	if id < 1 {
+		id = 1
+	}
+	data, err := ctsdb.GetAllSubByCid(int64(id))
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	f := excelize.NewFile()
+	// 创建一个工作表
+	f.SetCellValue("Sheet1", "A1", "Id")
+	f.SetCellValue("Sheet1", "B1", "Cid")
+	f.SetCellValue("Sheet1", "C1", "ContestName")
+	f.SetCellValue("Sheet1", "D1", "Uid")
+	f.SetCellValue("Sheet1", "E1", "UserName")
+	f.SetCellValue("Sheet1", "F1", "Pid")
+	f.SetCellValue("Sheet1", "G1", "ProblemName")
+	f.SetCellValue("Sheet1", "H1", "Lid")
+	f.SetCellValue("Sheet1", "I1", "Language")
+	f.SetCellValue("Sheet1", "J1", "Flag")
+	f.SetCellValue("Sheet1", "K1", "SubmitTime")
+	f.SetCellValue("Sheet1", "L1", "Code")
+	f.SetCellValue("Sheet1", "M1", "ErrorMsg")
+	f.SetCellValue("Sheet1", "N1", "TotalScore")
+	f.SetColWidth("Sheet1", "C", "C", 15)
+	f.SetColWidth("Sheet1", "E", "E", 15)
+	f.SetColWidth("Sheet1", "G", "G", 15)
+	f.SetColWidth("Sheet1", "I", "I", 9)
+	f.SetColWidth("Sheet1", "K", "K", 20)
+	f.SetColWidth("Sheet1", "L", "L", 50)
+	f.SetColWidth("Sheet1", "L", "L", 50)
+	f.SetColWidth("Sheet1", "M", "M", 20)
+	for i, j := 0, len(data); i < j; i++ {
+		n := strconv.Itoa(i + 2)
+		f.SetCellValue("Sheet1", "A"+n, data[i].Id)
+		f.SetCellValue("Sheet1", "B"+n, data[i].Cid)
+		f.SetCellValue("Sheet1", "C"+n, data[i].ContestName)
+		f.SetCellValue("Sheet1", "D"+n, data[i].Uid)
+		f.SetCellValue("Sheet1", "E"+n, data[i].UserName)
+		f.SetCellValue("Sheet1", "F"+n, data[i].Pid)
+		f.SetCellValue("Sheet1", "G"+n, data[i].ProblemName)
+		f.SetCellValue("Sheet1", "H"+n, data[i].Lid)
+		f.SetCellValue("Sheet1", "I"+n, data[i].Language)
+		f.SetCellValue("Sheet1", "J"+n, data[i].Flag)
+		f.SetCellValue("Sheet1", "K"+n, data[i].SubmitTime)
+		f.SetCellValue("Sheet1", "L"+n, data[i].Code)
+		f.SetCellValue("Sheet1", "M"+n, data[i].ErrorMsg)
+		f.SetCellValue("Sheet1", "N"+n, data[i].TotalScore)
+	}
+	name, err := ctsdb.GetName(int64(id))
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	fileName := name + "_" + time.Now().Format("2006-01-02_15_04_05.xlsx")
+	filePath := "./dist/file/" + fileName
+	if err := f.SaveAs(filePath); err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.ContentType("application/force-download")
+	c.Header("Content-Disposition", "attachment;filename="+fileName)
+	err = c.SendFile(filePath, fileName)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+}
+
+func (Contest) GetDetail(c iris.Context) {
+	var id dto.Id
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = cts.isPermitted(c, id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	data, err := ctsdb.GetDetail(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: data})
+}
+
+func (Contest) GetTodayCount(c iris.Context) {
+	res, err := ctsdb.GetTodayCount()
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: res})
+}
+
+func (Contest) GetWeekCount(c iris.Context) {
+	res, err := ctsdb.GetWeekCount()
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: res})
+}
+
+func (Contest) GetMonthCount(c iris.Context) {
+	res, err := ctsdb.GetMonthCount()
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: res})
+}
+
+func (Contest) GetRecentCount(c iris.Context) {
+	res, err := ctsdb.GetRecentCount()
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: res})
+}
 
 func (Contest) AddContest(c iris.Context) {
 	var contest dto.Contest
@@ -1170,104 +1338,6 @@ func (Contest) AddProblem(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: "add problem successfully"})
 }
 
-func (Contest) DeleteProblem(c iris.Context) {
-	var id dto.Id4
-	err := c.ReadJSON(&id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	err = cts.isPermitted(c, id.Cid)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	err = pb.isPermitted(c, id.Pid)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	isStarted, err := cts.isStarted(id.Cid)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	if isStarted {
-		c.JSON(&dto.Res{Error: "can't delete problem once the contest begun", Data: nil})
-		return
-	}
-	err = ctsdb.DeleteCtsPb(id.Cid, id.Pid)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	c.JSON(&dto.Res{Error: "", Data: "delete problem successfully"})
-}
-
-func (Contest) DeleteContest(c iris.Context) {
-	var id dto.Id
-	err := c.ReadJSON(&id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	err = cts.isPermitted(c, id.Id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	isUnderway, err := cts.isUnderway(id.Id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	if isUnderway {
-		c.JSON(&dto.Res{Error: "can't delete contest underway", Data: nil})
-		return
-	}
-	err = ctsdb.DeleteContest(id.Id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	c.JSON(&dto.Res{Error: "", Data: "delete contest successfully"})
-}
-
-func (Contest) TryEdit(c iris.Context) {
-	var id dto.Id
-	err := c.ReadJSON(&id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	err = cts.isPermitted(c, id.Id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	c.JSON(&dto.Res{Error: "", Data: "ok"})
-}
-
-func (Contest) GetDetail(c iris.Context) {
-	var id dto.Id
-	err := c.ReadJSON(&id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	err = cts.isPermitted(c, id.Id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	data, err := ctsdb.GetDetail(id.Id)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	c.JSON(&dto.Res{Error: "", Data: data})
-}
-
 func (Contest) UpdateContest(c iris.Context) {
 	var contest dto.Contest
 	err := c.ReadJSON(&contest)
@@ -1306,42 +1376,6 @@ func (Contest) UpdateContest(c iris.Context) {
 		return
 	}
 	c.JSON(&dto.Res{Error: "", Data: "save successfully"})
-}
-
-func (Contest) GetTodayCount(c iris.Context) {
-	res, err := ctsdb.GetTodayCount()
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	c.JSON(&dto.Res{Error: "", Data: res})
-}
-
-func (Contest) GetWeekCount(c iris.Context) {
-	res, err := ctsdb.GetWeekCount()
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	c.JSON(&dto.Res{Error: "", Data: res})
-}
-
-func (Contest) GetMonthCount(c iris.Context) {
-	res, err := ctsdb.GetMonthCount()
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	c.JSON(&dto.Res{Error: "", Data: res})
-}
-
-func (Contest) GetRecentCount(c iris.Context) {
-	res, err := ctsdb.GetRecentCount()
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	c.JSON(&dto.Res{Error: "", Data: res})
 }
 
 func (Contest) SetVisibleTrue(c iris.Context) {
@@ -1384,31 +1418,82 @@ func (Contest) SetVisibleFalse(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: "update successfully"})
 }
 
-func (Contest) isCreator(c iris.Context, id int64) error {
-	i, err := session.GetInt64(c, "userId")
+func (Contest) DeleteContest(c iris.Context) {
+	var id dto.Id
+	err := c.ReadJSON(&id)
 	if err != nil {
-		return err
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
 	}
-	creatorId, err := ctsdb.GetCreatorId(id)
+	err = cts.isPermitted(c, id.Id)
 	if err != nil {
-		return err
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
 	}
-	if i != creatorId {
-		return errors.New("not allowed")
+	isUnderway, err := cts.isUnderway(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
 	}
-	return nil
+	if isUnderway {
+		c.JSON(&dto.Res{Error: "can't delete contest underway", Data: nil})
+		return
+	}
+	err = ctsdb.DeleteContest(id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: "delete contest successfully"})
 }
 
-// to see whether he is super admin or the creator of the contest
-func (Contest) isPermitted(c iris.Context, id int64) error {
-	_, err := isSuperAdmin(c)
+func (Contest) DeleteProblem(c iris.Context) {
+	var id dto.Id4
+	err := c.ReadJSON(&id)
 	if err != nil {
-		err := cts.isCreator(c, id)
-		if err != nil {
-			return err
-		}
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
 	}
-	return nil
+	err = cts.isPermitted(c, id.Cid)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = pb.isPermitted(c, id.Pid)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	isStarted, err := cts.isStarted(id.Cid)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	if isStarted {
+		c.JSON(&dto.Res{Error: "can't delete problem once the contest begun", Data: nil})
+		return
+	}
+	err = ctsdb.DeleteCtsPb(id.Cid, id.Pid)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: "delete problem successfully"})
+}
+
+func (Contest) TryEdit(c iris.Context) {
+	var id dto.Id
+	err := c.ReadJSON(&id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	err = cts.isPermitted(c, id.Id)
+	if err != nil {
+		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	c.JSON(&dto.Res{Error: "", Data: "ok"})
 }
 
 func (Contest) isIPMatched(c iris.Context, id int64) error {
@@ -1453,6 +1538,48 @@ func (Contest) isIPMatched(c iris.Context, id int64) error {
 	return nil
 }
 
+// ---------------------------------------------------------------------
+//                                END
+// ---------------------------------------------------------------------
+
+// ---------------------------------------------------------------------
+//                   Administrator Rights Detection
+// ---------------------------------------------------------------------
+
+func (Contest) isCreator(c iris.Context, id int64) error {
+	i, err := session.GetInt64(c, "userId")
+	if err != nil {
+		return err
+	}
+	creatorId, err := ctsdb.GetCreatorId(id)
+	if err != nil {
+		return err
+	}
+	if i != creatorId {
+		return errors.New("not allowed")
+	}
+	return nil
+}
+
+func (Contest) isPermitted(c iris.Context, id int64) error {
+	_, err := isSuperAdmin(c)
+	if err != nil {
+		err := cts.isCreator(c, id)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// ---------------------------------------------------------------------
+//                                END
+// ---------------------------------------------------------------------
+
+// ---------------------------------------------------------------------
+//                            Contest Time
+// ---------------------------------------------------------------------
+
 func (Contest) isStarted(pid int64) (bool, error) {
 	ctsTime, err := ctsdb.GetTime(pid)
 	if err != nil {
@@ -1495,3 +1622,7 @@ func (Contest) isUnderway(pid int64) (bool, error) {
 	now := time.Now()
 	return now.After(startTime) && now.Before(endTime), nil
 }
+
+// ---------------------------------------------------------------------
+//                                END
+// ---------------------------------------------------------------------
