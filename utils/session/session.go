@@ -31,8 +31,12 @@ var cfg Config
 var Pool = map[string]Session{}
 var PoolLock sync.RWMutex
 
-func init() {
-	gob.Register(sync.RWMutex{})
+func Register(i interface{}) {
+	gob.Register(i)
+
+}
+
+func InitSession() {
 	LoadSession()
 	err := LoadConfig()
 	if err != nil {

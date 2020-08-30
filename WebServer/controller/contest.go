@@ -441,15 +441,15 @@ func (Contest) GetCurrentStatus(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
-// 根据csmid获得Contest提交记录的总体信息
+// 根据csid获得Contest提交记录的总体信息
 func (Contest) GetStatus(c iris.Context) {
-	var csmid dto.Eid
-	err := c.ReadJSON(&csmid)
+	var csid dto.Eid
+	err := c.ReadJSON(&csid)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	id, err := DecryptId(csmid.Id)
+	id, err := DecryptId(csid.Id)
 	data, err := ctsdb.GetStatus(id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -467,15 +467,15 @@ func (Contest) GetStatus(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
-// 根据csmid获得Contest提交记录的具体各个判题点信息
+// 根据csid获得Contest提交记录的具体各个判题点信息
 func (Contest) GetStatusDetail(c iris.Context) {
-	var csmid dto.Eid
-	err := c.ReadJSON(&csmid)
+	var csid dto.Eid
+	err := c.ReadJSON(&csid)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	id, err := DecryptId(csmid.Id)
+	id, err := DecryptId(csid.Id)
 	data, err := ctsdb.GetCaseRes(id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})

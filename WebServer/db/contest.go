@@ -440,9 +440,9 @@ func (Contest) GetAllStatusCount(uid int64) (int, error) {
 	return count, nil
 }
 
-func (Contest) GetStatus(csmid int64) (*dto.ContestSubStat, error) {
+func (Contest) GetStatus(csid int64) (*dto.ContestSubStat, error) {
 	var s dto.ContestSubStat
-	err := gosql.Get(&s, "select * from contest_submission cs where cs.id=? limit 1", csmid)
+	err := gosql.Get(&s, "select * from contest_submission cs where cs.id=? limit 1", csid)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err
@@ -589,43 +589,43 @@ func (Contest) UpdateStat(cid, pid int64, total, ac, wa, ce, re, tle, mle, ole i
 	return err
 }
 
-func (Contest) SetISEAndErrMsg(csmid int64, errMsg string) error {
-	_, err := gosql.Exec("update ojo.contest_submission set flag='ISE',error_msg=? where id=? limit 1", errMsg, csmid)
+func (Contest) SetISEAndErrMsg(csid int64, errMsg string) error {
+	_, err := gosql.Exec("update ojo.contest_submission set flag='ISE',error_msg=? where id=? limit 1", errMsg, csid)
 	if err != nil {
 		log.Warn("error:%v", err)
 	}
 	return err
 }
 
-func (Contest) UpdateFlagScoreMsg(csmid int64, score int, flag, errorMsg string) error {
+func (Contest) UpdateFlagScoreMsg(csid int64, score int, flag, errorMsg string) error {
 	var sql string = ` update ojo.contest_submission set 
                 flag =?,
                 total_score = ?,
                 error_msg=?
         where id = ?`
-	_, err := gosql.Exec(sql, flag, score, errorMsg, csmid)
+	_, err := gosql.Exec(sql, flag, score, errorMsg, csid)
 	return err
 }
 
-func (Contest) InsertCaseRes(csmid, uid int64, tc *dto.TestCase) error {
+func (Contest) InsertCaseRes(csid, uid int64, tc *dto.TestCase) error {
 	var sql = `  insert into ojo.contest_case_result
-  (csmid,pcaseid,uid,flag,cpu_time,real_time,real_memory,real_output,error_output,spj_output,spj_error_output,score)
+  (csid,pcid,uid,flag,cpu_time,real_time,real_memory,real_output,error_output,spj_output,spj_error_output,score)
   				values(?,?,?,?,?,?,?,?,?,?,?,?)`
-	_, err := gosql.Exec(sql, csmid, tc.Id, uid, tc.Flag, tc.ActualCpuTime,
+	_, err := gosql.Exec(sql, csid, tc.Id, uid, tc.Flag, tc.ActualCpuTime,
 		tc.ActualRealTime, tc.RealMemory, tc.RealOutput, tc.ErrorOutput,
 		tc.SPJOutput, tc.SPJErrorOutput, tc.Score)
 	return err
 }
 
-func (Contest) GetCaseRes(csmid int64) ([]dto.ContestCaseResult, error) {
+func (Contest) GetCaseRes(csid int64) ([]dto.ContestCaseResult, error) {
 	var res []dto.ContestCaseResult
-	err := gosql.Select(&res, "select * from ojo.contest_case_result where csmid=?", csmid)
+	err := gosql.Select(&res, "select * from ojo.contest_case_result where csid=?", csid)
 	return res, err
 }
 
-func (Contest) GetShowOutput(csmid int64) (bool, error) {
+func (Contest) GetShowOutput(csid int64) (bool, error) {
 	var cid int64
-	err := gosql.Get(&cid, "select cid from ojo.contest_submission where id=? limit 1", csmid)
+	err := gosql.Get(&cid, "select cid from ojo.contest_submission where id=? limit 1", csid)
 	if err != nil {
 		return false, err
 	}

@@ -24,7 +24,7 @@
         <el-row v-if="result.errorMsg" style="margin-top:20px" :class="getBgClass()">
           <p v-html="result.errorMsg.replaceAll('\n','<br>')"></p>
         </el-row>
-        <el-row style="background-color:#ffffff;margin-top:20px;border-radius: 4px;overflow: hidden">
+        <el-row style="background-color:#ffffff;margin-top:20px;border-radius: 4px;overflow: hidden;">
           <el-row>
             <span style="font-size:20px;margin-top:15px;margin-left:20px;float:left" v-if="!option">Status Detail</span>
             <span style="font-size:20px;margin-top:15px;margin-left:20px;float:left" v-if="option">Code</span>
@@ -33,7 +33,6 @@
               active-text="Code" inactive-text="Status Detail">
             </el-switch>
           </el-row>
-
           <el-table v-if="!option" :data="resultDetail" size="mini" style="width: 100%;margin-top:15px;">
             <el-table-column type="expand">
               <template slot-scope="props">
@@ -117,7 +116,7 @@
         show: false,
         option: 0,
         waitTimes: 0,
-        psmid: 0,
+        psid: 0,
         bigFlag: {
           show: false,
           bgCss: '',
@@ -149,11 +148,11 @@
     },
     async beforeCreate() {
       try {
-        let psmid = this.$route.query.id;
+        let psid = this.$route.query.id;
         let {
           data: res0
         } = await this.$http.post('/practice/getStatus', {
-          id: psmid
+          id: psid
         });
         if (res0.error) {
           this.$message.error(res0.error);

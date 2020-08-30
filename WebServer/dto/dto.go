@@ -268,9 +268,9 @@ type ContestProblem struct {
 
 type ContestCaseResult struct {
 	//Id          int64  `json:"id" db:"id"`
-	//Csmid          int64  `json:"csmid" db:"csmid"`
-	//Ecsmid         string `json:"ecsmid" db:"csmid"`
-	Pcaseid        int64  `json:"pcaseid" db:"pcaseid"`
+	//Csid          int64  `json:"csid" db:"csid"`
+	//Ecsid         string `json:"ecsid" db:"csid"`
+	Pcid           int64  `json:"pcid" db:"pcid"`
 	Uid            int64  `json:"uid" db:"uid"`
 	CpuTime        int    `json:"cpuTime" db:"cpu_time"`
 	RealTime       int    `json:"realTime" db:"real_time"`
@@ -432,7 +432,7 @@ type Language struct {
 }
 type PracticeCaseResult struct {
 	//Id             int64  `json:"id" db:"id"`
-	Pcaseid        int64  `json:"pcaseid" db:"pcaseid"`
+	Pcid           int64  `json:"pcid" db:"pcid"`
 	Uid            int64  `json:"uid" db:"uid"`
 	Flag           string `json:"flag" db:"flag"`
 	CpuTime        int    `json:"cpuTime" db:"cpu_time"`

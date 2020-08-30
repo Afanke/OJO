@@ -7,6 +7,7 @@ import (
 	"github.com/kataras/iris/v12"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 )
@@ -14,6 +15,8 @@ import (
 func main() {
 	app := iris.New()
 	log.InitLog()
+	session.Register(sync.RWMutex{})
+	session.InitSession()
 	stop := make(chan int, 1)
 	go func() {
 		ch := make(chan os.Signal, 1)

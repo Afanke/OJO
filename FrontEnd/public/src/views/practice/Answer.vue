@@ -293,7 +293,7 @@ export default {
       flag: "",
       statistic: {},
       isJudging: false,
-      psmid: -1,
+      psid: -1,
       show: false,
       code: {
         C: "",
@@ -503,7 +503,7 @@ export default {
         }
         this.currentLanguage = this.getLang(data.lid)
         if (data.eid) {
-          this.psmid = res1.data.eid;
+          this.psid = res1.data.eid;
         }
         this.langOptions.mode = this.getMIMEType(this.currentLanguage)
       } catch (err) {
@@ -667,7 +667,7 @@ export default {
       this.$router.push({
         path: '/practice/result',
         query: {
-          id: this.psmid
+          id: this.psid
         }
       })
     },
@@ -680,7 +680,7 @@ export default {
         const {
           data: res
         } = await this.$http.post('/practice/getStatus', {
-          id: this.psmid
+          id: this.psid
         });
         if (res.error) {
           this.$message.error(res.error);
@@ -717,7 +717,7 @@ export default {
           this.flag = '';
           return;
         }
-        this.psmid = res.data.eid;
+        this.psid = res.data.eid;
         this.flag = res.data.flag;
         setTimeout(this.getStatus, 500)
       } catch (err) {

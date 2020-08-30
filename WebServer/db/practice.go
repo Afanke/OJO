@@ -222,9 +222,9 @@ func (Practice) GetAllStatusCount(uid int64) (int, error) {
 	return count, nil
 }
 
-func (Practice) GetStatus(psmid int64) (*dto.PracticeSubStat, error) {
+func (Practice) GetStatus(psid int64) (*dto.PracticeSubStat, error) {
 	var s dto.PracticeSubStat
-	err := gosql.Get(&s, "select * from practice_submission ps where ps.id=? limit 1", psmid)
+	err := gosql.Get(&s, "select * from practice_submission ps where ps.id=? limit 1", psid)
 	if err != nil {
 		log.Warn("error:%v", err)
 		return nil, err
@@ -244,9 +244,9 @@ func (Practice) GetStatus(psmid int64) (*dto.PracticeSubStat, error) {
 	return &s, nil
 }
 
-func (Practice) GetCaseRes(psmid int64) ([]dto.PracticeCaseResult, error) {
+func (Practice) GetCaseRes(psid int64) ([]dto.PracticeCaseResult, error) {
 	var res []dto.PracticeCaseResult
-	err := gosql.Select(&res, "select * from ojo.practice_case_result where psmid=?", psmid)
+	err := gosql.Select(&res, "select * from ojo.practice_case_result where psid=?", psid)
 	return res, err
 }
 
@@ -302,29 +302,29 @@ func (Practice) UpdateStat(pbid int64, total, ac, wa, ce, mle, re, tle, ole int)
 	return err
 }
 
-func (Practice) SetISEAndErrMsg(psmid int64, errMsg string) error {
-	_, err := gosql.Exec("update ojo.practice_submission set flag='ISE',error_msg=? where id=? limit 1", errMsg, psmid)
+func (Practice) SetISEAndErrMsg(psid int64, errMsg string) error {
+	_, err := gosql.Exec("update ojo.practice_submission set flag='ISE',error_msg=? where id=? limit 1", errMsg, psid)
 	if err != nil {
 		log.Warn("error:%v", err)
 	}
 	return err
 }
 
-func (Practice) UpdateFlagScoreMsg(psmid int64, score int, flag, errorMsg string) error {
+func (Practice) UpdateFlagScoreMsg(psid int64, score int, flag, errorMsg string) error {
 	var sql = ` update ojo.practice_submission set 
                 flag =?,
                 total_score = ?,
                 error_msg=?
         where id = ?`
-	_, err := gosql.Exec(sql, flag, score, errorMsg, psmid)
+	_, err := gosql.Exec(sql, flag, score, errorMsg, psid)
 	return err
 }
 
-func (Practice) InsertCaseRes(psmid, uid int64, tc *dto.TestCase) error {
+func (Practice) InsertCaseRes(psid, uid int64, tc *dto.TestCase) error {
 	var sql = `  insert into ojo.practice_case_result
-  (psmid,pcaseid,uid,flag,cpu_time,real_time,real_memory,real_output,error_output,spj_output,spj_error_output,score)
+  (psid,pcid,uid,flag,cpu_time,real_time,real_memory,real_output,error_output,spj_output,spj_error_output,score)
   				values(?,?,?,?,?,?,?,?,?,?,?,?)`
-	_, err := gosql.Exec(sql, psmid, tc.Id, uid, tc.Flag, tc.ActualCpuTime,
+	_, err := gosql.Exec(sql, psid, tc.Id, uid, tc.Flag, tc.ActualCpuTime,
 		tc.ActualRealTime, tc.RealMemory, tc.RealOutput, tc.ErrorOutput,
 		tc.SPJOutput, tc.SPJErrorOutput, tc.Score)
 	return err

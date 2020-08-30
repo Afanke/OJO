@@ -114,15 +114,15 @@ func (Practice) GetCurrentStatus(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
-// 根据psmid获得对应Practice提交的总体信息
+// 根据psid获得对应Practice提交的总体信息
 func (Practice) GetStatus(c iris.Context) {
-	var psmid dto.Eid
-	err := c.ReadJSON(&psmid)
+	var psid dto.Eid
+	err := c.ReadJSON(&psid)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	id, err := DecryptId(psmid.Id)
+	id, err := DecryptId(psid.Id)
 	data, err := pctdb.GetStatus(id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
@@ -140,15 +140,15 @@ func (Practice) GetStatus(c iris.Context) {
 	c.JSON(&dto.Res{Error: "", Data: data})
 }
 
-// 根据pcmid获得对应Practice提交的各个判题点信息
+// 根据psid获得对应Practice提交的各个判题点信息
 func (Practice) GetStatusDetail(c iris.Context) {
-	var psmid dto.Eid
-	err := c.ReadJSON(&psmid)
+	var psid dto.Eid
+	err := c.ReadJSON(&psid)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	id, err := DecryptId(psmid.Id)
+	id, err := DecryptId(psid.Id)
 	data, err := pctdb.GetCaseRes(id)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
