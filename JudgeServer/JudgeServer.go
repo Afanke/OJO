@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/afanke/OJO/utils/log"
+	"github.com/gogotime/OJO/utils/log"
 	"github.com/kataras/iris/v12"
 )
 

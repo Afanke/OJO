@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/afanke/OJO/JudgeServer/dto"
-	"github.com/afanke/OJO/JudgeServer/judge"
-	"github.com/afanke/OJO/utils/log"
+	"github.com/gogotime/OJO/JudgeServer/dto"
+	"github.com/gogotime/OJO/JudgeServer/judge"
+	"github.com/gogotime/OJO/utils/log"
 	"github.com/kataras/iris/v12"
 	"runtime"
 )

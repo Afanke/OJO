@@ -2,7 +2,7 @@ package judge
 
 import (
 	"errors"
-	"github.com/afanke/OJO/utils/log"
+	"github.com/gogotime/OJO/utils/log"
 	"regexp"
 	"strings"
 )
