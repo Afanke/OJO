@@ -22,7 +22,7 @@
             </ve-line>
         </div>
         <div v-if="showRank" style="width:100%">
-            <el-table :data="tableData" style="width: 100%" v-loading="rankLoading" :cell-style="cellStyle"  size="mini">
+            <el-table :data="tableData" style="width: 100%;border-radius: 10px;" v-loading="rankLoading" :cell-style="cellStyle"  size="mini">
                 <el-table-column type="index" label="#" min-width="10" align="center" :index="indexMethod">
                 </el-table-column>
                 <el-table-column prop="username" label="Username" align="center" min-width="10">

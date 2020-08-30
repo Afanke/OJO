@@ -37,7 +37,7 @@
                                         Enter
                                     </el-button>
                                 </el-row>
-                                <el-table :data="contestData" style="width: 100%;margin-top:20px" >
+                                <el-table :data="contestData" style="width: 100%;margin-top:20px;border-radius:6px" >
                                     <el-table-column
                                             prop="startTime"
                                             label="Start Time"
@@ -83,7 +83,7 @@
                                 </el-row>
                                 <el-table
                                         :data="problemList"
-                                        style="width: 100%"
+                                        style="width: 100%;border-radius: 6px;"
                                         size="small"
                                         @row-click="handleClick">
                                     <el-table-column v-if="hasFlag" align="center" label="" width="50">
@@ -518,7 +518,7 @@
     .inner-box {
         width: 100%;
         background-color: #ffffff;
-        border-radius: 5px;
+        border-radius: 6px;
         box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
     }
 
