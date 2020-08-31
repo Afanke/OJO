@@ -231,7 +231,6 @@
                             id: Number(this.id)
                         }
                     );
-                    console.log(res);
                     if (res.error) {
                         this.$message.error(res.error);
                     } else {
@@ -239,7 +238,6 @@
                     }
                 } catch (err) {
                     console.log(err);
-                    alert(err);
                 }
             },
             async getQualification() {
@@ -250,7 +248,6 @@
                             id: Number(this.id)
                         }
                     );
-                    console.log(res);
                     if (res.error) {
                         // this.$message.error(res.error);
                     } else {
@@ -261,7 +258,6 @@
                     }
                 } catch (err) {
                     console.log(err);
-                    alert(err);
                 }
             },
             async qualify() {
@@ -274,13 +270,11 @@
                         id: Number(this.id),
                         password: this.password
                     });
-                    console.log(res);
                     if (res.error) {
                         this.$message.error(res.error);
                     }
                 } catch (err) {
                     console.log(err);
-                    alert(err);
                 }
                 await this.getQualification();
             },
@@ -311,7 +305,6 @@
                     const {data: res} = await this.$http.post('/contest/getDetail', {
                         id: Number(this.id)
                     });
-                    console.log(res);
                     if (res.error) {
                         this.$message.error(res.error);
                     } else {
@@ -338,7 +331,6 @@
                     }
                 } catch (err) {
                     console.log(err);
-                    alert(err);
                 }
             },
             async getProblems() {
@@ -348,7 +340,6 @@
                     const {data: res} = await this.$http.post('/contest/getAllProblem', {
                         id: Number(this.id)
                     });
-                    console.log(res);
                     if (res.error) {
                         this.$message.error(res.error);
                         return;
@@ -381,7 +372,6 @@
                     this.loading = false;
                 } catch (err) {
                     console.log(err);
-                    alert(err);
                 }
             },
             getDuration() {
@@ -472,7 +462,6 @@
                 return hour + ':' + minute + ':' + second;
             },
             handleClick(row, column, event) {
-                console.log(row, column, event);
                 this.$router.push({
                     path: '/contest/answer',
                     query: {

@@ -186,7 +186,6 @@
             status: this.status,
             keywords: this.keywords
           });
-          console.log(res);
           if (res.error) {
             this.$message.error(res.error);
           } else {

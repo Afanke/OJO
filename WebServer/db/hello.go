@@ -3,7 +3,6 @@ package db
 import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gogotime/OJO/WebServer/config"
-	"github.com/gogotime/OJO/WebServer/dto"
 	"github.com/gogotime/OJO/utils/log"
 	"github.com/ilibs/gosql/v2"
 	"time"
@@ -19,7 +18,7 @@ func init() {
 		ShowSql:      true,
 		MaxIdleConns: 10,
 		MaxLifetime:  int(100 * time.Second),
-		MaxOpenConns: 100,
+		MaxOpenConns: 10,
 	}
 	gosql.SetLogging(true)
 	gosql.SetLogger(log.GetLogger())
@@ -27,14 +26,4 @@ func init() {
 	if err != nil {
 		log.Fatal("error:%v", err)
 	}
-}
-
-func GetProgress() []dto.Progress {
-	var res []dto.Progress
-	err := gosql.Select(&res, "select * from ojo.progress")
-	if err != nil {
-		log.Warn("error:%v", err)
-		return nil
-	}
-	return res
 }

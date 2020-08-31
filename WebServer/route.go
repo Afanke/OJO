@@ -16,9 +16,6 @@ import (
 func PanicMidWare(ctx iris.Context) {
 	defer func() {
 		if err := recover(); err != nil {
-			if ctx.IsStopped() {
-				return
-			}
 			var stacktrace string
 			for i := 1; ; i++ {
 				_, f, l, got := runtime.Caller(i)
@@ -97,7 +94,6 @@ func BindRoute(app *iris.Application) {
 		app.Get("/css/*", file.File)
 		app.Get("/js/*", file.File)
 		app.Get("/sys/getWebConfig", sys.GetWebConfig)
-		app.Post("/getProgress", file.GetProgress)
 		app.Post("/uploadImg", file.UploadImg)
 		app.Options("*", func(c iris.Context) {
 			c.Next()

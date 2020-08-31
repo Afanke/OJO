@@ -12,6 +12,7 @@ import (
 	"github.com/kataras/iris/v12"
 	"io/ioutil"
 	"net/http"
+	"runtime"
 	"time"
 )
 
@@ -286,6 +287,22 @@ func (Practice) Submit(c iris.Context) {
 }
 
 func (Practice) handleSubmit(submitForm *dto.SubmitForm) {
+	defer func() {
+		if err := recover(); err != nil {
+			var stacktrace string
+			for i := 1; ; i++ {
+				_, f, l, got := runtime.Caller(i)
+				if !got {
+					break
+				}
+				stacktrace += fmt.Sprintf("%s:%d\n", f, l)
+			}
+			// when stack finishes
+			log.Error("Trace: %s", err)
+			log.Error("%s", stacktrace)
+			_ = pctdb.SetISEAndErrMsg(submitForm.Sid, fmt.Sprintf("Trace: %s", err)+stacktrace)
+		}
+	}()
 	form, err := pt.prepareForms(submitForm)
 	if err != nil {
 		log.Warn("error:%v", err)
@@ -312,7 +329,6 @@ func (Practice) handleSubmit(submitForm *dto.SubmitForm) {
 		}
 	}
 	err = pt.InsertCaseRes(form)
-	log.Debug("len output:%v", len(form.TestCase[0].RealOutput))
 	if err != nil {
 		log.Warn("error:%v", err)
 		_ = pctdb.SetISEAndErrMsg(submitForm.Sid, err.Error())

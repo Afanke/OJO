@@ -29,7 +29,7 @@ type SConfig struct {
 
 var cfg Config
 var Pool = map[string]Session{}
-var PoolLock sync.RWMutex
+var PoolLock = sync.RWMutex{}
 
 func Register(i interface{}) {
 	gob.Register(i)
@@ -79,6 +79,7 @@ func GetSession(c iris.Context) (s *Session, err error) {
 	PoolLock.RLock()
 	defer PoolLock.RUnlock()
 	if s, ok := Pool[cookie+addr]; ok {
+		s.Time = time.Now().Unix()
 		return &s, nil
 	} else {
 		s = Session{Data: map[string]interface{}{}, Time: time.Now().Unix()}

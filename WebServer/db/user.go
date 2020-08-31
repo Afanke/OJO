@@ -86,8 +86,9 @@ func (User) GetCount(form *dto.UserForm) (int, error) {
 		return 0, err
 	}
 	var count int
-	rows.Next()
-	err = rows.Scan(&count)
+	for rows.Next() {
+		err = rows.Scan(&count)
+	}
 	return count, err
 }
 

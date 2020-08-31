@@ -102,8 +102,9 @@ func (Announcement) GetVisibleCount(form *dto.AnnouncementForm) (int, error) {
 		log.Warn("error:%v", err)
 		return 0, err
 	}
-	_ = rows.Next()
-	err = rows.Scan(&count)
+	for rows.Next() {
+		err = rows.Scan(&count)
+	}
 	return count, err
 }
 
@@ -122,8 +123,9 @@ func (Announcement) GetCount(form *dto.AnnouncementForm) (int, error) {
 		log.Warn("error:%v", err)
 		return 0, err
 	}
-	_ = rows.Next()
-	err = rows.Scan(&count)
+	for rows.Next() {
+		err = rows.Scan(&count)
+	}
 	return count, err
 }
 

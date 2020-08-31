@@ -52,6 +52,7 @@ func (Contest) GetVisibleCount(c iris.Context) {
 		return
 	}
 	c.JSON(&dto.Res{Error: "", Data: res})
+
 }
 
 func (Contest) GetVisibleDetail(c iris.Context) {

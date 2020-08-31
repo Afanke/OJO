@@ -1,8 +1,6 @@
 package ctrl
 
 import (
-	"github.com/gogotime/OJO/WebServer/db"
-	"github.com/gogotime/OJO/WebServer/dto"
 	"github.com/gogotime/OJO/utils/log"
 	"github.com/kataras/iris/v12"
 	"io"
@@ -118,11 +116,6 @@ func (File) File(c iris.Context) {
 		log.Error("%v", err)
 		return
 	}
-}
-
-func (File) GetProgress(c iris.Context) {
-	progress := db.GetProgress()
-	_, _ = c.JSON(&dto.Res{Error: "", Data: progress})
 }
 
 func (File) UploadImg(c iris.Context) {

@@ -87,8 +87,9 @@ func (Problem) GetCount(form *dto.ProblemForm) (int, error) {
 		log.Warn("error:%v", err)
 		return 0, err
 	}
-	_ = rows.Next()
-	err = rows.Scan(&count)
+	for rows.Next() {
+		err = rows.Scan(&count)
+	}
 	return count, err
 }
 

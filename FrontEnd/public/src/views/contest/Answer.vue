@@ -794,7 +794,6 @@ export default {
         await this.getSubNumAndLimit()
       } catch (err) {
         console.log(err);
-        alert(err);
       }
     },
     async getSubNumAndLimit() {
@@ -816,7 +815,6 @@ export default {
         }
       } catch (err) {
         console.log(err);
-        alert(err);
       }
     },
     change(val) {

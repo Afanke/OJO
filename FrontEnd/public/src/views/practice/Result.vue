@@ -273,9 +273,6 @@
         }
         this.bigFlag.show = true;
       },
-      log() {
-        console.log(typeof this.option);
-      },
       goBack() {
         this.$router.go(-1);
       },
