@@ -7,7 +7,6 @@ import (
 	jsp "github.com/gogotime/OJO/WebServer/judge"
 	"github.com/gogotime/OJO/utils/log"
 	"github.com/gogotime/OJO/utils/randstr"
-	"github.com/gogotime/OJO/utils/session"
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"runtime"
@@ -76,19 +75,6 @@ func SessionMidWare(c iris.Context) {
 		c.SetCookieKV("GOGONEWWORLD", randstr.BigRandN(16), func(c *http.Cookie) {
 			c.MaxAge = 0
 		})
-	}
-	c.Next()
-}
-func TemUserMidWare(c iris.Context) {
-	s, err := session.GetSession(c)
-	if err != nil {
-		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
-		return
-	}
-	user := s.Get("user")
-	_, ok := user.(dto.User)
-	if !ok {
-		s.Set("user", dto.User{Id: 1, Username: "visitor"})
 	}
 	c.Next()
 }

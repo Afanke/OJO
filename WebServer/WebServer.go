@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
+	ctrl "github.com/gogotime/OJO/WebServer/controller"
 	"github.com/gogotime/OJO/utils/log"
 	"github.com/gogotime/OJO/utils/session"
 	"github.com/kataras/iris/v12"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 	"time"
 )
@@ -15,7 +15,7 @@ import (
 func main() {
 	app := iris.New()
 	log.InitLog()
-	session.Register(sync.RWMutex{})
+	session.Register(ctrl.RSTForm{})
 	session.InitSession()
 	stop := make(chan int, 1)
 	go func() {
