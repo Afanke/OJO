@@ -197,7 +197,7 @@ finally:
 )
 
 func main() {
-
+	fmt.Print(123)
 	form := dto.JudgeForm{
 		UseSPJ:      true,
 		MaxCpuTime:  3000,
@@ -226,7 +226,8 @@ func main() {
 		},
 	}
 	//send("http://192.168.111.139:2333/judge", &form)
-	send("http://49.234.91.99:2333/judge", &form)
+	//send("http://49.234.91.99:2333/judge", &form)
+	send("http://192.168.230.131:2333/judge", &form)
 }
 
 func send(addr string, form *dto.JudgeForm) {

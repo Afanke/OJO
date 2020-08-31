@@ -230,12 +230,6 @@ func (b Base) compile(form *dto.JudgeForm, ts *dto.TempStorage) error {
 		form.Flag = "ISE"
 		return errors.New("Internal Server Error: " + err.Error() + "\n")
 	}
-	// _, err = stdinPipe.Write([]byte("su judge\n"))
-	// if err != nil {
-	// 	log.Error("%v", err)
-	// 	form.Flag = "ISE"
-	// 	return errors.New("Internal Server Error: " + err.Error() + "\n")
-	// }
 	cmdline := CPSBox +
 		getLmtStr(form, "0", form.CompMp) +
 		b.rt.getCmpCmd(
@@ -362,11 +356,11 @@ func (b Base) run(form *dto.JudgeForm, i int, ts *dto.TempStorage) error {
 		log.Error("%v", err)
 		return err
 	}
-	// _, err = stdinPipe.Write([]byte("su judge\n"))
-	// if err != nil {
-	// 	log.Error("%v", err)
-	// 	return err
-	// }
+	_, err = stdinPipe.Write([]byte("su judge\n"))
+	if err != nil {
+		log.Error("%v", err)
+		return err
+	}
 	temp := ""
 	if b.rt.needCompile() {
 		temp = ts.FilePath + b.rt.getTargetSuffix()
@@ -514,12 +508,6 @@ func (b Base) compileSPJ(form *dto.JudgeForm, ts *dto.TempStorage) error {
 		log.Error("%v", err)
 		return errors.New("Internal Server Error: " + err.Error() + "\n")
 	}
-	// _, err = stdinPipe.Write([]byte("su judge\n"))
-	// if err != nil {
-	// 	log.Error("%v", err)
-	//
-	// 	return errors.New("Internal Server Error: " + err.Error() + "\n")
-	// }
 	mp := form.CompMp * form.SPJMp
 	cmdline := CPSBox +
 		getLmtStr(form, "0", mp) +

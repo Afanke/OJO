@@ -23,7 +23,7 @@ int init_rlimit(int max_cpu_time, int max_mem)
     struct rlimit R_MSGQUEUE = {0, 0};
     struct rlimit R_SIGPENDING = {0, 0};
     struct rlimit R_CORE = {0, 0};
-    struct rlimit R_NPROC = {350, 350};
+    struct rlimit R_NPROC = {400, 400};
 
     if (setrlimit(RLIMIT_CPU, &R_CPU))
     {

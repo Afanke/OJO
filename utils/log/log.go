@@ -93,9 +93,9 @@ func InitLog() {
 	l.Print(INFO, "success to load log system")
 }
 
-func InitDefaultLog() {
+func InitDefaultLog(level Level) {
 	var defaultCfg = Config{
-		ConsoleLevel:  0,
+		ConsoleLevel:  level,
 		FileLevel:     0,
 		EnableConsole: true,
 		EnableFile:    false,

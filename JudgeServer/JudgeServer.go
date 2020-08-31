@@ -8,15 +8,23 @@ import (
 
 var password string = ""
 
+var port string = ""
+
 func main() {
-	fmt.Printf("Please set a password:")
-	_, err := fmt.Scanf("%s", &password)
+	fmt.Printf("Please enter the listening port:")
+	_, err := fmt.Scanf("%s", &port)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	log.InitDefaultLog()
+	fmt.Printf("Please set a password:")
+	_, err = fmt.Scanf("%s", &password)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	log.InitDefaultLog(log.INFO)
 	app := iris.New()
 	BindRoute(app)
-	_ = app.Run(iris.Addr(":2333"))
+	_ = app.Run(iris.Addr(":" + port))
 }

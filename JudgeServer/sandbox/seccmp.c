@@ -13,7 +13,6 @@ int init_seccomp()
     // --------------------------- process control -------------------------------
 #ifndef CPSBOX
     seccomp_rule_add(ctx, SCMP_ACT_TRAP, SCMP_SYS(fork), 0);
-    seccomp_rule_add(ctx, SCMP_ACT_TRAP, SCMP_SYS(vfork), 0);
 #endif
 //    seccomp_rule_add(ctx, SCMP_ACT_TRACE(1, SCMP_SYS(clone), 0);
     seccomp_rule_add(ctx, SCMP_ACT_TRAP, SCMP_SYS(capset), 0);
