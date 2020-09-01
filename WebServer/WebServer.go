@@ -33,10 +33,10 @@ func main() {
 			timeout := 5 * time.Second
 			ctx, cancel := context.WithTimeout(context.Background(), timeout)
 			defer cancel()
-			ctx.Done()
 			err := app.Shutdown(ctx)
 			if err != nil {
 				log.Error("%v", err)
+				os.Exit(-1)
 				return
 			}
 			stop <- 1
