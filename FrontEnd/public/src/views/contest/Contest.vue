@@ -36,16 +36,16 @@
                              style="float:left;font-size:20px;width:100%;text-align:center;margin-top:25px">
                             No Data
                         </div>
-                        <el-row v-bind:key="index" v-for="(item, index) in contest" style="height:75px;">
-                            <img style="width: 45px; height: 45px;float:left;margin-left:30px;margin-top:10px"
+                        <el-row v-bind:key="index" v-for="(item, index) in contest" style="height:90px;">
+                            <img style="width: 45px; height: 45px;float:left;margin-left:30px;margin-top:20px"
                                  src="@/assets/images/contest.png"/>
-                            <div style="float:left;margin-top:8px;margin-left:10px">
+                            <div style="float:left;margin-top:20px;margin-left:15px">
                                 <el-link style="font-size:20px;" @click="goDetail(item.id)">{{ item.title }}</el-link>
-                                <div style="font-size:13px;margin-top:3px">
+                                <div style="font-size:13px;margin-top:9px">
                                     <i class="el-icon-unlock" style="color:#409EFF"></i>
                                     <span>{{ item.startTime }}</span>
-                                    <i class="el-icon-lock" style="color:#409EFF;margin-left:10px"></i>
-                                    <span>{{ item.endTime }}</span>
+                                    <!--                                    <i class="el-icon-lock" style="color:#409EFF;margin-left:10px"></i>-->
+                                    <!--                                    <span>{{ item.endTime }}</span>-->
                                     <i class="el-icon-timer" style="margin-left:10px;color:#409EFF"></i>
                                     <span>{{ item.timeDiff }}</span>
                                     <i class="el-icon-s-operation" style="margin-left:10px;color:#409EFF"></i>
@@ -214,18 +214,24 @@ export default {
                 let now = new Date(this.contest[i].now.replace(/-/g, '/'));
                 let endTime = new Date(this.contest[i].endTime.replace(/-/g, '/'));
                 let timeDiff = endTime - startTime;
-                if (timeDiff < 3600000) {
-                    this.contest[i].timeDiff =
-                        this.toDecimal(timeDiff / 60000) + ' minutes';
-                } else if (3600000 <= timeDiff && timeDiff < 86400000) {
-                    this.contest[i].timeDiff =
-                        this.toDecimal(timeDiff / 3600000) + ' hours';
+                if (timeDiff < 60000) {
+                    this.contest[i].timeDiff = "less than 1 minute"
+                } else if (timeDiff === 60000) {
+                    this.contest[i].timeDiff = "1 minute"
+                } else if (60000 < timeDiff && timeDiff < 3600000) {
+                    this.contest[i].timeDiff = this.toDecimal(timeDiff / 60000) + ' minutes';
+                } else if (timeDiff === 3600000) {
+                    this.contest[i].timeDiff = "1 hour"
+                } else if (3600000 < timeDiff && timeDiff < 86400000) {
+                    this.contest[i].timeDiff = this.toDecimal(timeDiff / 3600000) + ' hours';
+                } else if (timeDiff === 86400000) {
+                    this.contest[i].timeDiff = "1 day"
                 } else if (86400000 <= timeDiff && timeDiff < 2592000000) {
-                    this.contest[i].timeDiff =
-                        this.toDecimal(timeDiff / 86400000) + ' days';
-                } else if (2592000000 <= timeDiff && timeDiff < 31104000000) {
-                    this.contest[i].timeDiff =
-                        this.toDecimal(timeDiff / 2592000000) + ' months';
+                    this.contest[i].timeDiff = this.toDecimal(timeDiff / 86400000) + ' days';
+                } else if (timeDiff === 2592000000) {
+                    this.contest[i].timeDiff = "1 month"
+                } else if (timeDiff > 2592000000) {
+                    this.contest[i].timeDiff = this.toDecimal(timeDiff / 2592000000) + ' months';
                 }
                 if (now.getTime() < startTime.getTime()) {
                     this.contest[i].status = 'Not Start';
