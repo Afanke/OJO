@@ -1311,7 +1311,6 @@ func main(){
                         this.tags.push("" + res.data.tag[i].name)
                     }
                 }
-
             } catch (err) {
                 console.log(err);
             }

@@ -31,7 +31,6 @@ export default {
                 this.checked = !this.checked
                 this.$emit('toggle', this.checked);
             }, 100);
-            // console.log(this.value)
         }
     },
     components: {}
@@ -43,7 +42,7 @@ span,
 #open,
 #tb,
 #off {
-    --button-width: 60px;
+    --button-width: 64px;
     --button-height: 29.5px;
     --toggle-diameter: 25.5px;
     --button-toggle-offset: calc((var(--button-height) - var(--toggle-diameter)) / 2);

@@ -35,18 +35,16 @@ export default {
     },
     watch: {
         isClear(val) {
-            // 触发清除文本域内容
             if (val) {
                 this.editor.txt.clear()
                 this.info_ = null
             }
         },
-        value: function (value) {
-            if (value !== this.editor.txt.html()) {
+        value: function (value,old) {
+            if (old==="") {
                 this.editor.txt.html(this.value)
             }
         }
-        //value为编辑框输入的内容，这里我监听了一下值，当父组件调用得时候，如果给value赋值了，子组件将会显示父组件赋给的值
     },
     mounted() {
         this.setEditor()
@@ -54,14 +52,13 @@ export default {
     },
     methods: {
         setEditor() {
-            // http://192.168.2.125:8080/admin/storage/create
             this.editor = new E(this.$refs.toolbar, this.$refs.editor)
             this.editor.customConfig.uploadImgShowBase64 = false // base 64 存储图片
             this.editor.customConfig.uploadImgServer = this.$http.defaults.baseURL + "/uploadImg"// 配置服务器端地址
             this.editor.customConfig.uploadImgHeaders = {}// 自定义 header
             this.editor.customConfig.uploadFileName = 'img' // 后端接受上传文件的参数名
             this.editor.customConfig.uploadImgMaxSize = 2 * 1024 * 1024 // 将图片大小限制为 2M
-            this.editor.customConfig.uploadImgMaxLength = 1 // 限制一次最多上传 3 张图片
+            this.editor.customConfig.uploadImgMaxLength = 1 // 限制一次最多上传 1 张图片
             this.editor.customConfig.uploadImgTimeout = 3 * 60 * 1000 // 设置超时时间
 
             // 配置菜单

@@ -5,7 +5,7 @@
                 <div class="left-box">
                     <div style="width:100%;height:200px">
                         <el-avatar style="width:150px;height:150px;margin-left:50px;margin-top:30px" :size="50"
-                                   :src="this.$http.defaults.baseURL+detail.iconPath"></el-avatar>
+                                   :src="iconPath"></el-avatar>
                     </div>
                     <div :class="{ 'left-box-item' :true ,'left-box-item-active':c==1}" @click="c=1">
                         Profile
@@ -236,6 +236,7 @@ export default {
             newPassword1: "",
             newEmail: "",
             curPassword1: "",
+            iconPath:"",
         };
     },
     mounted() {
@@ -260,14 +261,14 @@ export default {
                 this.showCropper = true
             };
         },
-        params_init() {
+        paramsInit() {
             if (this.$route.query.c) {
                 this.c = Number(this.$route.query.c);
             } else {
                 this.c = 1;
             }
         },
-        params_query() {
+        paramsQuery() {
             let obj = {};
             if (this.$route.query.c) {
                 obj.c = this.$route.query.c;
@@ -333,6 +334,7 @@ export default {
                     return;
                 }
                 this.detail = res.data
+                this.iconPath=this.$http.defaults.baseURL+res.data.iconPath
             } catch (err) {
                 console.log(err);
             }

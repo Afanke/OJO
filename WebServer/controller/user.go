@@ -322,14 +322,20 @@ func (User) UpdateDetail(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	_, err = isSuperAdmin(c)
+	adminId, err := isSuperAdmin(c)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+		return
+	}
+	userType, err := userdb.GetUserType(form.Id)
+	if userType > 2 && adminId != form.Id {
+		c.JSON(&dto.Res{Error: "not allowed", Data: nil})
 		return
 	}
 	if form.Password != "" {
 		form.Password = SHA256(form.Password)
 	}
+
 	err = userdb.UpdateDetail(&form)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})

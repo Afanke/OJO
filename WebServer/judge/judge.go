@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/gogotime/OJO/WebServer/db"
 	"github.com/gogotime/OJO/WebServer/dto"
 	"github.com/gogotime/OJO/utils/log"
@@ -15,7 +14,6 @@ import (
 	"github.com/kataras/iris/v12/context"
 	"io/ioutil"
 	"net/http"
-	"runtime"
 	"strconv"
 	"sync"
 	"time"
@@ -44,21 +42,6 @@ func init() {
 }
 
 func GetAddr() (string, error) {
-	defer func() {
-		if err := recover(); err != nil {
-			var stacktrace string
-			for i := 1; ; i++ {
-				_, f, l, got := runtime.Caller(i)
-				if !got {
-					break
-				}
-				stacktrace += fmt.Sprintf("%s:%d\n", f, l)
-			}
-			// when stack finishes
-			log.Error("Trace: %s", err)
-			log.Error("%s", stacktrace)
-		}
-	}()
 	lock.RLock()
 	defer lock.RUnlock()
 	en := 0

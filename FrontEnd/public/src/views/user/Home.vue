@@ -4,7 +4,7 @@
             <div v-if="show">
                 <div class="avatar">
                     <el-avatar icon="el-icon-user-solid" :size="140"
-                               :src="this.$http.defaults.baseURL+detail.iconPath"></el-avatar>
+                               :src="iconPath"></el-avatar>
                 </div>
                 <div class="center-box">
                     <el-row style="height:80px"></el-row>
@@ -83,7 +83,8 @@ export default {
             username: "",
             ac: "",
             detail: {},
-            stat: {}
+            stat: {},
+            iconPath:""
         }
     },
     methods: {
@@ -99,6 +100,7 @@ export default {
                     return;
                 }
                 this.detail = res0.data;
+                this.iconPath=this.$http.defaults.baseURL+res0.data.iconPath
                 const {
                     data: res1
                 } = await this.$http.post("/user/getStatistic", {
