@@ -109,7 +109,7 @@ body {
 
 .main {
     margin-top: 20px;
-    min-width: 1000px;
+    min-width: 1300px;
     /* float:right;
     width:auto;
     right:20px;

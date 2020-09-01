@@ -3,8 +3,8 @@
         <transition name="slide-fade">
             <div v-if="show">
                 <div class="center-box">
-                    <el-row style="height:62px">
-                        <span style="float:left;font-size:20px;margin-left:30px;margin-top:15px">Contests</span>
+                    <el-row style="height:62px;margin-bottom:-15px">
+                        <span style="float:left;font-size:23px;margin-left:20px;margin-top:15px">Contests</span>
                         <el-button style="float:right;margin-top:15px;margin-right:20px;" class="el-icon-refresh"
                                    type="primary"
                                    size="small" @click="reset">&nbsp;Reset
@@ -36,23 +36,23 @@
                              style="float:left;font-size:20px;width:100%;text-align:center;margin-top:25px">
                             No Data
                         </div>
-                        <el-row v-bind:key="index" v-for="(item, index) in contest" style="height:90px;">
-                            <img style="width: 45px; height: 45px;float:left;margin-left:30px;margin-top:20px"
+                        <el-row v-bind:key="index" v-for="(item, index) in contest" style="height:100px;">
+                            <img style="width: 45px; height: 45px;float:left;margin-left:30px;margin-top:25px"
                                  src="@/assets/images/contest.png"/>
-                            <div style="float:left;margin-top:20px;margin-left:15px">
-                                <el-link style="font-size:20px;" @click="goDetail(item.id)">{{ item.title }}</el-link>
-                                <div style="font-size:13px;margin-top:9px">
-                                    <i class="el-icon-unlock" style="color:#409EFF"></i>
-                                    <span>{{ item.startTime }}</span>
+                            <div style="float:left;margin-top:20px;margin-left:30px">
+                                <el-link style="font-size:23px;" @click="goDetail(item.id)">{{ item.title }}</el-link>
+                                <div style="font-size:15px;margin-top:9px">
+                                    <i class="el-icon-date" style="color:#409EFF"></i>
+                                    <span>&nbsp;{{ item.startTime }}</span>
                                     <!--                                    <i class="el-icon-lock" style="color:#409EFF;margin-left:10px"></i>-->
                                     <!--                                    <span>{{ item.endTime }}</span>-->
-                                    <i class="el-icon-timer" style="margin-left:10px;color:#409EFF"></i>
-                                    <span>{{ item.timeDiff }}</span>
-                                    <i class="el-icon-s-operation" style="margin-left:10px;color:#409EFF"></i>
-                                    <span>{{ item.rule }}</span>
+                                    <i class="el-icon-timer" style="margin-left:20px;color:#409EFF"></i>
+                                    <span>&nbsp;{{ item.timeDiff }}</span>
+                                    <i class="el-icon-s-operation" style="margin-left:20px;color:#409EFF"></i>
+                                    <span>&nbsp;{{ item.rule }}</span>
                                 </div>
                             </div>
-                            <div style="float:right;margin-right:50px;margin-top:16px">
+                            <div style="float:right;margin-right:80px;margin-top:32px">
                                 <el-button plain size="small">
                                     <div :style="item.style">
                                         &nbsp;

@@ -381,13 +381,23 @@ export default {
         },
         getDuration() {
             let timeDiff = this.endTime - this.startTime;
-            if (timeDiff < 3600000) {
+            if (timeDiff < 60000) {
+                this.timeDiff = "less than 1 minute"
+            } else if (timeDiff === 60000) {
+                this.timeDiff = "1 minute"
+            } else if (60000 < timeDiff && timeDiff < 3600000) {
                 this.timeDiff = this.toDecimal(timeDiff / 60000) + ' minutes';
-            } else if (3600000 <= timeDiff && timeDiff < 86400000) {
+            } else if (timeDiff === 3600000) {
+                this.timeDiff = "1 hour"
+            } else if (3600000 < timeDiff && timeDiff < 86400000) {
                 this.timeDiff = this.toDecimal(timeDiff / 3600000) + ' hours';
+            } else if (timeDiff === 86400000) {
+                this.timeDiff = "1 day"
             } else if (86400000 <= timeDiff && timeDiff < 2592000000) {
                 this.timeDiff = this.toDecimal(timeDiff / 86400000) + ' days';
-            } else if (2592000000 <= timeDiff && timeDiff < 31104000000) {
+            } else if (timeDiff === 2592000000) {
+                this.timeDiff = "1 month"
+            } else if (timeDiff > 2592000000) {
                 this.timeDiff = this.toDecimal(timeDiff / 2592000000) + ' months';
             }
         },

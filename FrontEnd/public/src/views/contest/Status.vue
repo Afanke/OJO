@@ -23,7 +23,7 @@
                         <template slot-scope="scope">
                             <i class="el-icon-time"></i>
                             <span style="margin-left: 10px">
-                    {{ scope.row.submitTime | formatDateTime }}</span>
+                    {{ scope.row.submitTime }}</span>
                         </template>
                     </el-table-column>
                     <el-table-column align="center" label="Id" min-width="80">
@@ -206,20 +206,6 @@ export default {
     },
     components: {},
     filters: {
-        formatDateTime: function (value) {
-            let d = new Date(value);
-            return d.getFullYear() +
-                '-' +
-                (d.getMonth() + 1 < 10 ? '0' + (d.getMonth() + 1) : d.getMonth() + 1) +
-                '-' +
-                (d.getDate() < 10 ? '0' + d.getDate() : d.getDate()) +
-                ' ' +
-                (d.getHours() < 10 ? '0' + d.getDate() : d.getDate()) +
-                ':' +
-                (d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes()) +
-                ':' +
-                (d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds());
-        },
         formatFlags: function (value) {
             switch (value) {
                 case 'RE':
