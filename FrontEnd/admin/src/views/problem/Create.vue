@@ -95,7 +95,7 @@
                     <el-row v-for="(item,name,index) in limit" v-if="useLang[name]" :key="'limit'+index"
                             style="margin-top:40px;border:1px solid rgb(233, 233, 235);border-radius:5px;white-space: nowrap;text-overflow :ellipsis">
                         <el-row :gutter="10" style="margin-bottom:9px;border-bottom:1px solid rgb(233, 233, 235)">
-                            <p style="padding-left: 15px;font-weight:bold; "> Resource limit of {{name}}</p>
+                            <p style="padding-left: 15px;font-weight:bold; "> Resource limit of {{ name }}</p>
                         </el-row>
                         <el-row :gutter="30"
                                 style="font-size:15px;margin-bottom: 15px;margin-top:15px">
@@ -151,7 +151,7 @@
                     <el-row style="border:1px solid rgb(233, 233, 235);border-radius:5px;margin-top:30px"
                             v-for="(item,index3) in sample" :key="index3+'index3'">
                         <el-row style="height:50px;line-height:50px">
-                            <span style="margin-left:10px;font-weight:bold">Sample {{index3+1}}</span>
+                            <span style="margin-left:10px;font-weight:bold">Sample {{ index3 + 1 }}</span>
                             <el-button class="el-icon-delete" type="warning"
                                        style="margin-right:40px;float:right;margin-top:9px" size="small"
                                        @click="deleteSample(index3)">&nbsp;Delete
@@ -193,7 +193,7 @@
                     <el-row style="border:1px solid rgb(233, 233, 235);border-radius:5px;margin-top:30px"
                             v-for="(item,index4) in problemCase" :key="index4+'index4'">
                         <el-row style="height:50px;line-height:50px">
-                            <span style="margin-left:10px;font-weight:bold">Test Case {{index4+1}}</span>
+                            <span style="margin-left:10px;font-weight:bold">Test Case {{ index4 + 1 }}</span>
                             <el-button class="el-icon-delete" type="warning"
                                        style="margin-right:40px;float:right;margin-top:9px" size="small"
                                        @click="deleteProblemCase(index4)">&nbsp;Delete
@@ -483,104 +483,104 @@
     </div>
 </template>
 <script>
-    import Editor from '@/components/Editor'
-    // require component
-    import {codemirror} from 'vue-codemirror';
-    // require styles
-    import 'codemirror/lib/codemirror.css';
-    import 'codemirror/theme/idea.css';
-    import 'codemirror/theme/darcula.css';
-    import 'codemirror/mode/clike/clike';
-    import 'codemirror/mode/go/go';
-    import 'codemirror/mode/python/python';
-    import 'codemirror/addon/scroll/annotatescrollbar.js'
-    import 'codemirror/addon/search/matchesonscrollbar.js'
-    import 'codemirror/addon/search/match-highlighter.js'
-    import 'codemirror/addon/search/jump-to-line.js'
-    import 'codemirror/addon/dialog/dialog.js'
-    import 'codemirror/addon/dialog/dialog.css'
-    import 'codemirror/addon/search/searchcursor.js'
-    import 'codemirror/addon/search/search.js'
-    import 'codemirror/addon/fold/foldgutter.css'
-    import 'codemirror/addon/fold/foldcode'
-    import 'codemirror/addon/fold/foldgutter'
-    import 'codemirror/addon/fold/brace-fold'
-    import 'codemirror/addon/fold/comment-fold'
+import Editor from '@/components/Editor'
+// require component
+import {codemirror} from 'vue-codemirror';
+// require styles
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/theme/idea.css';
+import 'codemirror/theme/darcula.css';
+import 'codemirror/mode/clike/clike';
+import 'codemirror/mode/go/go';
+import 'codemirror/mode/python/python';
+import 'codemirror/addon/scroll/annotatescrollbar.js'
+import 'codemirror/addon/search/matchesonscrollbar.js'
+import 'codemirror/addon/search/match-highlighter.js'
+import 'codemirror/addon/search/jump-to-line.js'
+import 'codemirror/addon/dialog/dialog.js'
+import 'codemirror/addon/dialog/dialog.css'
+import 'codemirror/addon/search/searchcursor.js'
+import 'codemirror/addon/search/search.js'
+import 'codemirror/addon/fold/foldgutter.css'
+import 'codemirror/addon/fold/foldcode'
+import 'codemirror/addon/fold/foldgutter'
+import 'codemirror/addon/fold/brace-fold'
+import 'codemirror/addon/fold/comment-fold'
 
-    export default {
-        data() {
-            return {
-                dialogVisible: false,
-                useLang: {
-                    C: false,
-                    Cpp: false,
-                    Java: false,
-                    Python: false,
-                    Go: false,
+export default {
+    data() {
+        return {
+            dialogVisible: false,
+            useLang: {
+                C: false,
+                Cpp: false,
+                Java: false,
+                Python: false,
+                Go: false,
+            },
+            limit: {
+                C: {
+                    maxCpuTime: 1000,
+                    maxRealTime: 1000,
+                    maxMemory: 30720,
+                    compMp: 2,
+                    SPJMp: 2,
+                    lid: 1,
                 },
-                limit: {
-                    C: {
-                        maxCpuTime: 1000,
-                        maxRealTime: 1000,
-                        maxMemory: 30720,
-                        compMp: 2,
-                        SPJMp: 2,
-                        lid: 1,
-                    },
-                    Cpp: {
-                        maxCpuTime: 1000,
-                        maxRealTime: 1000,
-                        maxMemory: 30720,
-                        compMp: 2,
-                        SPJMp: 2,
-                        lid: 2,
-                    },
-                    Java: {
-                        maxCpuTime: 1000,
-                        maxRealTime: 1000,
-                        maxMemory: 61440,
-                        compMp: 2,
-                        SPJMp: 2,
-                        lid: 3,
-                    },
-                    Python: {
-                        maxCpuTime: 1000,
-                        maxRealTime: 1000,
-                        maxMemory: 30720,
-                        compMp: 2,
-                        SPJMp: 2,
-                        lid: 4,
-                    },
-                    Go: {
-                        maxCpuTime: 1000,
-                        maxRealTime: 1000,
-                        maxMemory: 30720,
-                        compMp: 2,
-                        SPJMp: 2,
-                        lid: 5,
-                    },
+                Cpp: {
+                    maxCpuTime: 1000,
+                    maxRealTime: 1000,
+                    maxMemory: 30720,
+                    compMp: 2,
+                    SPJMp: 2,
+                    lid: 2,
                 },
-                useTmpl: {
-                    C: false,
-                    Cpp: false,
-                    Java: false,
-                    Python: false,
-                    Go: false,
+                Java: {
+                    maxCpuTime: 1000,
+                    maxRealTime: 1000,
+                    maxMemory: 61440,
+                    compMp: 2,
+                    SPJMp: 2,
+                    lid: 3,
                 },
-                ltCode: "",
-                ltLang: "",
-                useSPJ: false,
-                SPJCode: "",
-                SPJLang: "",
-                tmpl: {
-                    C: "",
-                    Cpp: "",
-                    Java: "",
-                    Python: "",
-                    Go: "",
+                Python: {
+                    maxCpuTime: 1000,
+                    maxRealTime: 1000,
+                    maxMemory: 30720,
+                    compMp: 2,
+                    SPJMp: 2,
+                    lid: 4,
                 },
-                SPJExample: {
-                    C: `#include <stdio.h>
+                Go: {
+                    maxCpuTime: 1000,
+                    maxRealTime: 1000,
+                    maxMemory: 30720,
+                    compMp: 2,
+                    SPJMp: 2,
+                    lid: 5,
+                },
+            },
+            useTmpl: {
+                C: false,
+                Cpp: false,
+                Java: false,
+                Python: false,
+                Go: false,
+            },
+            ltCode: "",
+            ltLang: "",
+            useSPJ: false,
+            SPJCode: "",
+            SPJLang: "",
+            tmpl: {
+                C: "",
+                Cpp: "",
+                Java: "",
+                Python: "",
+                Go: "",
+            },
+            SPJExample: {
+                C: `#include <stdio.h>
 #include <string.h>
 
 char s1[100]={0};
@@ -604,7 +604,7 @@ int main(int argc, char *argv[]){
     fclose(f2);
     fclose(f3);
 }`,
-                    Cpp: `#include <string>
+                Cpp: `#include <string>
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -633,7 +633,7 @@ int main(int argc, char *argv[]){
         // or do nothing...
     }
 }`,
-                    Java: `import java.io.*;
+                Java: `import java.io.*;
 
 class SPJTest{
 
@@ -672,7 +672,7 @@ class SPJTest{
         }
     }
 }`,
-                    Python: `import sys
+                Python: `import sys
 
 if __name__=='__main__':
     s1=open(sys.argv[1],'r').read() # Test Case Input
@@ -683,7 +683,7 @@ if __name__=='__main__':
     else:
         print("WA",end="")  # You can print anything except "AC" to mark the answer "WA"
         # or do nothing...`,
-                    Go: `package main
+                Go: `package main
 
 import(
     "io/ioutil"
@@ -707,9 +707,9 @@ func main(){
     }
 
 }`,
-                },
-                tmplExample: {
-                    C: `// PREPEND BEGIN
+            },
+            tmplExample: {
+                C: `// PREPEND BEGIN
 #include <stdio.h>
 
 // PREPEND END
@@ -730,7 +730,7 @@ int main(){
 }
 
 // APPEND END`,
-                    Cpp: `// PREPEND BEGIN
+                Cpp: `// PREPEND BEGIN
 #include <iostream>
 using namespace std;
 
@@ -754,7 +754,7 @@ int main(){
 
 // APPEND END
 `,
-                    Java: `
+                Java: `
 // PREPEND BEGIN
 import java.util.Scanner;
 class Test{
@@ -777,7 +777,7 @@ public static void main(String args[]){
 }
 }
 // APPEND END`,
-                    Python: `# PREPEND BEGIN
+                Python: `# PREPEND BEGIN
 import time
 
 # PREPEND END
@@ -795,7 +795,7 @@ if __name__=="__main__":
 
 # APPEND END
 `,
-                    Go: `// PREPEND BEGIN
+                Go: `// PREPEND BEGIN
 package main
 
 import (
@@ -821,755 +821,748 @@ func main(){
 
 // APPEND END
                     `,
-                },
-                show: false,
-                title: '',
-                ref: '',
-                allTags: [],
-                textarea: '',
-                realTags: [],
-                realLanguages: [],
-                tags: [],
-                description: '',
-                inputDescription: '',
-                outputDescription: '',
-                hint: '',
-                source: '',
-                ltRes: {
-                    flag: "",
-                    errorMsg: "",
-                },
-                visible: false,
-                shared: false,
-                difficulty: 'Normal',
-                COptions: {
-                    // codemirror options
-                    tabSize: 4,
-                    mode: 'text/x-java',
-                    autoRefresh: true,
-                    styleActiveLine: true,
-                    smartIndent: true,
-                    indentUnit: 4,
-                    theme: 'idea',
-                    lineNumbers: true,
-                    line: true,
-                    foldGutter: true,
-                    lineWrapping: true,
-                    gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
-                },
-                CppOptions: {
-                    // codemirror options
-                    tabSize: 4,
-                    mode: 'text/x-csrc',
-                    autoRefresh: true,
-                    styleActiveLine: true,
-                    smartIndent: true,
-                    indentUnit: 4,
-                    theme: 'idea',
-                    lineNumbers: true,
-                    line: true,
-                    foldGutter: true,
-                    lineWrapping: true,
-                    gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
-                },
-                JavaOptions: {
-                    // codemirror options
-                    tabSize: 4,
-                    mode: 'text/x-csrc',
-                    autoRefresh: true,
-                    styleActiveLine: true,
-                    smartIndent: true,
-                    indentUnit: 4,
-                    theme: 'idea',
-                    lineNumbers: true,
-                    line: true,
-                    foldGutter: true,
-                    lineWrapping: true,
-                    gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
-                },
-                PythonOptions: {
-                    // codemirror options
-                    tabSize: 4,
-                    mode: 'python',
-                    autoRefresh: true,
-                    styleActiveLine: true,
-                    smartIndent: true,
-                    indentUnit: 4,
-                    theme: 'idea',
-                    lineNumbers: true,
-                    line: true,
-                    foldGutter: true,
-                    lineWrapping: true,
-                    gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
-                },
-                GoOptions: {
-                    // codemirror options
-                    tabSize: 4,
-                    mode: 'go',
-                    autoRefresh: true,
-                    styleActiveLine: true,
-                    smartIndent: true,
-                    indentUnit: 4,
-                    theme: 'idea',
-                    lineNumbers: true,
-                    line: true,
-                    foldGutter: true,
-                    lineWrapping: true,
-                    gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
-                },
-                LangOptions1: {
-                    // codemirror options
-                    tabSize: 4,
-                    mode: 'text/x-csrc',
-                    autoRefresh: true,
-                    styleActiveLine: true,
-                    smartIndent: true,
-                    indentUnit: 4,
-                    theme: 'idea',
-                    lineNumbers: true,
-                    line: true,
-                    foldGutter: true,
-                    lineWrapping: true,
-                    gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
-                },
-                LangOptions2: {
-                    // codemirror options
-                    tabSize: 4,
-                    mode: 'text/x-csrc',
-                    autoRefresh: true,
-                    styleActiveLine: true,
-                    smartIndent: true,
-                    indentUnit: 4,
-                    theme: 'idea',
-                    lineNumbers: true,
-                    line: true,
-                    foldGutter: true,
-                    lineWrapping: true,
-                    gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
-                },
-                sample: [{
-                    input: '',
-                    output: '',
+            },
+            show: false,
+            title: '',
+            ref: '',
+            allTags: [],
+            textarea: '',
+            realTags: [],
+            realLanguages: [],
+            tags: [],
+            description: '',
+            inputDescription: '',
+            outputDescription: '',
+            hint: '',
+            source: '',
+            ltRes: {
+                flag: "",
+                errorMsg: "",
+            },
+            visible: false,
+            shared: false,
+            difficulty: 'Normal',
+            COptions: {
+                // codemirror options
+                tabSize: 4,
+                mode: 'text/x-java',
+                autoRefresh: true,
+                styleActiveLine: true,
+                smartIndent: true,
+                indentUnit: 4,
+                theme: 'idea',
+                lineNumbers: true,
+                line: true,
+                foldGutter: true,
+                lineWrapping: true,
+                gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
+            },
+            CppOptions: {
+                // codemirror options
+                tabSize: 4,
+                mode: 'text/x-csrc',
+                autoRefresh: true,
+                styleActiveLine: true,
+                smartIndent: true,
+                indentUnit: 4,
+                theme: 'idea',
+                lineNumbers: true,
+                line: true,
+                foldGutter: true,
+                lineWrapping: true,
+                gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
+            },
+            JavaOptions: {
+                // codemirror options
+                tabSize: 4,
+                mode: 'text/x-csrc',
+                autoRefresh: true,
+                styleActiveLine: true,
+                smartIndent: true,
+                indentUnit: 4,
+                theme: 'idea',
+                lineNumbers: true,
+                line: true,
+                foldGutter: true,
+                lineWrapping: true,
+                gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
+            },
+            PythonOptions: {
+                // codemirror options
+                tabSize: 4,
+                mode: 'python',
+                autoRefresh: true,
+                styleActiveLine: true,
+                smartIndent: true,
+                indentUnit: 4,
+                theme: 'idea',
+                lineNumbers: true,
+                line: true,
+                foldGutter: true,
+                lineWrapping: true,
+                gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
+            },
+            GoOptions: {
+                // codemirror options
+                tabSize: 4,
+                mode: 'go',
+                autoRefresh: true,
+                styleActiveLine: true,
+                smartIndent: true,
+                indentUnit: 4,
+                theme: 'idea',
+                lineNumbers: true,
+                line: true,
+                foldGutter: true,
+                lineWrapping: true,
+                gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
+            },
+            LangOptions1: {
+                // codemirror options
+                tabSize: 4,
+                mode: 'text/x-csrc',
+                autoRefresh: true,
+                styleActiveLine: true,
+                smartIndent: true,
+                indentUnit: 4,
+                theme: 'idea',
+                lineNumbers: true,
+                line: true,
+                foldGutter: true,
+                lineWrapping: true,
+                gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
+            },
+            LangOptions2: {
+                // codemirror options
+                tabSize: 4,
+                mode: 'text/x-csrc',
+                autoRefresh: true,
+                styleActiveLine: true,
+                smartIndent: true,
+                indentUnit: 4,
+                theme: 'idea',
+                lineNumbers: true,
+                line: true,
+                foldGutter: true,
+                lineWrapping: true,
+                gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
+            },
+            sample: [{
+                input: '',
+                output: '',
+            }],
+            problemCase: [{
+                input: '',
+                output: '',
+                score: 10
+            }],
+            difficultyOptions: [
+                {
+                    value: 'Casual',
+                    label: 'Casual'
+                }, {
+                    value: 'Easy',
+                    label: 'Easy'
+                }, {
+                    value: 'Normal',
+                    label: 'Normal'
+                }, {
+                    value: 'Hard',
+                    label: 'Hard'
+                }, {
+                    value: 'Crazy',
+                    label: 'Crazy'
                 }],
-                problemCase: [{
-                    input: '',
-                    output: '',
-                    score: 10
-                }],
-                difficultyOptions: [
-                    {
-                        value: 'Casual',
-                        label: 'Casual'
-                    }, {
-                        value: 'Easy',
-                        label: 'Easy'
-                    }, {
-                        value: 'Normal',
-                        label: 'Normal'
-                    }, {
-                        value: 'Hard',
-                        label: 'Hard'
-                    }, {
-                        value: 'Crazy',
-                        label: 'Crazy'
-                    }],
+        }
+    },
+    created() {
+        this.$bus.emit("changeHeader", "3-1")
+        this.show = false
+    },
+    mounted() {
+        this.show = true
+        this.getAllTags()
+    },
+    methods: {
+        resetTmpl(lang) {
+            this.tmpl[lang] = this.tmplExample[lang]
+        },
+        resetSPJ() {
+            this.SPJCode = this.SPJExample[this.SPJLang]
+        },
+        changeLangOptions1(lang) {
+            this.changeLangOptions(lang, this.LangOptions1)
+            this.SPJCode = this.SPJExample[lang]
+        },
+        changeLangOptions2(lang) {
+            this.changeLangOptions(lang, this.LangOptions2)
+
+        },
+        changeLangOptions(lang, options) {
+            switch (lang) {
+                case "C":
+                    options.mode = "text/x-csrc"
+                    break
+                case "Cpp":
+                    options.mode = "text/x-c++src"
+                    break
+                case "Java":
+                    options.mode = "text/x-java"
+                    break
+                case "Python":
+                    options.mode = "python"
+                    break
+                case "Go":
+                    options.mode = "go"
+                    break
             }
         },
-        created() {
-            this.$bus.emit("changeHeader", "3-1")
-            this.show = false
+        processTmpl(tmpl, lang) {
+            let sign = this.getTmplSign(lang)
+            let err = lang + " template is not available, please reset it"
+            let obj = {
+                prepend: "",
+                content: "",
+                append: "",
+                lid: 0,
+            }
+            obj.lid = this.getLid(lang)
+            let s1 = tmpl.split(sign + ` PREPEND BEGIN\n`)
+            if (s1.length !== 2) {
+                this.$message.error("Error 2: " + err)
+                return null
+            }
+            let s2 = s1[1].split("\n" + sign + ` PREPEND END\n`)
+            if (s2.length !== 2) {
+                this.$message.error("Error 3: " + err)
+                return null
+            }
+            obj.prepend = s2[0]
+            if (obj.prepend.charAt(obj.prepend.length - 1) !== "\n") {
+                obj.prepend += "\n"
+            }
+            let s3 = s2[1].split(sign + ` TEMPLATE BEGIN\n`)
+            if (s3.length !== 2) {
+                this.$message.error("Error 4: " + err)
+                return null
+            }
+            let s4 = s3[1].split("\n" + sign + ` TEMPLATE END\n`)
+            if (s4.length !== 2) {
+                this.$message.error("Error 5: " + err)
+                return null
+            }
+            obj.content = s4[0]
+            if (obj.content.charAt(obj.content.length - 1) !== "\n") {
+                obj.content += "\n"
+            }
+            let s5 = s4[1].split(sign + ` APPEND BEGIN\n`)
+            if (s5.length !== 2) {
+                this.$message.error("Error 6: " + err)
+                return null
+            }
+            let s6 = s5[1].split("\n" + sign + ` APPEND END`)
+            if (s6.length !== 2) {
+                this.$message.error("Error 7: " + err)
+                return null
+            }
+            obj.append = s6[0]
+            if (obj.append[0] !== "\n") {
+                obj.append = "\n" + obj.append
+            }
+            return obj
         },
-        mounted() {
-            this.show = true
-            this.getAllTags()
+        check() {
+            let hasLang = false
+            for (const k in this.useLang) if (this.useLang.hasOwnProperty(k)) {
+                hasLang |= this.useLang[k]
+            }
+            if (!hasLang) {
+                this.$message.error("language is required")
+                return false
+            }
+            if (this.title === "") {
+                this.$message.error("title is required")
+                return false
+            }
+            if (this.ref === "") {
+                this.$message.error("display id is required")
+                return false
+            }
+            if (this.description === "") {
+                this.$message.error("description is required")
+                return false
+            }
+            if (this.inputDescription === "") {
+                this.$message.error("input description is required")
+                return false
+            }
+            if (this.outputDescription === "") {
+                this.$message.error("output description is required")
+                return false
+            }
+            if (this.difficulty === "") {
+                this.$message.error("difficulty is required")
+                return false
+            }
+            for (let i = 0; i < this.sample.length; i++) {
+                if (this.sample[i].output === "") {
+                    this.$message.error("sample " + (i + 1) + " output can't be empty")
+                    return false
+                }
+            }
+            for (let i = 0; i < this.problemCase.length; i++) {
+                if (this.problemCase[i].output === "") {
+                    this.$message.error("test case " + (i + 1) + " output can't be empty")
+                    return false
+                }
+                if (this.problemCase[i].score === 0) {
+                    this.$message.error("test case " + (i + 1) + " score can't be 0")
+                    return false
+                }
+            }
+            return true
         },
-        methods: {
-            resetTmpl(lang) {
-                this.tmpl[lang] = this.tmplExample[lang]
-            },
-            resetSPJ() {
-                this.SPJCode = this.SPJExample[this.SPJLang]
-            },
-            changeLangOptions1(lang) {
-                this.changeLangOptions(lang, this.LangOptions1)
-                this.SPJCode = this.SPJExample[lang]
-            },
-            changeLangOptions2(lang) {
-                this.changeLangOptions(lang, this.LangOptions2)
-
-            },
-            changeLangOptions(lang, options) {
-                switch (lang) {
-                    case "C":
-                        options.mode = "text/x-csrc"
-                        break
-                    case "Cpp":
-                        options.mode = "text/x-c++src"
-                        break
-                    case "Java":
-                        options.mode = "text/x-java"
-                        break
-                    case "Python":
-                        options.mode = "python"
-                        break
-                    case "Go":
-                        options.mode = "go"
-                        break
-                }
-            },
-            processTmpl(tmpl, lang) {
-                let sign = this.getTmplSign(lang)
-                let err = lang + " template is not available, please reset it"
-                let obj = {
-                    prepend: "",
-                    content: "",
-                    append: "",
-                    lid: 0,
-                }
-                obj.lid = this.getLid(lang)
-                let s1 = tmpl.split(sign + ` PREPEND BEGIN\n`)
-                if (s1.length !== 2) {
-                    this.$message.error("Error 2: " + err)
-                    return null
-                }
-                let s2 = s1[1].split("\n" + sign + ` PREPEND END\n`)
-                if (s2.length !== 2) {
-                    this.$message.error("Error 3: " + err)
-                    return null
-                }
-                obj.prepend = s2[0]
-                if (obj.prepend.charAt(obj.prepend.length - 1) !== "\n") {
-                    obj.prepend += "\n"
-                }
-                let s3 = s2[1].split(sign + ` TEMPLATE BEGIN\n`)
-                if (s3.length !== 2) {
-                    this.$message.error("Error 4: " + err)
-                    return null
-                }
-                let s4 = s3[1].split("\n" + sign + ` TEMPLATE END\n`)
-                if (s4.length !== 2) {
-                    this.$message.error("Error 5: " + err)
-                    return null
-                }
-                obj.content = s4[0]
-                if (obj.content.charAt(obj.content.length - 1) !== "\n") {
-                    obj.content += "\n"
-                }
-                let s5 = s4[1].split(sign + ` APPEND BEGIN\n`)
-                if (s5.length !== 2) {
-                    this.$message.error("Error 6: " + err)
-                    return null
-                }
-                let s6 = s5[1].split("\n" + sign + ` APPEND END`)
-                if (s6.length !== 2) {
-                    this.$message.error("Error 7: " + err)
-                    return null
-                }
-                obj.append = s6[0]
-                if (obj.append[0] !== "\n") {
-                    obj.append = "\n" + obj.append
-                }
-                console.log(obj)
-                return obj
-            },
-            check() {
-                let hasLang = false
-                for (const k in this.useLang) if (this.useLang.hasOwnProperty(k)) {
-                    hasLang |= this.useLang[k]
-                }
-                if (!hasLang) {
-                    this.$message.error("language is required")
-                    return false
-                }
-                if (this.title === "") {
-                    this.$message.error("title is required")
-                    return false
-                }
-                if (this.ref === "") {
-                    this.$message.error("display id is required")
-                    return false
-                }
-                if (this.description === "") {
-                    this.$message.error("description is required")
-                    return false
-                }
-                if (this.inputDescription === "") {
-                    this.$message.error("input description is required")
-                    return false
-                }
-                if (this.outputDescription === "") {
-                    this.$message.error("output description is required")
-                    return false
-                }
-                if (this.difficulty === "") {
-                    this.$message.error("difficulty is required")
-                    return false
-                }
-                for (let i = 0; i < this.sample.length; i++) {
-                    if (this.sample[i].output === "") {
-                        this.$message.error("sample " + (i + 1) + " output can't be empty")
-                        return false
-                    }
-                }
-                for (let i = 0; i < this.problemCase.length; i++) {
-                    if (this.problemCase[i].output === "") {
-                        this.$message.error("test case " + (i + 1) + " output can't be empty")
-                        return false
-                    }
-                    if (this.problemCase[i].score === 0) {
-                        this.$message.error("test case " + (i + 1) + " score can't be 0")
-                        return false
-                    }
-                }
-                return true
-            },
-            goBack() {
-                this.$router.go(-1)
-            },
-            getLid(lang) {
-                switch (lang) {
-                    case "C":
-                        return 1
-                    case "Cpp":
-                        return 2
-                    case "Java":
-                        return 3
-                    case "Python":
-                        return 4
-                    case "Go":
-                        return 5
-                    default:
-                        this.$message.error("no such language " + lang)
-                        throw "no such language"
-                }
-            },
-            getLang(lid) {
-                switch (lid) {
-                    case 1:
-                        return "C"
-                    case 2:
-                        return "Cpp"
-                    case 3:
-                        return "Java"
-                    case 4:
-                        return "Python"
-                    case 5:
-                        return "Go"
-                    default:
-                        this.$message.error("no such language id" + lid)
-                        throw "no such language id"
-                }
-            },
-            getRealTags() {
-                this.realTags = []
-                for (let i = 0; i < this.tags.length; i++) {
-                    for (let j = 0; j < this.allTags.length; j++) {
-                        if (this.tags[i] === this.allTags[j].name) {
-                            this.realTags.push({
-                                id: this.allTags[j].id
-                            })
-                            break
-                        }
-                    }
-                }
-            },
-            getRealLanguages() {
-                this.realLanguages = []
-                for (const k in this.useLang) if (this.useLang.hasOwnProperty(k)) {
-                    if (this.useLang[k]) {
-                        this.realLanguages.push({
-                            id: this.getLid(k)
+        goBack() {
+            this.$router.go(-1)
+        },
+        getLid(lang) {
+            switch (lang) {
+                case "C":
+                    return 1
+                case "Cpp":
+                    return 2
+                case "Java":
+                    return 3
+                case "Python":
+                    return 4
+                case "Go":
+                    return 5
+                default:
+                    this.$message.error("no such language " + lang)
+                    throw "no such language"
+            }
+        },
+        getLang(lid) {
+            switch (lid) {
+                case 1:
+                    return "C"
+                case 2:
+                    return "Cpp"
+                case 3:
+                    return "Java"
+                case 4:
+                    return "Python"
+                case 5:
+                    return "Go"
+                default:
+                    this.$message.error("no such language id" + lid)
+                    throw "no such language id"
+            }
+        },
+        getRealTags() {
+            this.realTags = []
+            for (let i = 0; i < this.tags.length; i++) {
+                for (let j = 0; j < this.allTags.length; j++) {
+                    if (this.tags[i] === this.allTags[j].name) {
+                        this.realTags.push({
+                            id: this.allTags[j].id
                         })
+                        break
                     }
                 }
-            },
-            getTmplSign(lang) {
-                switch (lang) {
-                    case "C":
-                    case "Cpp":
-                    case "Java":
-                    case "Go":
-                        return "//"
-                    case "Python":
-                        return "#"
-                    default:
-                        this.$message.error("unsupported language")
-                        return null
-                }
-            },
-            handleTmpl(obj) {
-                for (const k in this.useTmpl) if (this.useLang.hasOwnProperty(k)) {
-                    if (this.useTmpl[k]) {
-                        let r = this.processTmpl(this.tmpl[k], k)
-                        if (r === null) {
-                            return false
-                        }
-                        obj.template.push(r)
-                    }
-                }
-                return true
-            },
-            handleSPJ(obj) {
-                if (this.useSPJ) {
-                    obj.spj = {
-                        lid: this.getLid(this.SPJLang),
-                        code: this.SPJCode,
-                    }
-                }
-            },
-            handleLimit(obj) {
-                for (const k in this.limit) if (this.limit.hasOwnProperty(k)) {
-                    if (this.useLang[k]) {
-                        obj.limit.push(this.limit[k])
-                    }
-                }
-            },
-            addProblemCase() {
-                this.problemCase.push({
-                    input: '',
-                    output: '',
-                    score: 10
-                })
-            },
-            addSample() {
-                this.sample.push({
-                    input: '',
-                    output: ''
-                })
-            },
-            deleteProblemCase(val) {
-                if (this.problemCase.length === 1) {
-                    this.$message.error("test case is required")
-                    return
-                }
-                this.problemCase.splice(val, 1)
-            },
-            deleteSample(val) {
-                if (this.sample.length === 1) {
-                    this.$message.error("sample input and ouput is required")
-                    return
-                }
-                this.sample.splice(val, 1)
-            },
-            async getAllTags() {
-                try {
-                    const {
-                        data: res
-                    } = await this.$http.get('/admin/tag/getAllShared');
-                    if (res.error) {
-                        this.$message.error(res.error)
-                        return
-                    }
-                    this.allTags = res.data;
-                } catch (err) {
-                    console.log(err);
-                    // alert(err)
-                }
-            },
-            async localTest() {
-                let code = this.ltCode
-                let lang = this.ltLang
-                if (lang === "") {
-                    this.$message.error("please select a local test language")
-                    return
-                }
-                if (this.useTmpl[lang]) {
-                    let r = this.processTmpl(this.tmpl[lang], lang)
-                    if (r === null) {
-                        return
-                    }
-                    code = r.prepend + code + r.append
-                }
-                let obj = {
-                    maxMemory: this.limit[lang].maxMemory,
-                    maxRealTime: this.limit[lang].maxRealTime,
-                    maxCpuTime: this.limit[lang].maxCpuTime,
-                    code: code,
-                    lid: this.getLid(lang),
-                    useSPJ: this.useSPJ,
-                    SPJCode: this.SPJCode,
-                    SPJLid: 1,
-                    testCase: [],
-                    compMp: this.limit[lang].compMp,
-                    SPJMp: this.limit[lang].SPJMp
-                }
-                if (this.useSPJ) {
-                    obj.SPJLid = this.getLid(this.SPJLang)
-                }
-                for (let i = 0; i < this.problemCase.length; i++) {
-                    obj.testCase.push({
-                        input: this.problemCase[i].input,
-                        expectedOutput: this.problemCase[i].output,
-                        score: this.problemCase[i].score,
-                        id: i
+            }
+        },
+        getRealLanguages() {
+            this.realLanguages = []
+            for (const k in this.useLang) if (this.useLang.hasOwnProperty(k)) {
+                if (this.useLang[k]) {
+                    this.realLanguages.push({
+                        id: this.getLid(k)
                     })
                 }
-                try {
-                    this.ltRes = {
-                        flag: "Judging"
+            }
+        },
+        getTmplSign(lang) {
+            switch (lang) {
+                case "C":
+                case "Cpp":
+                case "Java":
+                case "Go":
+                    return "//"
+                case "Python":
+                    return "#"
+                default:
+                    this.$message.error("unsupported language")
+                    return null
+            }
+        },
+        handleTmpl(obj) {
+            for (const k in this.useTmpl) if (this.useLang.hasOwnProperty(k)) {
+                if (this.useTmpl[k]) {
+                    let r = this.processTmpl(this.tmpl[k], k)
+                    if (r === null) {
+                        return false
                     }
-                    const {data: res} = await this.$http.post('/admin/problem/localTest', obj);
-                    if (res.error) {
-                        this.$message.error(res.error)
-                        return
-                    }
-                    this.ltRes = res.data
-                } catch (err) {
-                    console.log(err);
-                    alert(err)
+                    obj.template.push(r)
                 }
-            },
-            async getDetail() {
-                try {
-                    const {
-                        data: res
-                    } = await this.$http.post('/admin/problem/getDetail', {
-                        id: Number(this.$route.query.id)
-                    });
-                    if (res.error) {
-                        this.$message.error(res.error)
-                        return
+            }
+            return true
+        },
+        handleSPJ(obj) {
+            if (this.useSPJ) {
+                obj.spj = {
+                    lid: this.getLid(this.SPJLang),
+                    code: this.SPJCode,
+                }
+            }
+        },
+        handleLimit(obj) {
+            for (const k in this.limit) if (this.limit.hasOwnProperty(k)) {
+                if (this.useLang[k]) {
+                    obj.limit.push(this.limit[k])
+                }
+            }
+        },
+        addProblemCase() {
+            this.problemCase.push({
+                input: '',
+                output: '',
+                score: 10
+            })
+        },
+        addSample() {
+            this.sample.push({
+                input: '',
+                output: ''
+            })
+        },
+        deleteProblemCase(val) {
+            if (this.problemCase.length === 1) {
+                this.$message.error("test case is required")
+                return
+            }
+            this.problemCase.splice(val, 1)
+        },
+        deleteSample(val) {
+            if (this.sample.length === 1) {
+                this.$message.error("sample input and ouput is required")
+                return
+            }
+            this.sample.splice(val, 1)
+        },
+        async getAllTags() {
+            try {
+                const {
+                    data: res
+                } = await this.$http.get('/admin/tag/getAllShared');
+                if (res.error) {
+                    this.$message.error(res.error)
+                    return
+                }
+                this.allTags = res.data;
+            } catch (err) {
+                console.log(err);
+            }
+        },
+        async localTest() {
+            let code = this.ltCode
+            let lang = this.ltLang
+            if (lang === "") {
+                this.$message.error("please select a local test language")
+                return
+            }
+            if (this.useTmpl[lang]) {
+                let r = this.processTmpl(this.tmpl[lang], lang)
+                if (r === null) {
+                    return
+                }
+                code = r.prepend + code + r.append
+            }
+            let obj = {
+                maxMemory: this.limit[lang].maxMemory,
+                maxRealTime: this.limit[lang].maxRealTime,
+                maxCpuTime: this.limit[lang].maxCpuTime,
+                code: code,
+                lid: this.getLid(lang),
+                useSPJ: this.useSPJ,
+                SPJCode: this.SPJCode,
+                SPJLid: 1,
+                testCase: [],
+                compMp: this.limit[lang].compMp,
+                SPJMp: this.limit[lang].SPJMp
+            }
+            if (this.useSPJ) {
+                obj.SPJLid = this.getLid(this.SPJLang)
+            }
+            for (let i = 0; i < this.problemCase.length; i++) {
+                obj.testCase.push({
+                    input: this.problemCase[i].input,
+                    expectedOutput: this.problemCase[i].output,
+                    score: this.problemCase[i].score,
+                    id: i
+                })
+            }
+            try {
+                this.ltRes = {
+                    flag: "Judging"
+                }
+                const {data: res} = await this.$http.post('/admin/problem/localTest', obj);
+                if (res.error) {
+                    this.$message.error(res.error)
+                    return
+                }
+                this.ltRes = res.data
+            } catch (err) {
+                console.log(err);
+            }
+        },
+        async getDetail() {
+            try {
+                const {
+                    data: res
+                } = await this.$http.post('/admin/problem/getDetail', {
+                    id: Number(this.$route.query.id)
+                });
+                if (res.error) {
+                    this.$message.error(res.error)
+                    return
+                }
+                this.id = res.data.id
+                this.title = res.data.title
+                this.ref = res.data.ref
+                this.description = res.data.description
+                this.inputDescription = res.data.inputDescription
+                this.outputDescription = res.data.outputDescription
+                this.hint = res.data.hint
+                this.source = res.data.source
+                this.visible = res.data.visible
+                this.shared = res.data.shared
+                this.difficulty = res.data.difficulty
+                this.problemCase = res.data.problemCase
+                this.sample = res.data.sample
+                if (res.data.useSPJ) {
+                    this.useSPJ = true
+                    this.SPJCode = res.data.spj.code
+                    this.SPJLang = this.getLang(res.data.spj.lid)
+                }
+                for (let i = 0; i < res.data.language.length; i++) {
+                    this.useLang[this.getLang(res.data.language[i].id)] = true
+                }
+                for (let i = 0; i < res.data.template.length; i++) {
+                    let tm = res.data.template[i]
+                    let lang = this.getLang(tm.lid)
+                    let sign = this.getTmplSign(lang)
+                    this.useTmpl[lang] = true
+                    this.tmpl[lang] =
+                        sign + " PREPEND BEGIN\n" +
+                        tm.prepend +
+                        sign + " PREPEND END\n\n" +
+                        sign + " TEMPLATE BEGIN\n" +
+                        tm.content +
+                        sign + " TEMPLATE END\n\n" +
+                        sign + " APPEND BEGIN\n" +
+                        tm.append +
+                        sign + " APPEND END\n"
+                }
+                for (let i = 0; i < res.data.limit.length; i++) {
+                    let lm = res.data.limit[i]
+                    let lang = this.getLang(lm.lid)
+                    this.limit[lang] = lm
+                }
+                if (res.data.tag) {
+                    for (let i = 0; i < res.data.tag.length; i++) {
+                        this.tags.push("" + res.data.tag[i].name)
                     }
-                    console.log(res)
-                    this.id = res.data.id
-                    this.title = res.data.title
-                    this.ref = res.data.ref
-                    this.description = res.data.description
-                    this.inputDescription = res.data.inputDescription
-                    this.outputDescription = res.data.outputDescription
-                    this.hint = res.data.hint
-                    this.source = res.data.source
-                    this.visible = res.data.visible
-                    this.shared = res.data.shared
-                    this.difficulty = res.data.difficulty
-                    this.problemCase = res.data.problemCase
-                    this.sample = res.data.sample
-                    if (res.data.useSPJ) {
-                        this.useSPJ = true
-                        this.SPJCode = res.data.spj.code
-                        this.SPJLang = this.getLang(res.data.spj.lid)
-                    }
-                    for (let i = 0; i < res.data.language.length; i++) {
-                        this.useLang[this.getLang(res.data.language[i].id)] = true
-                    }
-                    for (let i = 0; i < res.data.template.length; i++) {
-                        let tm = res.data.template[i]
-                        let lang = this.getLang(tm.lid)
-                        let sign = this.getTmplSign(lang)
-                        this.useTmpl[lang] = true
-                        this.tmpl[lang] =
-                            sign + " PREPEND BEGIN\n" +
-                            tm.prepend +
-                            sign + " PREPEND END\n\n" +
-                            sign + " TEMPLATE BEGIN\n" +
-                            tm.content +
-                            sign + " TEMPLATE END\n\n" +
-                            sign + " APPEND BEGIN\n" +
-                            tm.append +
-                            sign + " APPEND END\n"
-                    }
-                    for (let i = 0; i < res.data.limit.length; i++) {
-                        let lm = res.data.limit[i]
-                        let lang = this.getLang(lm.lid)
-                        this.limit[lang] = lm
-                    }
-                    if (res.data.tag) {
-                        for (let i = 0; i < res.data.tag.length; i++) {
-                            this.tags.push("" + res.data.tag[i].name)
-                        }
-                    }
+                }
 
-                } catch (err) {
-                    console.log(err);
-                    alert(err)
-                }
-            },
-            async save() {
-                if (!this.check()) {
+            } catch (err) {
+                console.log(err);
+            }
+        },
+        async save() {
+            if (!this.check()) {
+                return
+            }
+            this.getRealTags()
+            this.getRealLanguages()
+            let obj = {
+                title: this.title,
+                ref: this.ref,
+                description: this.description,
+                inputDescription: this.inputDescription,
+                outputDescription: this.outputDescription,
+                hint: this.hint,
+                source: this.source,
+                tag: this.realTags,
+                visible: this.visible,
+                shared: this.shared,
+                difficulty: this.difficulty,
+                language: this.realLanguages,
+                sample: this.sample,
+                problemCase: this.problemCase,
+                useSPJ: this.useSPJ,
+                template: [],
+                spj: {},
+                limit: [],
+            }
+            if (!this.handleTmpl(obj)) {
+                return
+            }
+            this.handleSPJ(obj)
+            this.handleLimit(obj)
+            try {
+                const {
+                    data: res
+                } = await this.$http.post('/admin/problem/addProblem', obj);
+                if (res.error) {
+                    this.$message.error(res.error)
                     return
                 }
-                this.getRealTags()
-                this.getRealLanguages()
-                let obj = {
-                    title: this.title,
-                    ref: this.ref,
-                    description: this.description,
-                    inputDescription: this.inputDescription,
-                    outputDescription: this.outputDescription,
-                    hint: this.hint,
-                    source: this.source,
-                    tag: this.realTags,
-                    visible: this.visible,
-                    shared: this.shared,
-                    difficulty: this.difficulty,
-                    language: this.realLanguages,
-                    sample: this.sample,
-                    problemCase: this.problemCase,
-                    useSPJ: this.useSPJ,
-                    template: [],
-                    spj: {},
-                    limit: [],
-                }
-                if (!this.handleTmpl(obj)) {
-                    return
-                }
-                this.handleSPJ(obj)
-                this.handleLimit(obj)
-                console.log(obj)
-                try {
-                    const {
-                        data: res
-                    } = await this.$http.post('/admin/problem/addProblem', obj);
-                    if (res.error) {
-                        this.$message.error(res.error)
-                        return
-                    }
-                    this.$message({
-                        message: res.data,
-                        type: 'success'
-                    });
-                    await this.$router.push("/problem")
-                } catch (err) {
-                    console.log(err);
-                    alert(err)
-                }
-            },
+                this.$message({
+                    message: res.data,
+                    type: 'success'
+                });
+                await this.$router.push("/problem")
+            } catch (err) {
+                console.log(err);
+            }
         },
-        components: {
-            editor: Editor,
-            codemirror,
-        },
-        watch: {
-            useLang: {
-                deep: true,
-                handler(obj) {
-                    for (const k in obj) if (obj.hasOwnProperty(k)) {
-                        if (!obj[k]) {
-                            this.useTmpl[k] = false
-                            if (this.ltLang === k) {
-                                this.ltLang = ""
-                            }
+    },
+    components: {
+        editor: Editor,
+        codemirror,
+    },
+    watch: {
+        useLang: {
+            deep: true,
+            handler(obj) {
+                for (const k in obj) if (obj.hasOwnProperty(k)) {
+                    if (!obj[k]) {
+                        this.useTmpl[k] = false
+                        if (this.ltLang === k) {
+                            this.ltLang = ""
                         }
                     }
                 }
-            },
-            useSPJ() {
-                if (this.SPJLang === "") {
-                    this.SPJLang = "C"
-                    this.SPJCode = this.SPJExample.C
-                }
-            },
-            useTmpl: {
-                deep: true,
-                handler(obj) {
-                    for (const k in obj) if (obj.hasOwnProperty(k)) {
-                        if (obj[k]) {
-                            if (this.tmpl[k] === '') {
-                                this.tmpl[k] = this.tmplExample[k]
-                            }
+            }
+        },
+        useSPJ() {
+            if (this.SPJLang === "") {
+                this.SPJLang = "C"
+                this.SPJCode = this.SPJExample.C
+            }
+        },
+        useTmpl: {
+            deep: true,
+            handler(obj) {
+                for (const k in obj) if (obj.hasOwnProperty(k)) {
+                    if (obj[k]) {
+                        if (this.tmpl[k] === '') {
+                            this.tmpl[k] = this.tmplExample[k]
                         }
                     }
                 }
             }
         }
-    };
+    }
+};
 </script>
 
 <style scoped>
-    .center-box {
-        width: 100%;
-        background-color: #ffffff;
-        border-radius: 10px;
-        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-    }
+.center-box {
+    width: 100%;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
 
-    .center-box >>> .w-e-text {
-        overflow: visible !important
-    }
+.center-box >>> .w-e-text {
+    overflow: visible !important
+}
 
-    .center-box >>> .CodeMirror {
-        height: auto;
-    }
+.center-box >>> .CodeMirror {
+    height: auto;
+}
 
-    .center-box >>> .CodeMirror-scroll {
-        overflow: scroll !important;
-        min-height: 200px;
-        height: auto;
-    }
+.center-box >>> .CodeMirror-scroll {
+    overflow: scroll !important;
+    min-height: 200px;
+    height: auto;
+}
 
-    .template-checkbox {
-        margin-top: 20px
-    }
+.template-checkbox {
+    margin-top: 20px
+}
 
-    .local-test-result {
-        float: right;
-        margin-right: 20px;
-        margin-top: 10px;
-    }
+.local-test-result {
+    float: right;
+    margin-right: 20px;
+    margin-top: 10px;
+}
 
-    .spj-checkbox {
-        margin-top: 10px;
-        border: 1px solid rgb(233, 233, 235);
-    }
+.spj-checkbox {
+    margin-top: 10px;
+    border: 1px solid rgb(233, 233, 235);
+}
 
-    .local-test-checkbox {
-        margin-top: 10px;
-        border: 1px solid rgb(233, 233, 235);
-    }
+.local-test-checkbox {
+    margin-top: 10px;
+    border: 1px solid rgb(233, 233, 235);
+}
 
-    .page-container {
-        padding: 8px 16px;
-        background-color: #fff6f7;
-        border-radius: 4px;
-        border-left: 5px solid #fe6c6f;
-        margin: 0 0 30px 0;
-    }
+.page-container {
+    padding: 8px 16px;
+    background-color: #fff6f7;
+    border-radius: 4px;
+    border-left: 5px solid #fe6c6f;
+    margin: 0 0 30px 0;
+}
 
-    .dialog >>> .el-form-item__label {
-        text-align: left;
-        vertical-align: middle;
-        float: left;
-        font-size: 14px;
-        min-width: 280px;
-        color: #99a9bf;
-        line-height: 40px;
-        padding: 0 12px 0 0;
-        box-sizing: border-box;
-    }
+.dialog >>> .el-form-item__label {
+    text-align: left;
+    vertical-align: middle;
+    float: left;
+    font-size: 14px;
+    min-width: 280px;
+    color: #99a9bf;
+    line-height: 40px;
+    padding: 0 12px 0 0;
+    box-sizing: border-box;
+}
 
-    .add-button {
-        border: 1px solid rgb(233, 233, 235);
-        border-radius: 5px;
-        margin-top: 30px;
-        text-align: center;
-        height: 40px;
-        line-height: 40px;
-    }
+.add-button {
+    border: 1px solid rgb(233, 233, 235);
+    border-radius: 5px;
+    margin-top: 30px;
+    text-align: center;
+    height: 40px;
+    line-height: 40px;
+}
 
-    .add-button:hover {
-        background-color: #FAFDFF;
-        cursor: pointer;
-    }
+.add-button:hover {
+    background-color: #FAFDFF;
+    cursor: pointer;
+}
 
-    .small-element {
-        margin-top: 20px;
-        margin-left: 10px
-    }
+.small-element {
+    margin-top: 20px;
+    margin-left: 10px
+}
 
-    .slide-fade-enter-active {
-        transition: all 0.8s ease;
-    }
+.slide-fade-enter-active {
+    transition: all 0.8s ease;
+}
 
-    .slide-fade-leave-active {
-        transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
-    }
+.slide-fade-leave-active {
+    transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
 
-    .slide-fade-enter,
-    .slide-fade-leave-to
+.slide-fade-enter,
+.slide-fade-leave-to
 
-        /* .slide-fade-leave-active for below version 2.1.8 */
-    {
-        transform: translateY(40px);
-        opacity: 0;
-    }
+    /* .slide-fade-leave-active for below version 2.1.8 */
+{
+    transform: translateY(40px);
+    opacity: 0;
+}
 </style>

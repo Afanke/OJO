@@ -36,7 +36,9 @@
                 <el-table-column label="TotalTime" align="center" min-width="10">
                     <template slot-scope="scope">
                         <span
-                            v-if="scope.row.totalTime">{{ countDuration(startTime, stringToDate(scope.row.totalTime)) }}</span>
+                            v-if="scope.row.totalTime">{{
+                                countDuration(startTime, stringToDate(scope.row.totalTime))
+                            }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column :label="item.title" min-width="10" v-bind:key="i" v-for="(item, i) in problemList"
@@ -46,9 +48,13 @@
                     </template>
                     <template slot-scope="scope">
                         <span
-                            v-if="scope.row.detail[i].total">{{ countDuration(startTime, scope.row.detail[i].lastSubmitTime) }}</span><br>
+                            v-if="scope.row.detail[i].total">{{
+                                countDuration(startTime, scope.row.detail[i].lastSubmitTime)
+                            }}</span><br>
                         <span
-                            v-if="scope.row.detail[i] && scope.row.detail[i].total-scope.row.detail[i].ac">(-{{ scope.row.detail[i].total - scope.row.detail[i].ac }})</span>
+                            v-if="scope.row.detail[i] && scope.row.detail[i].total-scope.row.detail[i].ac">(-{{
+                                scope.row.detail[i].total - scope.row.detail[i].ac
+                            }})</span>
                     </template>
                 </el-table-column>
             </el-table>
@@ -176,7 +182,6 @@ export default {
             this.loading = false;
         } catch (err) {
             console.log(err);
-            // alert(err);
         }
     },
     methods: {
@@ -198,7 +203,6 @@ export default {
                 this.prepareChart()
             } catch (err) {
                 console.log(err);
-                // alert(err);
             }
         },
         cellStyle(tb) {
@@ -333,7 +337,6 @@ export default {
                 this.rankLoading = false;
             } catch (err) {
                 console.log(err);
-                // alert(err);
             }
         },
         goProblem(val) {
@@ -348,6 +351,10 @@ export default {
         startCountDown() {
             if (this.timeout) {
                 clearTimeout(this.timeout)
+                this.timeout = null
+            }
+            if (!(Number(this.$route.query.c) === 4 && this.$route.query.id)) {
+                return
             }
             let now = new Date();
             if (now < this.updateTime) {
@@ -440,8 +447,10 @@ export default {
         }
     },
     beforeDestroy() {
-        console.log(this.timeout)
-        clearTimeout(this.timeout)
+        if (this.timeout) {
+            clearTimeout(this.timeout)
+            this.timeout = null
+        }
     }
 };
 </script>
@@ -451,7 +460,6 @@ export default {
     width: 100%;
     background-color: #ffffff;
     border-radius: 10px;
-    /* margin-bottom: 20px; */
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 </style>

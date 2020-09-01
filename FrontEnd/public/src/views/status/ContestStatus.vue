@@ -201,7 +201,6 @@ export default {
                 }
             } catch (err) {
                 console.log(err);
-                alert(err)
             }
         }
     },

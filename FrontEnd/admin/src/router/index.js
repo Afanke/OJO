@@ -18,7 +18,7 @@ const ProblemTag = () => import('@/views/problem/Tag.vue');
 
 
 const DashBoard = () => import('@/views/DashBoard.vue');
-// const Test2 = () => import('@/components/Test2.vue');
+
 
 const originalPush = VueRouter.prototype.push;
 VueRouter.prototype.push = function push(location) {
@@ -40,7 +40,6 @@ const routes = [
   { path: '/general/announcement', component: Announcement },
   { path: '/dashboard', component: DashBoard },
   { path: '/', redirect:"/dashboard" }
-  // { path: '/', component:ContestProblemList }
 ];
 
 const router = new VueRouter({

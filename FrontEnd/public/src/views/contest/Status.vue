@@ -4,34 +4,34 @@
             <el-row style="height:60px">
                 <span style="float:left;font-size:20px;margin-left:20px;margin-top:15px">Status</span>
                 <el-button
-                        style="float:right;margin-top:15px;margin-right:20px;"
-                        class="el-icon-refresh"
-                        type="primary"
-                        size="small"
-                        @click="reset">
+                    style="float:right;margin-top:15px;margin-right:20px;"
+                    class="el-icon-refresh"
+                    type="primary"
+                    size="small"
+                    @click="reset">
                     &nbsp;Reset
                 </el-button>
             </el-row>
             <el-row>
                 <el-table
-                        stripe
-                        size="small"
-                        :data="status"
-                        style="width:100%;border-radius:10px"
-                        v-loading="loading">
+                    stripe
+                    size="small"
+                    :data="status"
+                    style="width:100%;border-radius:10px"
+                    v-loading="loading">
                     <el-table-column align="center" label="Submit Time" width="180">
                         <template slot-scope="scope">
                             <i class="el-icon-time"></i>
                             <span style="margin-left: 10px">
-                    {{scope.row.submitTime | formatDateTime}}</span>
+                    {{ scope.row.submitTime | formatDateTime }}</span>
                         </template>
                     </el-table-column>
                     <el-table-column align="center" label="Id" min-width="80">
                         <template slot-scope="scope">
                             <el-link
-                                    type="primary"
-                                    :underline="false"
-                                    @click="gotoResult(scope.row.eid)">
+                                type="primary"
+                                :underline="false"
+                                @click="gotoResult(scope.row.eid)">
                                 {{ scope.row.eid.substring(0, 16) }}
                             </el-link>
                         </template>
@@ -39,8 +39,8 @@
                     <el-table-column align="center" label="Status" min-width="120">
                         <template slot-scope="scope">
                             <el-button
-                                    size="mini"
-                                    :type="scope.row.flag | formatType">
+                                size="mini"
+                                :type="scope.row.flag | formatType">
                                 {{ scope.row.flag | formatFlags }}
                             </el-button>
                         </template>
@@ -48,8 +48,8 @@
                     <el-table-column align="center" label="Problem" min-width="80">
                         <template slot-scope="scope">
                             <el-link
-                                    :underline="false"
-                                    @click="gotoAnswer(scope.row.pid)">
+                                :underline="false"
+                                @click="gotoAnswer(scope.row.pid)">
                                 {{ scope.row.problemName }}
                             </el-link>
                         </template>
@@ -57,7 +57,7 @@
                     <el-table-column align="center" label="Language" min-width="80">
                         <template slot-scope="scope">
                             <span>
-                                {{getLang(scope.row.lid) }}
+                                {{ getLang(scope.row.lid) }}
                             </span>
                         </template>
                         getLang
@@ -69,235 +69,233 @@
         </div>
         <el-row style="margin:20px auto 0">
             <el-pagination
-                    style="float:right;"
-                    hide-on-single-page
-                    background=""
-                    layout="prev, pager, next"
-                    :page-size="pageSize"
-                    @current-change="handlePageChange"
-                    :current-page="page"
-                    :total="count">
+                style="float:right;"
+                hide-on-single-page
+                background=""
+                layout="prev, pager, next"
+                :page-size="pageSize"
+                @current-change="handlePageChange"
+                :current-page="page"
+                :total="count">
             </el-pagination>
         </el-row>
     </div>
 </template>
 <script>
-    export default {
-        created() {
-            this.$bus.emit('changeHeader', '3');
-            this.show = false;
+export default {
+    created() {
+        this.$bus.emit('changeHeader', '3');
+        this.show = false;
+    },
+    async mounted() {
+        this.show = true;
+        this.loading = true;
+        await this.queryList();
+    },
+    data() {
+        return {
+            loading: false,
+            count: 0,
+            page: 1,
+            pageSize: 15,
+            show: false,
+            status: [],
+        };
+    },
+    methods: {
+        getLang(lid) {
+            switch (lid) {
+                case 1:
+                    return "C"
+                case 2:
+                    return "Cpp"
+                case 3:
+                    return "Java"
+                case 4:
+                    return "Python"
+                case 5:
+                    return "Go"
+                default:
+                    this.$message.error("no such language id" + lid)
+                    throw "no such language id"
+            }
         },
-        async mounted() {
-            this.show = true;
+        paramsInit() {
+            if (this.$route.query.page) {
+                this.page = Number(this.$route.query.page);
+            } else {
+                this.page = 1;
+            }
+        },
+        paramsQuery() {
+            let obj = {};
+            if (this.$route.query.page) {
+                obj.page = Number(this.$route.query.page);
+            }
+            if (this.$route.query.c) {
+                obj.c = Number(this.$route.query.c);
+            }
+            if (this.$route.query.id) {
+                obj.id = Number(this.$route.query.id);
+            }
+            return obj;
+        },
+        fresh(obj) {
+            this.$router.push({
+                path: '/contest/detail',
+                query: obj
+            });
+        },
+        reset() {
+            var obj = this.paramsQuery()
+            obj.page = 1
+            this.$router.push({
+                path: '/contest/detail',
+                query: obj
+            });
+        },
+        gotoAnswer(val) {
+            this.$router.push({
+                path: '/contest/answer',
+                query: {cid: this.$route.query.id, pid: Number(val)}
+            });
+        },
+        gotoResult(val) {
+            this.$router.push({
+                path: '/contest/result',
+                query: {id: val}
+            });
+        },
+        handlePageChange(val) {
+            let obj = this.paramsQuery();
+            obj.page = Number(val);
+            this.fresh(obj);
+        },
+        async queryList() {
             this.loading = true;
-            await this.queryList();
-        },
-        data() {
-            return {
-                loading: false,
-                count: 0,
-                page: 1,
-                pageSize:15,
-                show: false,
-                status: [],
-            };
-        },
-        methods: {
-            getLang(lid) {
-                switch (lid) {
-                    case 1:
-                        return "C"
-                    case 2:
-                        return "Cpp"
-                    case 3:
-                        return "Java"
-                    case 4:
-                        return "Python"
-                    case 5:
-                        return "Go"
-                    default:
-                        this.$message.error("no such language id" + lid)
-                        throw "no such language id"
-                }
-            },
-            paramsInit() {
-                if (this.$route.query.page) {
-                    this.page = Number(this.$route.query.page);
+            this.paramsInit();
+            try {
+                const {data: res} = await this.$http.post('/contest/getStatusByCid', {
+                    page: this.page,
+                    cid: Number(this.$route.query.id)
+                });
+                if (res.error) {
+                    this.$message.error(res.error);
+                    return
                 } else {
-                    this.page = 1;
+                    this.status = res.data;
+                    this.loading = false;
                 }
-            },
-            paramsQuery() {
-                let obj = {};
-                if (this.$route.query.page) {
-                    obj.page = Number(this.$route.query.page);
-                }
-                if (this.$route.query.c) {
-                    obj.c = Number(this.$route.query.c);
-                }
-                if (this.$route.query.id) {
-                    obj.id = Number(this.$route.query.id);
-                }
-                return obj;
-            },
-            fresh(obj) {
-                this.$router.push({
-                    path: '/contest/detail',
-                    query: obj
+                const {data: res1} = await this.$http.post('/contest/getStatusCountByCid', {
+                    cid: Number(this.$route.query.id)
                 });
-            },
-            reset() {
-                var obj = this.paramsQuery()
-                obj.page = 1
-                this.$router.push({
-                    path: '/contest/detail',
-                    query: obj
-                });
-            },
-            gotoAnswer(val) {
-                this.$router.push({
-                    path: '/contest/answer',
-                    query: {cid: this.$route.query.id, pid: Number(val)}
-                });
-            },
-            gotoResult(val) {
-                this.$router.push({
-                    path: '/contest/result',
-                    query: {id: val}
-                });
-            },
-            handlePageChange(val) {
-                let obj = this.paramsQuery();
-                obj.page = Number(val);
-                this.fresh(obj);
-            },
-            async queryList() {
-                this.loading = true;
-                this.paramsInit();
-                try {
-                    const {data: res} = await this.$http.post('/contest/getStatusByCid', {
-                        page: this.page,
-                        cid: Number(this.$route.query.id)
-                    });
-                    if (res.error) {
-                        this.$message.error(res.error);
-                        return
-                    } else {
-                        this.status = res.data;
-                        this.loading = false;
-                    }
-                    const {data: res1} = await this.$http.post('/contest/getStatusCountByCid', {
-                        cid: Number(this.$route.query.id)
-                    });
-                    if (res1.error) {
-                        this.$message.error(res1.error);
-                    } else {
-                        this.count = res1.data;
-                    }
-                } catch (err) {
-                    console.log(err);
-                    // alert(err)
+                if (res1.error) {
+                    this.$message.error(res1.error);
+                } else {
+                    this.count = res1.data;
                 }
-
-            }
-        },
-        watch: {
-            $route() {
-                this.queryList();
-            }
-        },
-        components: {},
-        filters: {
-            formatDateTime: function (value) {
-                let d = new Date(value);
-                return d.getFullYear() +
-                    '-' +
-                    (d.getMonth() + 1 < 10 ? '0' + (d.getMonth() + 1) : d.getMonth() + 1) +
-                    '-' +
-                    (d.getDate() < 10 ? '0' + d.getDate() : d.getDate()) +
-                    ' ' +
-                    (d.getHours() < 10 ? '0' + d.getDate() : d.getDate()) +
-                    ':' +
-                    (d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes()) +
-                    ':' +
-                    (d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds());
-            },
-            formatFlags: function (value) {
-                switch (value) {
-                    case 'RE':
-                        return 'Runtime Error';
-                    case 'CE':
-                        return 'Compile Error';
-                    case 'WA':
-                        return 'Wrong Answer';
-                    case 'ISE':
-                        return 'Internal Server Error';
-                    case 'TLE':
-                        return 'Time Limit Exceeded';
-                    case 'MLE':
-                        return 'Memory Limit Exceeded';
-                    case 'OLE':
-                        return 'Output Limit Exceeded';
-                    case 'PA':
-                        return 'Partial Accepted';
-                    case 'JUG':
-                        return 'Judging';
-                    case 'Pending':
-                        return 'Pending';
-                    case 'AC':
-                        return 'Accepted';
-                }
-            },
-            formatType: function (value) {
-                switch (value) {
-                    case 'RE':
-                    case 'WA':
-                    case 'ISE':
-                        return 'danger';
-                    case 'TLE':
-                    case 'MLE':
-                    case 'OLE':
-                    case 'CE':
-                        return 'warning';
-                    case 'PA':
-                    case 'JUG':
-                        return 'primary';
-                    case 'AC':
-                        return 'success';
-                }
+            } catch (err) {
+                console.log(err);
             }
         }
-    };
+    },
+    watch: {
+        $route() {
+            this.queryList();
+        }
+    },
+    components: {},
+    filters: {
+        formatDateTime: function (value) {
+            let d = new Date(value);
+            return d.getFullYear() +
+                '-' +
+                (d.getMonth() + 1 < 10 ? '0' + (d.getMonth() + 1) : d.getMonth() + 1) +
+                '-' +
+                (d.getDate() < 10 ? '0' + d.getDate() : d.getDate()) +
+                ' ' +
+                (d.getHours() < 10 ? '0' + d.getDate() : d.getDate()) +
+                ':' +
+                (d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes()) +
+                ':' +
+                (d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds());
+        },
+        formatFlags: function (value) {
+            switch (value) {
+                case 'RE':
+                    return 'Runtime Error';
+                case 'CE':
+                    return 'Compile Error';
+                case 'WA':
+                    return 'Wrong Answer';
+                case 'ISE':
+                    return 'Internal Server Error';
+                case 'TLE':
+                    return 'Time Limit Exceeded';
+                case 'MLE':
+                    return 'Memory Limit Exceeded';
+                case 'OLE':
+                    return 'Output Limit Exceeded';
+                case 'PA':
+                    return 'Partial Accepted';
+                case 'JUG':
+                    return 'Judging';
+                case 'Pending':
+                    return 'Pending';
+                case 'AC':
+                    return 'Accepted';
+            }
+        },
+        formatType: function (value) {
+            switch (value) {
+                case 'RE':
+                case 'WA':
+                case 'ISE':
+                    return 'danger';
+                case 'TLE':
+                case 'MLE':
+                case 'OLE':
+                case 'CE':
+                    return 'warning';
+                case 'PA':
+                case 'JUG':
+                    return 'primary';
+                case 'AC':
+                    return 'success';
+            }
+        }
+    }
+};
 </script>
 
 <style scoped>
-    .center-box {
-        margin: 0 auto;
-        width: 100%;
-        background-color: #ffffff;
-        border-radius: 10px;
-        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-    }
+.center-box {
+    margin: 0 auto;
+    width: 100%;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
 
-    .el-col {
-        text-align: center;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+.el-col {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-    .slide-fade-enter-active {
-        transition: all 0.8s ease;
-    }
+.slide-fade-enter-active {
+    transition: all 0.8s ease;
+}
 
-    .slide-fade-leave-active {
-        transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
-    }
+.slide-fade-leave-active {
+    transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
 
-    .slide-fade-enter, .slide-fade-leave-to
-        /* .slide-fade-leave-active for below version 2.1.8 */
-    {
-        transform: translateY(40px);
-        opacity: 0;
-    }
+.slide-fade-enter, .slide-fade-leave-to
+    /* .slide-fade-leave-active for below version 2.1.8 */
+{
+    transform: translateY(40px);
+    opacity: 0;
+}
 </style>

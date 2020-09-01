@@ -6,43 +6,42 @@
                     <span style="font-size:20px;margin-left:20px">Judge Server</span>
                 </el-row>
                 <el-table
-                        :data="judgeServer"
-                        style="width: 100%">
+                    :data="judgeServer"
+                    style="width: 100%">
                     <el-table-column
-                            label="#"
-                            type="index"
-                            width="60"
-                            align="center"
-                    >
+                        label="#"
+                        type="index"
+                        width="60"
+                        align="center">
                     </el-table-column>
                     <el-table-column
-                            prop="name"
-                            label="Name"
-                            align="center"
-                            min-width="100">
+                        prop="name"
+                        label="Name"
+                        align="center"
+                        min-width="100">
                     </el-table-column>
                     <el-table-column
-                            prop="address"
-                            label="Address"
-                            align="center"
-                            min-width="60">
+                        prop="address"
+                        label="Address"
+                        align="center"
+                        min-width="60">
                     </el-table-column>
                     <el-table-column
-                            prop="port"
-                            label="Port"
-                            align="center"
-                            min-width="60">
+                        prop="port"
+                        label="Port"
+                        align="center"
+                        min-width="60">
                     </el-table-column>
                     <el-table-column
-                            prop="weight"
-                            label="Weight"
-                            align="center"
-                            min-width="60">
+                        prop="weight"
+                        label="Weight"
+                        align="center"
+                        min-width="60">
                     </el-table-column>
                     <el-table-column
-                            label="State"
-                            align="center"
-                            min-width="100">
+                        label="State"
+                        align="center"
+                        min-width="100">
                         <template slot-scope="scope">
                             <el-button v-if="scope.row.connected&&scope.row.enabled" size="mini" type="success" plain>
                                 Connected
@@ -50,7 +49,7 @@
                             <el-button v-if="!scope.row.enabled" size="mini" type="danger" plain>Disabled</el-button>
                             <el-button v-if="!scope.row.connected&&scope.row.enabled&&scope.row.message" size="mini"
                                        type="warning" plain>
-                                {{scope.row.message}}
+                                {{ scope.row.message }}
                             </el-button>
                             <el-button v-if="!scope.row.connected&&scope.row.enabled&&!scope.row.message" size="mini"
                                        type="warning" plain>
@@ -59,9 +58,9 @@
                         </template>
                     </el-table-column>
                     <el-table-column
-                            label="Enabled"
-                            align="center"
-                            min-width="60">
+                        label="Enabled"
+                        align="center"
+                        min-width="60">
                         <template slot-scope="scope">
                             <el-switch @change="switchEnabled(scope.row)" v-model="scope.row.enabled"
                                        active-color="#409eff" inactive-color="#dcdfe6">
@@ -212,259 +211,252 @@
 
 </template>
 <script>
-    export default {
-        data() {
-            return {
-                show: false,
-                judgeServer: [],
-                timeout: null,
-                createVisible: false,
-                editVisible: false,
-                addForm: {
-                    address: "",
-                    connected: false,
-                    enabled: false,
-                    id: 0,
-                    name: "",
-                    password: "",
-                    port: "",
-                    weight: 1,
-                },
-                editForm: {
-                    address: "",
-                    connected: false,
-                    enabled: false,
-                    id: 0,
-                    name: "",
-                    password: "",
-                    port: "",
-                    weight: 1,
-                },
-            }
-        },
-        beforeDestroy() {
-            clearTimeout(this.timeout)
-        },
-        created() {
-            this.$bus.emit("changeHeader", "2-3")
-            this.show = false
-        },
-        mounted() {
-            this.show = true
-            this.getAllInfo()
-        },
+export default {
+    data() {
+        return {
+            show: false,
+            judgeServer: [],
+            timeout: null,
+            createVisible: false,
+            editVisible: false,
+            addForm: {
+                address: "",
+                connected: false,
+                enabled: false,
+                id: 0,
+                name: "",
+                password: "",
+                port: "",
+                weight: 1,
+            },
+            editForm: {
+                address: "",
+                connected: false,
+                enabled: false,
+                id: 0,
+                name: "",
+                password: "",
+                port: "",
+                weight: 1,
+            },
+        }
+    },
+    beforeDestroy() {
+        clearTimeout(this.timeout)
+    },
+    created() {
+        this.$bus.emit("changeHeader", "2-3")
+        this.show = false
+    },
+    mounted() {
+        this.show = true
+        this.getAllInfo()
+    },
 
-        methods: {
-            check(obj) {
-                if (obj.name === "") {
-                    this.$message.error("name can't be empty")
-                    return false
-                }
-                if (obj.address === "") {
-                    this.$message.error("address can't be empty")
-                    return false
-                }
-                if (obj.port === "") {
-                    this.$message.error("port can't be empty")
-                    return false
-                }
-                return true
-            },
-            edit(obj) {
-                this.editForm = obj
-                this.editVisible = true
-            },
-            async getAllInfo() {
-                try {
-                    const {
-                        data: res
-                    } = await this.$http.get('/admin/jsp/getAllInfo');
-                    if (res.error) {
-                        this.$message.error(res.error)
-                    } else {
-                        this.judgeServer = res.data
-                        this.timeout = setTimeout(
-                            this.getAllInfo
-                            , 5000);
-                    }
-                } catch (err) {
-                    console.log(err);
-                    alert(err)
-                }
-            },
-            async add() {
-                try {
-                    if (!this.check(this.addForm)) {
-                        return
-                    }
-                    this.addForm.port = Number(this.addForm.port)
-                    const {
-                        data: res
-                    } = await this.$http.post('/admin/jsp/addJudgeServer',
-                        this.addForm);
-                    if (res.error) {
-                        this.$message.error(res.error)
-                    } else {
-                        clearTimeout(this.timeout)
-                        await this.getAllInfo()
-                        this.createVisible = false
-                        this.handleCreateClose()
-                        this.$message.success("save successfully")
-                    }
-                } catch (err) {
-                    console.log(err);
-                    alert(err)
-                }
-            },
-            async del(id) {
-                try {
-                    const {
-                        data: res
-                    } = await this.$http.post('/admin/jsp/deleteJudgeServer',
-                        {
-                            id: Number(id)
-                        });
-                    if (res.error) {
-                        this.$message.error(res.error)
-                    } else {
-                        clearTimeout(this.timeout)
-                        await this.getAllInfo()
-                        this.$message.success("delete successfully")
-                    }
-                } catch (err) {
-                    console.log(err);
-                    alert(err)
-                }
-            },
-            async update() {
-                try {
-                    if (!this.check(this.editForm)) {
-                        return
-                    }
-                    this.editForm.port = Number(this.editForm.port)
-                    const {
-                        data: res
-                    } = await this.$http.post('/admin/jsp/updateJudgeServer',
-                        this.editForm);
-                    if (res.error) {
-                        this.$message.error(res.error)
-                    } else {
-                        clearTimeout(this.timeout)
-                        await this.getAllInfo()
-                        this.editVisible = false
-                        this.handleEditClose()
-                        this.$message.success("update successfully")
-                    }
-                } catch (err) {
-                    console.log(err);
-                    alert(err)
-                }
-            },
-            async switchEnabled(obj) {
-                console.log(obj)
-                if (obj.enabled) {
-                    try {
-                        const {
-                            data: res
-                        } = await this.$http.post('/admin/jsp/setEnabledTrue', {
-                            id: obj.id
-                        });
-                        if (res.error) {
-                            this.$message.error(res.error)
-                            obj.enabled = false
-                            return
-                        }
-                        obj.enabled = true
-                    } catch (err) {
-                        console.log(err);
-                        // alert(err)
-                    }
+    methods: {
+        check(obj) {
+            if (obj.name === "") {
+                this.$message.error("name can't be empty")
+                return false
+            }
+            if (obj.address === "") {
+                this.$message.error("address can't be empty")
+                return false
+            }
+            if (obj.port === "") {
+                this.$message.error("port can't be empty")
+                return false
+            }
+            return true
+        },
+        edit(obj) {
+            this.editForm = obj
+            this.editVisible = true
+        },
+        async getAllInfo() {
+            try {
+                const {
+                    data: res
+                } = await this.$http.get('/admin/jsp/getAllInfo');
+                if (res.error) {
+                    this.$message.error(res.error)
                 } else {
-                    try {
-                        const {
-                            data: res
-                        } = await this.$http.post('/admin/jsp/setEnabledFalse', {
-                            id: obj.id
-                        });
-                        if (res.error) {
-                            this.$message.error(res.error)
-                            obj.enabled = true
-                            return
-                        }
-                        obj.enabled = false
-                    } catch (err) {
-                        console.log(err);
-                        // alert(err)
-                    }
+                    this.judgeServer = res.data
+                    this.timeout = setTimeout(
+                        this.getAllInfo
+                        , 5000);
                 }
-            },
-            handleCreateClose(done) {
-                this.addForm = {
-                    address: "",
-                    enabled: false,
-                    id: 0,
-                    name: "",
-                    password: "",
-                    port: 2333,
-                    weight: 1,
-                }
-                if (done) {
-                    done()
-                }
-            },
-            handleEditClose(done) {
-                this.editForm = {
-                    address: "",
-                    enabled: false,
-                    id: 0,
-                    name: "",
-                    password: "",
-                    port: "",
-                    weight: 1,
-                }
-                if (done) {
-                    done()
-                }
-            },
-            shallowCopy(src) {
-                const dst = {};
-                for (const prop in src) {
-                    if (src.hasOwnProperty(prop)) {
-                        dst[prop] = src[prop];
-                    }
-                }
-                return dst;
+            } catch (err) {
+                console.log(err);
             }
         },
-        components: {}
-    };
+        async add() {
+            try {
+                if (!this.check(this.addForm)) {
+                    return
+                }
+                this.addForm.port = Number(this.addForm.port)
+                const {
+                    data: res
+                } = await this.$http.post('/admin/jsp/addJudgeServer',
+                    this.addForm);
+                if (res.error) {
+                    this.$message.error(res.error)
+                } else {
+                    clearTimeout(this.timeout)
+                    await this.getAllInfo()
+                    this.createVisible = false
+                    this.handleCreateClose()
+                    this.$message.success("save successfully")
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        },
+        async del(id) {
+            try {
+                const {
+                    data: res
+                } = await this.$http.post('/admin/jsp/deleteJudgeServer',
+                    {
+                        id: Number(id)
+                    });
+                if (res.error) {
+                    this.$message.error(res.error)
+                } else {
+                    clearTimeout(this.timeout)
+                    await this.getAllInfo()
+                    this.$message.success("delete successfully")
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        },
+        async update() {
+            try {
+                if (!this.check(this.editForm)) {
+                    return
+                }
+                this.editForm.port = Number(this.editForm.port)
+                const {
+                    data: res
+                } = await this.$http.post('/admin/jsp/updateJudgeServer',
+                    this.editForm);
+                if (res.error) {
+                    this.$message.error(res.error)
+                } else {
+                    clearTimeout(this.timeout)
+                    await this.getAllInfo()
+                    this.editVisible = false
+                    this.handleEditClose()
+                    this.$message.success("update successfully")
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        },
+        async switchEnabled(obj) {
+            if (obj.enabled) {
+                try {
+                    const {
+                        data: res
+                    } = await this.$http.post('/admin/jsp/setEnabledTrue', {
+                        id: obj.id
+                    });
+                    if (res.error) {
+                        this.$message.error(res.error)
+                        obj.enabled = false
+                        return
+                    }
+                    obj.enabled = true
+                } catch (err) {
+                    console.log(err);
+                }
+            } else {
+                try {
+                    const {
+                        data: res
+                    } = await this.$http.post('/admin/jsp/setEnabledFalse', {
+                        id: obj.id
+                    });
+                    if (res.error) {
+                        this.$message.error(res.error)
+                        obj.enabled = true
+                        return
+                    }
+                    obj.enabled = false
+                } catch (err) {
+                    console.log(err);
+                }
+            }
+        },
+        handleCreateClose(done) {
+            this.addForm = {
+                address: "",
+                enabled: false,
+                id: 0,
+                name: "",
+                password: "",
+                port: 2333,
+                weight: 1,
+            }
+            if (done) {
+                done()
+            }
+        },
+        handleEditClose(done) {
+            this.editForm = {
+                address: "",
+                enabled: false,
+                id: 0,
+                name: "",
+                password: "",
+                port: "",
+                weight: 1,
+            }
+            if (done) {
+                done()
+            }
+        },
+        shallowCopy(src) {
+            const dst = {};
+            for (const prop in src) {
+                if (src.hasOwnProperty(prop)) {
+                    dst[prop] = src[prop];
+                }
+            }
+            return dst;
+        }
+    },
+    components: {}
+};
 </script>
 
 <style scoped>
 
 
-    .center-box {
-        background-color: #ffffff;
-        border-radius: 10px;
-        /* min-height: 600px; */
-        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-    }
+.center-box {
+    background-color: #ffffff;
+    border-radius: 10px;
+    /* min-height: 600px; */
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
 
 
-    .slide-fade-enter-active {
-        transition: all 0.8s ease;
-    }
+.slide-fade-enter-active {
+    transition: all 0.8s ease;
+}
 
-    .slide-fade-leave-active {
-        transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
-    }
+.slide-fade-leave-active {
+    transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
 
-    .slide-fade-enter,
-    .slide-fade-leave-to
+.slide-fade-enter,
+.slide-fade-leave-to
 
-        /* .slide-fade-leave-active for below version 2.1.8 */
-    {
-        transform: translateY(40px);
-        opacity: 0;
-    }
+    /* .slide-fade-leave-active for below version 2.1.8 */
+{
+    transform: translateY(40px);
+    opacity: 0;
+}
 </style>

@@ -25,7 +25,8 @@
                             <span style="color:red">*</span>
                             <span>&nbsp;Start Time</span>
                             <el-row class="small-element">
-                                <el-date-picker :disabled="isStarted" v-model="startTime" type="datetime" placeholder="Start Time">
+                                <el-date-picker :disabled="isStarted" v-model="startTime" type="datetime"
+                                                placeholder="Start Time">
                                 </el-date-picker>
                             </el-row>
                         </el-col>
@@ -41,8 +42,11 @@
                             <span style="color:red">*</span>
                             <span>&nbsp;Password</span>
                             <el-row class="small-element">
-                                <el-button type="primary" v-if="!changePassword" @click="changePassword=true">Change Password</el-button>
-                                <el-input v-if="changePassword" placeholder="Password" v-model="password" show-password clearable></el-input>
+                                <el-button type="primary" v-if="!changePassword" @click="changePassword=true">Change
+                                    Password
+                                </el-button>
+                                <el-input v-if="changePassword" placeholder="Password" v-model="password" show-password
+                                          clearable></el-input>
                             </el-row>
                         </el-col>
                     </el-row>
@@ -60,7 +64,8 @@
                             <!--              <span v-if="rule==='OI'">&nbsp;Punish Score</span>-->
                             <span v-if="rule==='ACM'">&nbsp;Punish Time (second)</span>
                             <el-row class="small-element">
-                                <el-input-number :disabled="isStarted" v-model="punish" controls-position="right" :min="0"></el-input-number>
+                                <el-input-number :disabled="isStarted" v-model="punish" controls-position="right"
+                                                 :min="0"></el-input-number>
                             </el-row>
                         </el-col>
                         <el-col :span="7" :offset="1">
@@ -107,9 +112,10 @@
                             <el-input style="width:40%" placeholder="Address" v-model="item.address" clearable>
                             </el-input>
                             <span style="margin: 0 10px;font-size: 20px;color:#5c6065;opacity: 0.3">/</span>
-                            <el-input style="width:20%;"  placeholder="Mask" v-model="item.mask" clearable>
+                            <el-input style="width:20%;" placeholder="Mask" v-model="item.mask" clearable>
                             </el-input>
-                            <el-button plain style="float:right;margin-left:11px" icon="el-icon-minus" @click="deleteIPRange(index)"></el-button>
+                            <el-button plain style="float:right;margin-left:11px" icon="el-icon-minus"
+                                       @click="deleteIPRange(index)"></el-button>
                             <el-button plain style="float:right;" icon="el-icon-plus" @click="addIPRange"></el-button>
                         </el-row>
                     </el-row>
@@ -124,244 +130,242 @@
     </div>
 </template>
 <script>
-    import Editor from '@/components/Editor'
+import Editor from '@/components/Editor'
 
-    export default {
-        data() {
-            return {
-                id:0,
-                isStarted:false,
-                changePassword:false,
-                show: false,
-                input: "",
-                title: '',
-                password: "",
-                startTime: new Date(),
-                endTime: new Date(),
-                now: new Date(),
-                description: '',
-                visible: false,
-                rule: "OI",
-                showOutput: false,
-                showRank: false,
-                submitLimit: 0,
-                punish: 0,
-                IPRange: [{
-                    address: "",
-                    mask: "",
-                }]
-            }
-        },
-        created() {
-            this.$bus.emit("changeHeader", "4-1")
-            this.show = false
-        },
-        mounted() {
-            this.query()
-        },
-        methods: {
-            check() {
-                for (let i = 0; i < this.IPRange.length; i++) {
-                    if (this.IPRange[i].address === "" && this.IPRange[i].mask==="") {
-                        this.IPRange[i].address="0.0.0.0"
-                        this.IPRange[i].mask=0
-                        continue
-                    }
-                    if (/^\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}$/.test(this.IPRange[i].address)) {
-                        if (/^\d{1,2}$/.test(this.IPRange[i].mask)) {
-                            let mask = Number(this.IPRange[i].mask)
-                            if (mask >= 0 && mask <= 32) {
-                                this.IPRange[i].mask=mask
-                                continue
-                            }
+export default {
+    data() {
+        return {
+            id: 0,
+            isStarted: false,
+            changePassword: false,
+            show: false,
+            input: "",
+            title: '',
+            password: "",
+            startTime: new Date(),
+            endTime: new Date(),
+            now: new Date(),
+            description: '',
+            visible: false,
+            rule: "OI",
+            showOutput: false,
+            showRank: false,
+            submitLimit: 0,
+            punish: 0,
+            IPRange: [{
+                address: "",
+                mask: "",
+            }]
+        }
+    },
+    created() {
+        this.$bus.emit("changeHeader", "4-1")
+        this.show = false
+    },
+    mounted() {
+        this.query()
+    },
+    methods: {
+        check() {
+            for (let i = 0; i < this.IPRange.length; i++) {
+                if (this.IPRange[i].address === "" && this.IPRange[i].mask === "") {
+                    this.IPRange[i].address = "0.0.0.0"
+                    this.IPRange[i].mask = 0
+                    continue
+                }
+                if (/^\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}$/.test(this.IPRange[i].address)) {
+                    if (/^\d{1,2}$/.test(this.IPRange[i].mask)) {
+                        let mask = Number(this.IPRange[i].mask)
+                        if (mask >= 0 && mask <= 32) {
+                            this.IPRange[i].mask = mask
+                            continue
                         }
                     }
-                    this.$message.error("ip range " + (i + 1) + " is not legal")
-                    return false
                 }
-                if (this.title === "") {
-                    this.$message.error("title is required")
-                    return false
-                }
-                if (this.description === "") {
-                    this.$message.error("description is required")
-                    return false
-                }
-                if (this.endTime.getTime()<=this.startTime.getTime()) {
-                    this.$message.error("End time cannot be earlier than or equal to start time")
-                    return false
-                }
-                return true
-            },
-            goBack() {
-                this.$router.go(-1)
-            },
-            async query() {
-                try {
-                    const {
-                        data: res
-                    } = await this.$http.post('/admin/contest/getDetail', {
-                        id: Number(this.$route.query.id)
-                    });
-                    if (res.error) {
-                        this.$message.error(res.error)
-                        return
-                    }
-                    this.id=res.data.id
-                    this.title = res.data.title
-                    this.password = res.data.password
-                    this.startTime = this.stringToDate(res.data.startTime)
-                    this.endTime = this.stringToDate(res.data.endTime)
-                    this.now = this.stringToDate(res.data.now)
-                    this.description = res.data.description
-                    this.visible = res.data.visible
-                    this.rule = res.data.rule
-                    this.submitLimit = res.data.submitLimit
-                    this.punish = res.data.punish
-                    this.showOutput = res.data.showOutput
-                    this.showRank = res.data.showRank
-                    this.IPRange = res.data.IPLimit
-                    this.isStarted=this.now.getTime()>this.startTime.getTime()
-                    this.show = true
-                } catch (err) {
-                    console.log(err);
-                    alert(err)
-                }
-            },
-            stringToDate(str) {
-                let tempStrs = str.split(" ");
-                let dateStrs = tempStrs[0].split("-");
-                let year = parseInt(dateStrs[0], 10);
-                let month = parseInt(dateStrs[1], 10) - 1;
-                let day = parseInt(dateStrs[2], 10);
-                let timeStrs = tempStrs[1].split(":");
-                let hour = parseInt(timeStrs[0], 10);
-                let minute = parseInt(timeStrs[1], 10);
-                let second = parseInt(timeStrs[2], 10);
-                return new Date(year, month, day, hour, minute, second);
-            },
-            async save() {
-                if (!this.check()) {
-                    return
-                }
-                let obj = {
-                    id:this.id,
-                    changePassword:this.changePassword,
-                    title: this.title,
-                    password: this.password,
-                    startTime: this.dateFormat("YYYY-mm-dd HH:MM:SS", this.startTime),
-                    endTime: this.dateFormat("YYYY-mm-dd HH:MM:SS", this.endTime),
-                    description: this.description,
-                    visible: this.visible,
-                    rule: this.rule,
-                    submitLimit: this.submitLimit,
-                    punish: this.punish,
-                    showRank:this.showRank,
-                    showOutput:this.showOutput,
-                    IPLimit: this.IPRange,
-                }
-                try {
-                    const {
-                        data: res
-                    } = await this.$http.post('/admin/contest/updateContest', obj);
-                    if (res.error) {
-                        this.$message.error(res.error)
-                        return
-                    }
-                    this.$message({
-                        message: res.data,
-                        type: 'success'
-                    });
-                    await this.$router.push("/contest")
-                } catch (err) {
-                    console.log(err);
-                    alert(err)
-                }
-            },
-            dateFormat(fmt, date) {
-                let ret;
-                const opt = {
-                    "Y+": date.getFullYear().toString(), // 年
-                    "m+": (date.getMonth() + 1).toString(), // 月
-                    "d+": date.getDate().toString(), // 日
-                    "H+": date.getHours().toString(), // 时
-                    "M+": date.getMinutes().toString(), // 分
-                    "S+": date.getSeconds().toString() // 秒
-                    // 有其他格式化字符需求可以继续添加，必须转化成字符串
-                };
-                for (let k in opt) {
-                    ret = new RegExp("(" + k + ")").exec(fmt);
-                    if (ret) {
-                        fmt = fmt.replace(ret[1], (ret[1].length === 1) ? (opt[k]) : (opt[k].padStart(ret[1].length, "0")))
-                    }
-                }
-                return fmt;
-            },
-            addIPRange() {
-                this.IPRange.push({
-                    address: "",
-                    mask: "",
-                })
-            },
-            deleteIPRange(index) {
-                if (this.IPRange.length === 1) {
-                    this.$message.error("At least one is needed. If you don't want any ip limit, just keep it empty")
-                    return
-                }
-                this.IPRange.splice(index, 1);
-            },
+                this.$message.error("ip range " + (i + 1) + " is not legal")
+                return false
+            }
+            if (this.title === "") {
+                this.$message.error("title is required")
+                return false
+            }
+            if (this.description === "") {
+                this.$message.error("description is required")
+                return false
+            }
+            if (this.endTime.getTime() <= this.startTime.getTime()) {
+                this.$message.error("End time cannot be earlier than or equal to start time")
+                return false
+            }
+            return true
         },
-        components: {
-            editor: Editor
-        }
-    };
+        goBack() {
+            this.$router.go(-1)
+        },
+        async query() {
+            try {
+                const {
+                    data: res
+                } = await this.$http.post('/admin/contest/getDetail', {
+                    id: Number(this.$route.query.id)
+                });
+                if (res.error) {
+                    this.$message.error(res.error)
+                    return
+                }
+                this.id = res.data.id
+                this.title = res.data.title
+                this.password = res.data.password
+                this.startTime = this.stringToDate(res.data.startTime)
+                this.endTime = this.stringToDate(res.data.endTime)
+                this.now = this.stringToDate(res.data.now)
+                this.description = res.data.description
+                this.visible = res.data.visible
+                this.rule = res.data.rule
+                this.submitLimit = res.data.submitLimit
+                this.punish = res.data.punish
+                this.showOutput = res.data.showOutput
+                this.showRank = res.data.showRank
+                this.IPRange = res.data.IPLimit
+                this.isStarted = this.now.getTime() > this.startTime.getTime()
+                this.show = true
+            } catch (err) {
+                console.log(err);
+            }
+        },
+        stringToDate(str) {
+            let tempStrs = str.split(" ");
+            let dateStrs = tempStrs[0].split("-");
+            let year = parseInt(dateStrs[0], 10);
+            let month = parseInt(dateStrs[1], 10) - 1;
+            let day = parseInt(dateStrs[2], 10);
+            let timeStrs = tempStrs[1].split(":");
+            let hour = parseInt(timeStrs[0], 10);
+            let minute = parseInt(timeStrs[1], 10);
+            let second = parseInt(timeStrs[2], 10);
+            return new Date(year, month, day, hour, minute, second);
+        },
+        async save() {
+            if (!this.check()) {
+                return
+            }
+            let obj = {
+                id: this.id,
+                changePassword: this.changePassword,
+                title: this.title,
+                password: this.password,
+                startTime: this.dateFormat("YYYY-mm-dd HH:MM:SS", this.startTime),
+                endTime: this.dateFormat("YYYY-mm-dd HH:MM:SS", this.endTime),
+                description: this.description,
+                visible: this.visible,
+                rule: this.rule,
+                submitLimit: this.submitLimit,
+                punish: this.punish,
+                showRank: this.showRank,
+                showOutput: this.showOutput,
+                IPLimit: this.IPRange,
+            }
+            try {
+                const {
+                    data: res
+                } = await this.$http.post('/admin/contest/updateContest', obj);
+                if (res.error) {
+                    this.$message.error(res.error)
+                    return
+                }
+                this.$message({
+                    message: res.data,
+                    type: 'success'
+                });
+                await this.$router.push("/contest")
+            } catch (err) {
+                console.log(err);
+            }
+        },
+        dateFormat(fmt, date) {
+            let ret;
+            const opt = {
+                "Y+": date.getFullYear().toString(), // 年
+                "m+": (date.getMonth() + 1).toString(), // 月
+                "d+": date.getDate().toString(), // 日
+                "H+": date.getHours().toString(), // 时
+                "M+": date.getMinutes().toString(), // 分
+                "S+": date.getSeconds().toString() // 秒
+                // 有其他格式化字符需求可以继续添加，必须转化成字符串
+            };
+            for (let k in opt) {
+                ret = new RegExp("(" + k + ")").exec(fmt);
+                if (ret) {
+                    fmt = fmt.replace(ret[1], (ret[1].length === 1) ? (opt[k]) : (opt[k].padStart(ret[1].length, "0")))
+                }
+            }
+            return fmt;
+        },
+        addIPRange() {
+            this.IPRange.push({
+                address: "",
+                mask: "",
+            })
+        },
+        deleteIPRange(index) {
+            if (this.IPRange.length === 1) {
+                this.$message.error("At least one is needed. If you don't want any ip limit, just keep it empty")
+                return
+            }
+            this.IPRange.splice(index, 1);
+        },
+    },
+    components: {
+        editor: Editor
+    }
+};
 </script>
 
 <style scoped>
-    .center-box {
-        width: 100%;
-        background-color: #ffffff;
-        border-radius: 10px;
-        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-    }
+.center-box {
+    width: 100%;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
 
-    .center-box >>> .w-e-text {
-        overflow: visible !important
-    }
+.center-box >>> .w-e-text {
+    overflow: visible !important
+}
 
-    #add-button {
-        border: 1px solid rgb(233, 233, 235);
-        border-radius: 5px;
-        margin-top: 30px;
-        text-align: center;
-        height: 40px;
-        line-height: 40px;
-    }
+#add-button {
+    border: 1px solid rgb(233, 233, 235);
+    border-radius: 5px;
+    margin-top: 30px;
+    text-align: center;
+    height: 40px;
+    line-height: 40px;
+}
 
-    #add-button:hover {
-        background-color: #FAFDFF;
-        cursor: pointer;
-    }
+#add-button:hover {
+    background-color: #FAFDFF;
+    cursor: pointer;
+}
 
-    .small-element {
-        margin-top: 20px;
-        margin-left: 10px
-    }
+.small-element {
+    margin-top: 20px;
+    margin-left: 10px
+}
 
-    .slide-fade-enter-active {
-        transition: all 0.8s ease;
-    }
+.slide-fade-enter-active {
+    transition: all 0.8s ease;
+}
 
-    .slide-fade-leave-active {
-        transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
-    }
+.slide-fade-leave-active {
+    transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
 
-    .slide-fade-enter,
-    .slide-fade-leave-to
+.slide-fade-enter,
+.slide-fade-leave-to
 
-        /* .slide-fade-leave-active for below version 2.1.8 */
-    {
-        transform: translateY(40px);
-        opacity: 0;
-    }
+    /* .slide-fade-leave-active for below version 2.1.8 */
+{
+    transform: translateY(40px);
+    opacity: 0;
+}
 </style>h
