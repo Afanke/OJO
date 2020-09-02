@@ -174,6 +174,7 @@ func (Practice) GetAllStatus(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
+	fmt.Printf("%v\n", userId)
 	data, err := pctdb.GetAllStatus(userId, form.Offset, form.Limit)
 	if err != nil {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})

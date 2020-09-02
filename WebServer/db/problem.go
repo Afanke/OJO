@@ -657,6 +657,16 @@ func (Problem) DeleteProblem(pid int64) error {
 		}
 		return err
 	}
+	s = "delete from ojo.practice_submission where pid=?"
+	_, err = tx.Exec(s, pid)
+	if err != nil {
+		log.Warn("%v", err)
+		err2 := tx.Rollback()
+		if err2 != nil {
+			log.Warn("%v", err2)
+		}
+		return err
+	}
 	err = pb.DeleteProblemCase(tx, pid)
 	if err != nil {
 		log.Warn("%v", err)
