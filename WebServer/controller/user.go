@@ -121,7 +121,7 @@ func (User) UploadImg(c iris.Context) {
 	}
 	defer file.Close()
 	if info.Size > ImgMaxSize {
-		c.JSON(&dto.Res{Error: errors.New("file to large").Error(), Data: nil})
+		c.JSON(&dto.Res{Error: errors.New("file too large").Error(), Data: nil})
 		return
 	}
 	bytes, err := ioutil.ReadAll(file)
@@ -129,7 +129,7 @@ func (User) UploadImg(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	path := "/img/data/" + strconv.Itoa(int(userId)) + "_" +
+	path := "/img/user/" + strconv.Itoa(int(userId)) + "_" +
 		time.Now().Format("2006_01_02_15_04_05") + "_" + info.Filename
 	err = ioutil.WriteFile("./dist"+path, bytes, 0666)
 	if err != nil {

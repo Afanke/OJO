@@ -38,7 +38,7 @@
                     </el-table-column>
                     <el-table-column label="Display Id" prop="ref" align="center" min-width="30">
                     </el-table-column>
-                    <el-table-column label="Title" prop="title" min-width="90">
+                    <el-table-column label="Title" prop="title" align="center"  min-width="90">
                     </el-table-column>
                     <el-table-column label="Creator" prop="creatorName" align="center" min-width="30">
                     </el-table-column>

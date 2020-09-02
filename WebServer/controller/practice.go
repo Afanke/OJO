@@ -1,8 +1,6 @@
 package ctrl
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"github.com/gogotime/OJO/WebServer/db"
 	"github.com/gogotime/OJO/WebServer/dto"
@@ -10,10 +8,7 @@ import (
 	"github.com/gogotime/OJO/utils/log"
 	"github.com/gogotime/OJO/utils/session"
 	"github.com/kataras/iris/v12"
-	"io/ioutil"
-	"net/http"
 	"runtime"
-	"time"
 )
 
 type Practice struct{}
@@ -303,13 +298,13 @@ func (Practice) handleSubmit(submitForm *dto.SubmitForm) {
 			_ = pctdb.SetISEAndErrMsg(submitForm.Sid, fmt.Sprintf("Trace: %s", err)+stacktrace)
 		}
 	}()
-	form, err := pt.prepareForms(submitForm)
+	form, err := jsp.PrepareForm(submitForm)
 	if err != nil {
 		log.Warn("error:%v", err)
 		_ = pctdb.SetISEAndErrMsg(submitForm.Sid, err.Error())
 		return
 	}
-	form, err = pt.sendToJudge(form)
+	form, err = jsp.SendToJudge(form)
 	if err != nil {
 		log.Warn("error:%v", err)
 		_ = pctdb.SetISEAndErrMsg(submitForm.Sid, err.Error())
@@ -340,106 +335,6 @@ func (Practice) handleSubmit(submitForm *dto.SubmitForm) {
 		_ = pctdb.SetISEAndErrMsg(submitForm.Sid, err.Error())
 		return
 	}
-}
-
-func (Practice) sendToJudge(form *dto.JudgeForm) (*dto.JudgeForm, error) {
-	fmt.Println(form)
-	addr, err := jsp.GetAddr()
-	if err != nil {
-		log.Error("error:%v", err)
-		return nil, err
-	}
-	timeOut := time.Millisecond * time.Duration(4*form.MaxRealTime*form.SPJMp*form.CompMp)
-	client := &http.Client{
-		Timeout: timeOut,
-	}
-	buff, err := json.Marshal(form)
-	if err != nil {
-		log.Error("error:%v", err)
-		return nil, err
-	}
-	res, err := client.Post("http://"+addr+"/judge", "application/json", bytes.NewBuffer(buff))
-	if err != nil {
-		log.Error("error:%v", err)
-		return nil, err
-	}
-	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		log.Error("error:%v", err)
-		return nil, err
-	}
-	err = json.Unmarshal(body, &form)
-	if err != nil {
-		log.Error("error:%v", err)
-		return nil, err
-	}
-	fmt.Printf("%#v", form)
-	return form, err
-}
-
-func (Practice) prepareForms(subForm *dto.SubmitForm) (*dto.JudgeForm, error) {
-	useSPJ, err := pbdb.UseSPJ(subForm.Pid)
-	if err != nil {
-		log.Warn("error:%v", err)
-		return nil, err
-	}
-	limit, err := pbdb.GetLimitByLid(subForm.Pid, subForm.Lid)
-	if err != nil {
-		log.Warn("error:%v", err)
-		return nil, err
-	}
-	t, err := pbdb.GetTemplateByLid(subForm.Pid, subForm.Lid)
-	if err != nil {
-		log.Warn("error:%v", err)
-		return nil, err
-	}
-	code := t.Prepend + subForm.Code + t.Append
-	form := &dto.JudgeForm{
-		UseSPJ:      useSPJ,
-		MaxCpuTime:  limit.MaxCpuTime,
-		MaxRealTime: limit.MaxRealTime,
-		MaxMemory:   limit.MaxMemory,
-		TotalScore:  0,
-		CompMp:      limit.CompMp,
-		SPJMp:       limit.SPJMp,
-		Id:          subForm.Sid,
-		Lid:         subForm.Lid,
-		Sid:         subForm.Sid,
-		Pid:         subForm.Pid,
-		Cid:         subForm.Cid,
-		Uid:         subForm.Uid,
-		SPJLid:      0,
-		SPJCode:     "",
-		Code:        code,
-		Flag:        "",
-		ErrorMsg:    "",
-		TestCase:    nil,
-	}
-	if useSPJ {
-		spj, err := pbdb.GetSPJ(subForm.Pid)
-		if err != nil {
-			log.Warn("error:%v", err)
-			return nil, err
-		}
-		form.SPJCode = spj.Code
-		form.SPJLid = spj.Lid
-	}
-
-	cases, err := pbdb.GetCase(subForm.Pid)
-	if err != nil {
-		log.Warn("error:%v", err)
-		return nil, err
-	}
-	testCase := make([]dto.TestCase, len(cases))
-	for i := 0; i < len(cases); i++ {
-		testCase[i].Input = cases[i].Input
-		testCase[i].ExpectedOutput = cases[i].Output
-		testCase[i].Score = cases[i].Score
-		testCase[i].Id = cases[i].Id
-	}
-	form.TestCase = testCase
-	return form, nil
 }
 
 func (Practice) updateStatistic(form *dto.JudgeForm) error {

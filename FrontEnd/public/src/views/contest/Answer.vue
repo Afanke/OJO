@@ -325,7 +325,7 @@ export default {
                 C: "",
                 Cpp: "",
                 Java: "",
-                Python3: "",
+                Python: "",
                 Go: "",
             },
             currentTheme: "",

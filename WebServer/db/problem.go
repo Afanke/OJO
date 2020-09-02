@@ -166,10 +166,13 @@ func (Problem) GetDetail(id int64) (*dto.Problem, error) {
 		log.Warn("error:%v", err)
 		return nil, err
 	}
-	SPJ, err := pb.GetSPJ(id)
-	if err != nil {
-		log.Warn("error:%v", err)
-		return nil, err
+	if detail.UseSPJ {
+		SPJ, err := pb.GetSPJ(id)
+		if err != nil {
+			log.Warn("error:%v", err)
+			return nil, err
+		}
+		detail.SPJ = SPJ
 	}
 	template, err := pb.GetTemplate(id)
 	if err != nil {
@@ -185,7 +188,7 @@ func (Problem) GetDetail(id int64) (*dto.Problem, error) {
 	detail.Language = languages
 	detail.Sample = samples
 	detail.ProblemCase = cases
-	detail.SPJ = SPJ
+
 	detail.Template = template
 	detail.Limit = limit
 	return &detail, err

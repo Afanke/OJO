@@ -196,6 +196,7 @@ func BindRoute(app *iris.Application) {
 			admin.Post("/problem/getAllShared", pb.GetAllShared)
 			admin.Post("/problem/getSharedCount", pb.GetSharedCount)
 			admin.Post("/problem/deleteProblem", pb.DeleteProblem)
+			admin.Post("/problem/importFromQDUOJ", pb.ImportFromQDUOJ)
 		}
 		var pct ctrl.Practice
 		{

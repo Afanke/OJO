@@ -26,6 +26,7 @@
                     </template>
                     <el-menu-item index="3-1">Problem List</el-menu-item>
                     <el-menu-item index="3-2">Tag List</el-menu-item>
+                    <el-menu-item index="3-3">Import/Export Problem</el-menu-item>
                 </el-submenu>
                 <el-submenu index="4">
                     <template slot="title">
@@ -77,6 +78,9 @@ export default {
                     break
                 case "3-2":
                     this.$router.push("/problem/tag")
+                    break
+                case "3-3":
+                    this.$router.push("/problem/port")
                     break
                 case "4-1":
                     this.$router.push("/contest")

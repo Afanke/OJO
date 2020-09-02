@@ -127,8 +127,6 @@ func (File) UploadImg(c iris.Context) {
 		return
 	}
 	defer file.Close()
-	// 创建一个具有相同名称的文件
-	// 假设你有一个名为'uploads'的文件夹
 	out, err := os.OpenFile("./dist/img/"+header.Filename,
 		os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {

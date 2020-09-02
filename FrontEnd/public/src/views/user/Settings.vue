@@ -250,7 +250,7 @@ export default {
         changeUpload(file, fileList) {
             const isLt2M = file.size / 1024 / 1024 < 2
             if (!isLt2M) {
-                this.$message.error('上传文件大小不能超过 2MB!')
+                this.$message.error('file size must less than 2MB')
                 return false
             }
             this.fileName = file.name

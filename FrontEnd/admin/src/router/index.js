@@ -5,6 +5,7 @@ Vue.use(VueRouter);
 
 const ProblemCreate = () => import('@/views/problem/Create.vue');
 const ProblemEdit = () => import('@/views/problem/Edit.vue');
+const ProblemPort = () => import('@/views/problem/Port.vue');
 const Problem = () => import('@/views/problem/Problem.vue');
 const Contest = () => import('@/views/contest/Contest.vue');
 const ContestCreate = () => import('@/views/contest/Create.vue');
@@ -29,6 +30,7 @@ const routes = [
   { path: '/problem/create', component: ProblemCreate },
   { path: '/problem/edit', component: ProblemEdit },
   { path: '/problem/tag', component: ProblemTag },
+  { path: '/problem/port', component: ProblemPort },
   { path: '/problem', component: Problem },
   { path: '/contest', component: Contest },
   { path: '/contest/create', component: ContestCreate },

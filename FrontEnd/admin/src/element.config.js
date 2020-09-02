@@ -40,7 +40,7 @@ import {
   // Alert,
   // Slider,
 
-  // Upload,
+  Upload,
 
   // Spinner,
   // Badge,
@@ -153,7 +153,7 @@ Vue.use(Popover);
 Vue.use(Tooltip);
 // Vue.use(Breadcrumb);
 // Vue.use(BreadcrumbItem);
-// Vue.use(Upload);
+Vue.use(Upload);
 // Vue.use(Slider);
 
 // Vue.use(Spinner);

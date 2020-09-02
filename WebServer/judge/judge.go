@@ -202,7 +202,7 @@ func PrepareForm(subForm *dto.SubmitForm) (*dto.JudgeForm, error) {
 		log.Warn("error:%v", err)
 		return nil, err
 	}
-	code := t.Prepend + subForm.Code + t.Append
+	code := t.Prepend + "\n" + subForm.Code + "\n" + t.Append
 	form := &dto.JudgeForm{
 		UseSPJ:      useSPJ,
 		MaxCpuTime:  limit.MaxCpuTime,
