@@ -50,7 +50,7 @@
                         <template slot-scope="scope">
                             <el-button size="mini" type="info" v-if="scope.row.difficulty === 'Casual'">Casual
                             </el-button>
-                            <el-button size="mini" type="success" v-if="scope.row.difficulty === 'Eazy'">Eazy
+                            <el-button size="mini" type="success" v-if="scope.row.difficulty === 'Easy'">Easy
                             </el-button>
                             <el-button size="mini" type="primary" v-if="scope.row.difficulty === 'Normal'">Normal
                             </el-button>
@@ -137,8 +137,8 @@ export default {
                     label: 'Casual'
                 },
                 {
-                    value: 'Eazy',
-                    label: 'Eazy'
+                    value: 'Easy',
+                    label: 'Easy'
                 },
                 {
                     value: 'Normal',
@@ -161,7 +161,7 @@ export default {
     },
     async mounted() {
         this.show = true
-        this.queryList()
+        await this.queryList()
     },
     methods: {
         toggle(checked) {

@@ -165,3 +165,12 @@ func (Tag) IsShared(tid int64) error {
 	}
 	return nil
 }
+
+func (Tag) GetTagIdByName(name string) (int64, error) {
+	var res int64
+	err := gosql.Get(&res, "select id from ojo.tag where name=?", name)
+	if err != nil {
+		return 0, err
+	}
+	return res, nil
+}

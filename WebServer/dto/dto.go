@@ -732,3 +732,42 @@ type ACMSubmission struct {
 	Flag       string `json:"flag" db:"flag"`
 	SubmitTime string `json:"submitTime" db:"submit_time"`
 }
+
+type QDUOJProblem struct {
+	Ref               string           `json:"display_id"`
+	Title             string           `json:"title" `
+	Description       QDUOJDescription `json:"description" `
+	InputDescription  QDUOJDescription `json:"input_description" `
+	OutputDescription QDUOJDescription `json:"output_description"`
+	Hint              QDUOJDescription `json:"hint" `
+	Source            string           `json:"source"`
+	TimeLimit         int              `json:"time_limit"`
+	MemoryLimit       int              `json:"memory_limit"`
+	Template          QDUOJTemplate    `json:"template"`
+	ProblemCase       []QDUOJTestCase  `json:"test_case_score" `
+	Sample            []ProblemSample  `json:"samples" `
+	Tag               []string         `json:"tags"`
+}
+
+type QDUOJDescription struct {
+	Format string `json:"format"`
+	Value  string `json:"value"`
+}
+
+type QDUOJTestCase struct {
+	Score      int    `json:"score"`
+	InputName  string `json:"input_name"`
+	OutputName string `json:"output_name"`
+}
+type QDUOJTemplate struct {
+	C       QDUOJLangTemplate `json:"C"`
+	Cpp     QDUOJLangTemplate `json:"C++"`
+	Java    QDUOJLangTemplate `json:"Java"`
+	Python3 QDUOJLangTemplate `json:"Python3"`
+}
+
+type QDUOJLangTemplate struct {
+	Prepend  string `json:"prepend"`
+	Template string `json:"template"`
+	Append   string `json:"append"`
+}
