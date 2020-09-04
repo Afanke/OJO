@@ -2,7 +2,6 @@
 
     <div>
         <transition name="slide-fade">
-
             <div class="center-box" v-if="show">
                 <el-row style="height:60px;line-height:60px">
                     <span style="font-size:20px;margin-left:20px">Problem List</span>
@@ -406,7 +405,7 @@ export default {
 }
 
 .center-box {
-    height: auto;
+    /*height: auto;*/
     background-color: #ffffff;
     border-radius: 10px;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);

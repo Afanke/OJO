@@ -1,7 +1,7 @@
 <template>
     <div id="app">
-        <el-container v-if="isAdmin && show">
-            <el-header style="min-width:1280px;padding:0;margin:0;background-color:rgb(102, 177, 255);color:#fff;" height="50px">
+        <div v-if="isAdmin && show">
+            <div class="header">
                 <div style="float:left;margin-left:20px;line-height:50px;font-size:25px">
                     Hello OJO
                 </div>
@@ -17,33 +17,31 @@
                 <div class="full-screen" @click="changeScreen">
                     <i class="el-icon-full-screen"></i>
                 </div>
-            </el-header>
-            <el-container style="height:100%">
-                <el-aside width="230px" style="height:100%;border-right: solid 1px #e6e6e6;background-color:#fff">
+            </div>
+            <div class="container">
+                <div class="aside" width="230px" style="">
                     <app-header></app-header>
-                </el-aside>
-                <el-main style="min-width:1050px">
-                    <router-view>
-                    </router-view>
-                </el-main>
+                </div>
+<!--                <div class="main" style="min-width:1050px">-->
+<!--                    <router-view>-->
+<!--                    </router-view>-->
+<!--                </div>-->
                 <!-- <el-footer> -->
                 <!-- </el-footer> -->
-            </el-container>
-        </el-container>
+            </div>
+        </div>
         <login v-if="!isAdmin && show"></login>
     </div>
 </template>
 <script>
 import Header from '@/views/Header.vue';
 import Login from '@/views/Login.vue';
-import Scrollbar from "element-ui/lib/scrollbar"
 
 
 export default {
     name: 'app',
     components: {
         appHeader: Header,
-        elScrollbar: Scrollbar,
         login: Login
     },
     data() {
@@ -172,12 +170,44 @@ body {
     display: flex;
 }
 
+.header{
+    min-width:1280px;
+    width:100%;
+    padding:0;
+    margin:0;
+    background-color:rgb(102, 177, 255);
+    color:#fff;
+    height: 50px;
+    position:fixed;
+    float: top;
+    top:0;
+    left:0;
+}
+
+.container{
+
+}
+
+.aside{
+    height:100%;
+    border-right: solid 1px #e6e6e6;
+    background-color:#fff;
+    float: left;
+}
+
+/*.aside::-webkit-scrollbar {*/
+/*    display: none; !* Chrome Safari *!*/
+/*}*/
+
+/*.main::-webkit-scrollbar {*/
+/*    display: none; !* Chrome Safari *!*/
+/*}*/
+
 .el-aside {
     height: 100%;
     background-color: #ffffff;
 }
 
-.el-scrollbar__wrap.default-scrollbar__wrap {
-    overflow-x: auto;
-}
+
+
 </style>

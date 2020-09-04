@@ -12,7 +12,8 @@
                                 </div>
                                 <el-button style="float:right;margin-top:15px;margin-right:20px;"
                                            class="el-icon-refresh" type="primary"
-                                           size="small" @click="reset">&nbsp;Reset
+                                           size="small" @click="reset">
+                                    &nbsp;Reset
                                 </el-button>
                                 <el-input style="float:right;width:200px;margin-top:15px;margin-right:20px"
                                           placeholder="keywords"
@@ -39,7 +40,7 @@
                                 <el-table :highlight-current-row="true" size="small" :data="problemList"
                                           style="width: 100%;margin-top:-20px;border-radius:6px"
                                           v-loading="practiseListLoading">
-                                    <el-table-column v-if="hasFlag" align="center" label="" width="50">
+                                    <el-table-column align="center" label="" width="50">
                                         <template slot-scope="scope">
                                             <i class="el-icon-check" style="color:#67C23A;font-size:20px;margin-top:2px"
                                                v-if="scope.row.flag === 'AC'"></i>
@@ -134,7 +135,6 @@ export default {
     data() {
         return {
             tags: [],
-            hasFlag: false,
             showTags: false,
             realShowTags: false,
             tagsLoading: false,
@@ -280,8 +280,6 @@ export default {
                 }
                 this.problemList = res.data;
                 this.count = res1.data;
-
-                this.hasFlag = false
                 for (let i = 0; i < this.problemList.length; i++) {
                     let rate =
                         this.problemList[i].statistic.ac /
@@ -292,10 +290,10 @@ export default {
                     } else {
                         this.problemList[i].ac_rate = (rate * 100).toFixed(2) + '%';
                     }
-                    if (this.problemList[i].flag !== "") {
-                        this.hasFlag = true
-                    }
                 }
+                // setTimeout(()=>{
+                //
+                // })
                 this.practiseListLoading = false;
             } catch (err) {
                 console.log(err);
