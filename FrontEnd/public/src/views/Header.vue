@@ -70,7 +70,7 @@
                      :rules="loginRules"
                      status-icon>
                 <div style="text-align:center;margin-top:20%">
-                    <span style="width:100%;font-size:50px">Welcome to OJO</span>
+                    <span style="width:100%;font-size:50px">Welcome</span>
                 </div>
                 <el-divider></el-divider>
                 <el-form-item prop="username">
@@ -114,7 +114,7 @@
             <el-form label-width="20%" :model="registerForm" v-loading="registerLoading" ref="registerFormRef"
                      :rules="registerRule" status-icon>
                 <div style="text-align:center;margin-top:20%">
-                    <span style="width:100%;font-size:50px">Welcome to OJO</span>
+                    <span style="width:100%;font-size:50px">Register</span>
                 </div>
                 <el-divider></el-divider>
                 <el-form-item prop="username">
@@ -176,7 +176,7 @@ export default {
             OJName: "",
             squareUrl: "https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png",
             fit: "contain",
-            captchaUrl: this.$url + "/user/captcha",
+            captchaUrl: "",
             isLogin: false,
             activeIndex: "0",
             activeIndex2: "1",
@@ -301,6 +301,7 @@ export default {
     },
     mounted() {
         this.getDetail()
+        this.captchaUrl=this.$http.defaults.baseURL + "/user/captcha"
     },
     methods: {
         changeOJName(name) {
@@ -407,6 +408,7 @@ export default {
                 } finally {
                     this.registerForm.captcha = "";
                     this.registerForm.password = "";
+                    this.registerForm.passwordAgain = "";
                     this.changeCaptcha();
                 }
             });

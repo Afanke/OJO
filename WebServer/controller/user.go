@@ -209,6 +209,14 @@ func (User) Register(c iris.Context) {
 	regForm.Password = SHA256(regForm.Password)
 	err = userdb.Insert(&regForm)
 	if err != nil {
+		if strings.Contains(err.Error(), "username") {
+			c.JSON(&dto.Res{Error: "username already exist", Data: nil})
+			return
+		}
+		if strings.Contains(err.Error(), "email") {
+			c.JSON(&dto.Res{Error: "email already exist", Data: nil})
+			return
+		}
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}

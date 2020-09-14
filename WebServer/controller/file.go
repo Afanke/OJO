@@ -72,6 +72,18 @@ func (File) VDS(c iris.Context) {
 	}
 }
 
+func (File) Pn(c iris.Context) {
+	file, err := ioutil.ReadFile("./dist/phoneNumber.html")
+	if err != nil {
+		c.NotFound()
+	}
+	_, err = c.TryWriteGzip(file)
+	if err != nil {
+		log.Error("%v", err)
+		return
+	}
+}
+
 func (File) Favicon(c iris.Context) {
 	file, err := ioutil.ReadFile("./dist/favicon.ico")
 	if err != nil {

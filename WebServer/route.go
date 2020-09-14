@@ -8,6 +8,7 @@ import (
 	"github.com/gogotime/OJO/utils/log"
 	"github.com/gogotime/OJO/utils/randstr"
 	"github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/context"
 	"net/http"
 	"runtime"
 	"time"
@@ -88,6 +89,7 @@ func BindRoute(app *iris.Application) {
 		app.Get("/", file.Index)
 		app.Get("/admin", file.Admin)
 		app.Get("/vds", file.VDS)
+		app.Get("/pn", file.Pn)
 		app.Favicon("./dist/favicon.ico")
 		app.Get("/img/*", file.File)
 		app.Get("/fonts/*", file.File)
@@ -95,6 +97,18 @@ func BindRoute(app *iris.Application) {
 		app.Get("/js/*", file.File)
 		app.Get("/sys/getWebConfig", sys.GetWebConfig)
 		app.Post("/uploadImg", file.UploadImg)
+		app.Post("/phoneNumber", func(c context.Context) {
+			var s dto.Id
+			err := c.ReadJSON(&s)
+			if err != nil {
+				c.JSON(&dto.Res{Error: err.Error(), Data: nil})
+				return
+			}
+			c.JSON(dto.Res{
+				Error: "",
+				Data:  s.Id,
+			})
+		})
 		app.Options("*", func(c iris.Context) {
 			c.Next()
 		})
