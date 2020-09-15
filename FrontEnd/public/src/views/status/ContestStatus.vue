@@ -184,7 +184,7 @@ export default {
                     page: this.page
                 });
                 if (res.error) {
-                    if (res.error !== "please login") {
+                    if (res.error !== "please login" && res.error !=="sql: no rows in result set") {
                         this.$message.error(res.error);
                     }
                     this.loading = false
