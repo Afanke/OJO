@@ -14,7 +14,7 @@
 #include "child.h"
 
 pid_t pid;
-bool flag=true;
+volatile bool flag=true;
 struct timeb tb_end;
 
 int main(int argc, char *argv[])
