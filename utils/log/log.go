@@ -3,7 +3,6 @@ package log
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/labstack/gommon/log"
 	"io/ioutil"
 	"os"
 	"path"
@@ -45,7 +44,7 @@ type Logger struct {
 }
 
 func (l Logger) Printf(format string, v ...interface{}) {
-	log.Debug(format, v)
+	Debug(format, v)
 }
 
 type FileLogger struct {

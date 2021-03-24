@@ -954,7 +954,7 @@ func (Contest) Submit(c iris.Context) {
 		c.JSON(&dto.Res{Error: err.Error(), Data: nil})
 		return
 	}
-	if number >= limit {
+	if limit != 0 && number >= limit {
 		c.JSON(&dto.Res{Error: "submit limit exceeded", Data: nil})
 		return
 	}
