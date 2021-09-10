@@ -12,7 +12,7 @@
                 <transition name="fade">
                     <div class="footer" v-if="showFooter">
                         <div v-html="footer"></div>
-                        <div style="color:#C0C4CC">Power By OJO</div>
+                        <div style="color:#C0C4CC">Powered By GOGOOJ</div>
                     </div>
                 </transition>
 
